@@ -1,7 +1,28 @@
 {
-  "executable": "/opt/homebrew/Caskroom/codex/0.157.1/bin/codex",
-  "sha256": "27ceb5f9b957b43a519efe4eaa3816a0bffb0a531a2c89af18840c0a3c016a7d",
+  "schema_version": "2.0",
   "version": "0.157.1",
   "model": "gpt-6-astra",
-  "initial_writer_model_evidence": "artifacts/workers/writer-1791711139777498000/stderr.log"
+  "platforms": {
+    "Darwin-arm64": {
+      "asset": "codex-aarch64-apple-darwin.tar.gz",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.157.1/codex-aarch64-apple-darwin.tar.gz",
+      "archive_sha256": "3c45b162b7a76f51325015b1d0a8112c73219b7a9b59cd5762c37c9ba55894fa",
+      "binary_member": "codex-aarch64-apple-darwin",
+      "binary_sha256": "27ceb5f9b957b43a519efe4eaa3816a0bffb0a531a2c89af18840c0a3c016a7d",
+      "binary_size": 238223808,
+      "release": "https://github.com/openai/codex/releases/tag/rust-v0.157.1",
+      "verification": "official GitHub API digest + locally verified archive/member hash; foreign binary not executed"
+    },
+    "Linux-x86_64": {
+      "asset": "codex-x86_64-unknown-linux-musl.tar.gz",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.157.1/codex-x86_64-unknown-linux-musl.tar.gz",
+      "archive_sha256": "e98c1e8e028e8137fa2d2415c82ec58e7b3701a627e3554aace5b3ca31454af2",
+      "binary_member": "codex-x86_64-unknown-linux-musl",
+      "binary_sha256": "3e2584f3f3829a43a0495011a1cecb2facbe64a2403e2b682351fd9c2983f970",
+      "binary_size": 285340072,
+      "release": "https://github.com/openai/codex/releases/tag/rust-v0.157.1",
+      "verification": "official GitHub API digest + locally verified archive/member hash; foreign binary not executed"
+    }
+  },
+  "discovery": "explicit PC_CODEX_EXECUTABLE, then project .tools/codex/codex, then PATH; always hash and version checked"
 }

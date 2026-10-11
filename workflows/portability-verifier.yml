@@ -1,0 +1,34 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-portability-verifier"
+  name: "Actual read-only portability and preserved product review"
+  version: "1.0.0"
+steps:
+  - id: verify
+    type: prompt
+    integration: codex
+    prompt: |
+      Independently review the integrated T007 portability snapshot at exact HEAD.
+      You are a fresh actual read-only verifier, not the implementation writer.
+      Read AGENTS.md, both specs/001-offline and specs/002-portability spec/plan,
+      tasks/T007.json, and pc-cloud-setup, pc-snapshot-check, pc-payment-audit
+      SKILL.md explicitly. Preserve original src/tests/golden/contracts/spec.
+      First run .venv/bin/python scripts/verify_readonly.py; stop if write allowed.
+      Run .venv/bin/python -m pytest -q -p no:cacheprovider --basetemp="$TMPDIR/pytest";
+      .venv/bin/ruff check --no-cache .; .venv/bin/ruff format --check --no-cache .;
+      .venv/bin/python scripts/verify_scope.py tasks/T007.json .;
+      .venv/bin/python scripts/bootstrap.py --check --with-runner;
+      .venv/bin/python scripts/toolchain.py --json.
+      Inspect bootstrap, platform pins, installer isolation, interpreter launcher,
+      prompt option boundary, executable/version checks, env/permissions/timeouts,
+      relative task anchor and observed quality metadata. Add independent temporary
+      reproducers in $TMPDIR only. Unit fakes/simulated hosts do not prove Linux
+      or actual agent execution. Inspect artifacts/portability for fresh relocated
+      checkout/repeat/quality/runner evidence; do not rerun installation/network.
+      Report actionable in-scope defects with reproducible evidence. Do not write
+      project, Git, spec, tests, skills or tasks; no network, delegation, credentials
+      or changed security. No actual cloud environment is claimed.
+      Return JSON only: {"verdict":"passed|failed|blocked", "commit":"exact HEAD",
+      "checks":[{"command":"...", "exit_code":0}],
+      "findings":[{"severity":"...", "file":"...", "reason":"...", "reproducer":"..."}],
+      "limitations":["..."]}. Never pass when a required check cannot run. 600s limit.

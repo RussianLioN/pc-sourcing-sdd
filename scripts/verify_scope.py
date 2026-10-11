@@ -7,10 +7,28 @@ import json
 import subprocess
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def coordinator_path(value):
+    path = Path(value)
+    return path.resolve() if path.is_absolute() else (ROOT / path).resolve()
+
 
 def check(task_path, worktree):
     task = json.loads(Path(task_path).read_text())
     base = task["base_commit"]
+    coordinator = coordinator_path(task["coordinator_root"])
+    change = task.get("change_spec")
+    if change:
+        change_path = (Path(worktree) / change["path"]).resolve()
+        if not change_path.is_relative_to((Path(worktree) / "specs").resolve()):
+            raise SystemExit("BLOCKED change spec outside specs")
+        if (
+            change["revision"] != "1.0.0"
+            or hashlib.sha256(change_path.read_bytes()).hexdigest() != change["sha256"]
+        ):
+            raise SystemExit("BLOCKED change spec hash stale")
     if task.get("status") != "ready":
         raise SystemExit("BLOCKED task not ready")
     spec = Path(worktree) / "specs/001-offline/spec.md"
@@ -19,9 +37,7 @@ def check(task_path, worktree):
     if task["spec_revision"] != "1.0.0":
         raise SystemExit("BLOCKED task spec revision unsupported")
     for dependency in task["dependencies"]:
-        receipt = (
-            Path(task["coordinator_root"]) / "artifacts/task-receipts" / (dependency + ".json")
-        )
+        receipt = coordinator / "artifacts/task-receipts" / (dependency + ".json")
         if not receipt.exists() or json.loads(receipt.read_text()).get("status") != "passed":
             raise SystemExit("BLOCKED unmet task dependency: " + dependency)
 
@@ -38,7 +54,7 @@ def check(task_path, worktree):
             [
                 "git",
                 "-C",
-                task["coordinator_root"],
+                str(coordinator),
                 "show",
                 f"{task.get('protected_baselines', {}).get(p, base)}:{p}",
             ]
@@ -46,9 +62,7 @@ def check(task_path, worktree):
         if (Path(worktree) / p).read_bytes() != expected:
             raise SystemExit("BLOCKED protected baseline changed: " + p)
     for p in task.get("protected_behavior_files", []):
-        before = subprocess.check_output(
-            ["git", "-C", task["coordinator_root"], "show", f"{base}:{p}"]
-        )
+        before = subprocess.check_output(["git", "-C", str(coordinator), "show", f"{base}:{p}"])
 
         def behavior(raw):
             tree = ast.parse(raw)

@@ -1,18 +1,19 @@
 # pc-sourcing-sdd
 
-[Cloud handoff and verified offline summary](docs/cloud-handoff.md).
+**Cloud preparation is WIP on feature/cloud-portability.** This branch has
+Mac checks, but no independent portability acceptance or Linux/cloud run.
+
+[Current portable setup](docs/cloud-setup.md) · [Historical accepted offline summary](docs/cloud-handoff.md).
 Offline pilot on the user's Mac. **Every fixture is synthetic.** No real
 price, stock, protected transaction or production readiness is confirmed.
 
 The application is installed locally in `.venv` (editable, version 0.1.0).
-From `/Users/s060874gmail.com/coding/projects/pc-sourcing-sdd`:
+From the checked-out repository root (Python 3.11+):
 
 ```bash
-.venv/bin/python -m pytest -q
-.venv/bin/ruff check .
-.venv/bin/ruff format --check .
-.venv/bin/python scripts/verify_scope.py tasks/T002.json .
-.venv/bin/python scripts/check_acceptance.py
+python3 scripts/bootstrap.py
+.venv/bin/python scripts/bootstrap.py --check
+.venv/bin/python scripts/quality.py --out artifacts/fresh-host-check
 ```
 
 Rerun sourcing on the retained acceptance input into **new** output paths:
@@ -77,3 +78,9 @@ resource directory and preserve the old evidence; do not blindly reuse state.
 Converge is optional gap/task discovery, not an offline acceptance prerequisite.
 The autonomous coordinator continues narrow tasks across finite runs; no
 persistent service or parallel fan-out capability is claimed.
+
+Portability change specification: `specs/002-portability/spec.md`, task T007.
+Original source/goldens/tests remain protected; old acceptance stays historical.
+Read `docs/cloud-setup.md` before runner use. Only allowlisted current workflows
+can launch; old writer/repair assignments are retained as history. Actual
+Linux/cloud execution remains a separate gate. No Mac authorization is copied.

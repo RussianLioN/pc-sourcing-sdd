@@ -2,11 +2,8 @@
 
 import argparse
 import hashlib
-import importlib.metadata
 import json
 import os
-import platform
-import sqlite3
 import subprocess
 import time
 from pathlib import Path
@@ -36,6 +33,13 @@ def snapshot():
         "fixtures_hash": digest(list((ROOT / "fixtures").rglob("*.json"))),
         "tests_hash": digest(list((ROOT / "tests").rglob("*.py"))),
         "code_hash": digest(list((ROOT / "src").rglob("*.py"))),
+        "tooling_hash": digest(
+            list((ROOT / "scripts").glob("*.py"))
+            + list((ROOT / "scripts").glob("*.json"))
+            + list((ROOT / "scripts").glob("codex-worker"))
+            + list((ROOT / "workflows").glob("*.yml"))
+        ),
+        "lock_hash": digest(list(ROOT.glob("*.lock"))),
     }
 
 
@@ -103,17 +107,9 @@ def run(out):
             "status": "passed" if result.returncode == 0 else "failed",
         }
     )
-    versions = {
-        p: importlib.metadata.version(p) for p in ("pydantic", "pytest", "hypothesis", "ruff")
-    }
-    versions.update(
-        python=platform.python_version(),
-        sqlite=sqlite3.sqlite_version,
-        spec_kit="1.1.3",
-        spec_kit_sha="0282d03eb6fc3091b3deaa3a855d4030dc40cd6c",
-        codex="0.157.1",
-        uv="0.10.2",
-    )
+    from toolchain import observed_versions
+
+    versions = observed_versions(ROOT)
     stable = before == snapshot()
     evidence = {
         "snapshot": before,
