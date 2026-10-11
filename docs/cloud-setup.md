@@ -60,17 +60,24 @@ These failures occur in the outer cloud filesystem sandbox, before the nested
 verifier can execute its own project-write denial probe. `--ephemeral` and
 `--ignore-user-config` do not remove these runtime writes.
 
-Minimal operator action, requiring separate confirmation: provide the current
-CLI a writable service file at `/run/codex-environment/codex-home/installation_id`
-(including its lock/mode operations) and writable helper directory
-`/run/codex-environment/codex-home/tmp/arg0`, while keeping `auth.json` read-only
-and all project verifier permissions unchanged. SQLite/logs can use private
-already-permitted scratch paths through the documented config overrides.
-This is a service-state filesystem permission change, not a request for a new
-key/login. Authorization and further runtime requirements remain untested;
-do not promise this alone completes review. No such change was made here.
-Do not copy Mac credentials or bypass sandboxing. Then run a new reviewed
-workflow at exact current HEAD and retain the failed runs.
+Those two service paths are the diagnosed compatibility requirements, not
+instructions for a user to issue `chmod` or grant mounts. No supported
+per-path mount control was found in the documented user Cloud Environment
+settings, and this task cannot inspect authenticated admin settings. Enterprise
+Agent Security documents supported filesystem policy controls, but their
+availability/applicability here is unconfirmed and changing them would change
+security. See the official [Cloud environments guide](https://learn.chatgpt.com/docs/environments/cloud-environments)
+and [Agent Security guide](https://learn.chatgpt.com/docs/enterprise/agent-security).
+The remaining request is a platform compatibility diagnosis for OpenAI support,
+not a command the user is assumed able to execute. No permissions were changed.
+Do not copy credentials, replace auth home or bypass sandboxing.
+
+An explicit SDD version migration is permitted in principle. The official
+Codex 0.159.2 source at `ff6aec96948b70d94983af2641a6b67c94faeff5` still
+unconditionally opens the same installation-id file read/write/create and
+retains the same helper path. Its config schema provides SQLite/log overrides
+but no alternate installation-id path. Therefore changing the pin alone does
+not resolve the blocker. No blocked nested launch was repeated for this probe.
 
 PORT-10 requires an independent actual Codex read-only review at one integrated
 SHA; it does not explicitly require nesting. A separate cloud executor can
@@ -81,6 +88,25 @@ T007's combined `actual pinned Spec Kit runner + independent read-only Codex
 review` command. The current implementation connects those through the pinned
 workflow; retain the outstanding runtime gates unless equivalent evidence is
 independently demonstrated without weakening their requirements.
+
+## Independent review repair — PORT-01
+
+A separate cloud reviewer requested changes: on the earlier snapshot,
+`.tools/uv-cache` and `.tools/python` symlinks could direct installer resources
+outside the checkout. The reviewer actually ran pinned uv offline with an
+empty input in isolated scratch; external cache files were created. This is a
+real portability defect, independent of the nested model-runtime blocker.
+
+The repair checks all existing writable installer trees and symlink destinations
+before receipt creation, any subprocess and Codex download. External or dangling
+external destinations fail closed without modifying their targets. Internal uv
+cache links remain supported, with cycle-safe traversal; bootstrap venv's host
+Python aliases remain read-only interpreter inputs. Installer temp directories
+are project-local, and the initial pip installation disables its global cache.
+Regression tests cover root/intermediate/nested/dangling links, cache aliases,
+late pre-subprocess changes, actual CLI rejection and normal repeat with spaces.
+This fix needs fresh independent review; neither its unit tests nor the earlier
+review constitute passed sandbox acceptance or close the nested runtime gates.
 
 From Slack or a phone, send the cloud task: “Continue T007 in
 RussianLioN/pc-sourcing-sdd, feature/cloud-portability. Read docs/cloud-setup.md;

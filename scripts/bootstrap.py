@@ -29,9 +29,49 @@ from toolchain import (
 
 def local_path(root, path):
     path = Path(path)
-    if not path.resolve().is_relative_to(Path(root).resolve()):
+    try:
+        contained = path.resolve().is_relative_to(Path(root).resolve())
+    except (OSError, RuntimeError) as error:
+        raise ToolchainError("generated resource path cannot be safely resolved") from error
+    if not contained:
         raise ToolchainError("generated resource would leave project root")
     return path
+
+
+def validate_installer_paths(root):
+    """Check existing writable trees before any installer or receipt writes.
+
+    Internal uv cache links are normal. Follow them once, reject external
+    destinations, and avoid cycles. Bootstrap Python aliases are read-only
+    inputs to pip, never installation destinations in an existing environment.
+    """
+    root = Path(root).resolve()
+    resources = (
+        ".tools",
+        ".venv",
+        "artifacts/bootstrap",
+        "src/pc_sourcing_sdd.egg-info",
+    )
+    pending = [root / name for name in resources]
+    visited = set()
+    while pending:
+        path = pending.pop()
+        if (
+            path.parent == root / ".tools/bootstrap-env/bin"
+            and re.fullmatch(r"python(?:3(?:\.\d+)?)?", path.name)
+            and path.is_symlink()
+            and path.is_file()
+        ):
+            # A venv created with the host interpreter normally links outside
+            # the checkout. No command recreates an existing bootstrap venv.
+            continue
+        local_path(root, path)
+        resolved = path.resolve()
+        if resolved in visited:
+            continue
+        visited.add(resolved)
+        if path.is_dir():
+            pending.extend(path.iterdir())
 
 
 def check_existing_python(root, directory):
@@ -139,6 +179,7 @@ def check_environment(root, *, with_runner=False, with_codex=False):
 
 
 def clean_installer_environment(root):
+    validate_installer_paths(root)
     env = {k: v for k, v in os.environ.items() if not k.startswith(("UV_", "PIP_"))}
     # Keep the environment's existing network/proxy policy; configure no credentials.
     env.update(
@@ -146,6 +187,9 @@ def clean_installer_environment(root):
         UV_PYTHON_INSTALL_DIR=str(Path(root) / ".tools/python"),
         PIP_CONFIG_FILE=os.devnull,
         PYTHONDONTWRITEBYTECODE="1",
+        TMPDIR=str(local_path(root, Path(root) / ".tools/tmp")),
+        TMP=str(local_path(root, Path(root) / ".tools/tmp")),
+        TEMP=str(local_path(root, Path(root) / ".tools/tmp")),
     )
     return env
 
@@ -154,6 +198,7 @@ class Installer:
     def __init__(self, root):
         self.root = Path(root)
         self.env = clean_installer_environment(root)
+        local_path(root, Path(self.env["TMPDIR"])).mkdir(parents=True, exist_ok=True)
         self.out = local_path(root, Path(root) / "artifacts/bootstrap" / str(time.time_ns()))
         self.out.mkdir(parents=True)
         self.deadline = time.monotonic() + 480
@@ -171,6 +216,7 @@ class Installer:
         return data
 
     def run(self, command):
+        validate_installer_paths(self.root)
         remaining = self.deadline - time.monotonic()
         if remaining <= 0:
             raise ToolchainError("bootstrap total deadline exceeded")
@@ -228,6 +274,7 @@ class Installer:
                 "--isolated",
                 "install",
                 "--no-deps",
+                "--no-cache-dir",
                 "--index-url",
                 "https://pypi.org/simple",
                 "uv==" + pins(self.root)["uv"],
@@ -253,6 +300,7 @@ class Installer:
         check_existing_python(self.root, directory)
 
     def codex(self):
+        validate_installer_paths(self.root)
         config = json.loads((self.root / "scripts/codex-pin.json").read_text())
         asset = config["platforms"][host_key()]
         destination = local_path(self.root, self.root / ".tools/codex/codex")
@@ -306,7 +354,7 @@ def main():
         if sys.version_info < (3, 11):  # noqa: UP036 -- bootstrap runs before pinned Python exists
             raise ToolchainError("bootstrap requires an existing Python 3.11+ interpreter")
         host_key()
-        local_path(ROOT, ROOT / ".tools")
+        validate_installer_paths(ROOT)
         if not args.check:
             installer = Installer(ROOT)
             uv = installer.uv()

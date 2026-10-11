@@ -191,3 +191,143 @@ def test_cloud_skill_contains_executable_examples():
     assert "scripts/bootstrap.py --check" in text
     assert "scripts/quality.py" in text
     assert "new credentials" in text
+
+
+@pytest.mark.parametrize(
+    "resource",
+    [
+        ".tools",
+        ".tools/uv-cache",
+        ".tools/python",
+        ".tools/tmp",
+        ".tools/bootstrap-env",
+        ".tools/spec-kit-env",
+        ".tools/codex",
+        ".tools/codex/codex",
+        ".venv",
+        "artifacts/bootstrap",
+        "src/pc_sourcing_sdd.egg-info",
+        ".tools/uv-cache/archive-v0/linked-package",
+        ".tools/python/managed/lib/linked-library",
+        ".tools/bootstrap-env/lib/python3.13/site-packages/linked-package",
+        ".tools/spec-kit-env/lib/python3.13/site-packages/linked-package",
+        ".venv/lib/python3.13/site-packages/linked-package",
+        "artifacts/bootstrap/old-run/receipt.json",
+    ],
+)
+def test_installer_rejects_external_links_before_any_write(tmp_path, resource):
+    root = tmp_path / "checkout with spaces"
+    outside = tmp_path / "external sentinel"
+    root.mkdir()
+    outside.mkdir()
+    sentinel = outside / "preserve"
+    sentinel.write_bytes(b"unchanged external contents")
+    link = root / resource
+    link.parent.mkdir(parents=True, exist_ok=True)
+    link.symlink_to(outside, target_is_directory=True)
+    before = sentinel.stat()
+    original_paths = set(root.rglob("*"))
+    with pytest.raises(toolchain.ToolchainError, match="leave project root"):
+        bootstrap.Installer(root)
+    assert sentinel.read_bytes() == b"unchanged external contents"
+    assert sentinel.stat().st_mtime_ns == before.st_mtime_ns
+    assert list(outside.iterdir()) == [sentinel]
+    assert link.is_symlink()
+    assert set(root.rglob("*")) == original_paths
+
+
+@pytest.mark.parametrize(
+    "resource",
+    [
+        ".tools/uv-cache",
+        ".tools/python",
+        ".tools/bootstrap-env",
+        ".tools/spec-kit-env",
+        ".tools/codex/codex",
+        ".venv",
+        "artifacts/bootstrap",
+        ".tools/uv-cache/archive-v0/package",
+    ],
+)
+def test_dangling_cache_link_is_rejected_without_creating_target(tmp_path, resource):
+    root = tmp_path / "checkout"
+    (root / ".tools").mkdir(parents=True)
+    outside = tmp_path / "not-created"
+    link = root / resource
+    link.parent.mkdir(parents=True, exist_ok=True)
+    link.symlink_to(outside, target_is_directory=True)
+    with pytest.raises(toolchain.ToolchainError, match="leave project root"):
+        bootstrap.Installer(root)
+    assert not outside.exists()
+    assert not (root / "artifacts/bootstrap").exists()
+
+
+def test_internal_cache_links_and_host_python_aliases_preserve_repeat(tmp_path):
+    root = tmp_path / "checkout with spaces"
+    archive = root / ".tools/uv-cache/archive-v0/package"
+    archive.mkdir(parents=True)
+    wheel = root / ".tools/uv-cache/wheels-v6/package"
+    wheel.parent.mkdir()
+    wheel.symlink_to(archive, target_is_directory=True)
+    (archive / "loop").symlink_to(archive, target_is_directory=True)
+    binary = root / ".tools/bootstrap-env/bin/python"
+    binary.parent.mkdir(parents=True)
+    binary.symlink_to(sys.executable)
+    installer = bootstrap.Installer(root)
+    assert Path(installer.env["TMPDIR"]).is_relative_to(root)
+    bootstrap.Installer(root)
+
+
+def test_installer_rechecks_paths_before_subprocess(tmp_path):
+    root = tmp_path / "checkout"
+    root.mkdir()
+    installer = bootstrap.Installer(root)
+    outside = tmp_path / "external"
+    outside.mkdir()
+    (root / ".tools/uv-cache").symlink_to(outside, target_is_directory=True)
+    marker = tmp_path / "executed"
+    with pytest.raises(toolchain.ToolchainError, match="leave project root"):
+        installer.run([sys.executable, "-c", f"open({str(marker)!r}, 'w').close()"])
+    assert not marker.exists()
+    assert list(outside.iterdir()) == []
+
+
+def test_internal_cache_alias_does_not_hide_nested_external_link(tmp_path):
+    root = tmp_path / "checkout"
+    destination = root / "internal alternate cache"
+    destination.mkdir(parents=True)
+    (root / ".tools").mkdir()
+    (root / ".tools/uv-cache").symlink_to(destination, target_is_directory=True)
+    outside = tmp_path / "external"
+    outside.mkdir()
+    (destination / "escape").symlink_to(outside, target_is_directory=True)
+    with pytest.raises(toolchain.ToolchainError, match="leave project root"):
+        bootstrap.Installer(root)
+    assert list(outside.iterdir()) == []
+
+
+@pytest.mark.parametrize("resource", [".tools/uv-cache", ".tools/python"])
+def test_actual_bootstrap_cli_blocks_escape_before_installation(tmp_path, resource):
+    root = tmp_path / "checkout with spaces"
+    (root / "scripts").mkdir(parents=True)
+    for name in ("bootstrap.py", "toolchain.py"):
+        shutil.copy2(ROOT / "scripts" / name, root / "scripts" / name)
+    outside = tmp_path / "external"
+    outside.mkdir()
+    sentinel = outside / "preserve"
+    sentinel.write_bytes(b"original")
+    link = root / resource
+    link.parent.mkdir(parents=True, exist_ok=True)
+    link.symlink_to(outside, target_is_directory=True)
+    result = subprocess.run(
+        [sys.executable, "-B", str(root / "scripts/bootstrap.py"), "--with-runner", "--with-codex"],
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
+    assert result.returncode == 1
+    assert '"status": "blocked"' in result.stdout
+    assert "leave project root" in result.stdout
+    assert not (root / "artifacts").exists()
+    assert list(outside.iterdir()) == [sentinel]
+    assert sentinel.read_bytes() == b"original"
