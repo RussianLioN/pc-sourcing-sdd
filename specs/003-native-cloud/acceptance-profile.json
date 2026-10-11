@@ -1,0 +1,37 @@
+{
+  "id": "native-cloud-offline",
+  "version": "1.0.0",
+  "manifest_schema": "native-cloud-acceptance/1",
+  "record_schema": "native-cloud-record/1",
+  "review_schema": "native-cloud-review/1",
+  "baseline_commit": "802e001f72bbaf3ae9b6f52081b6361d01736be5",
+  "required_checks": [
+    "bootstrap",
+    "pytest",
+    "ruff_check",
+    "ruff_format",
+    "pipeline",
+    "scope",
+    "pipeline_repeat"
+  ],
+  "required_environment": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "provenance": "parent verifies real distinct cloud tasks and separate checkouts; local records are not authenticated",
+  "claims": {
+    "os_readonly": false,
+    "separate_security_principal": false,
+    "managed_binary_model_pin": false,
+    "enforced_cloud_task_deadline": false,
+    "required_server_checks_configured": false
+  },
+  "limitations": [
+    "offline synthetic data only; live Avito remains prohibited",
+    "clean before/after detects final drift, not temporary writes",
+    "cloud task identities and separate checkouts require parent verification",
+    "no authenticated cloud API, signed receipt, runtime binary/model pin or OS read-only proof",
+    "no enforced task deadline, scheduler, do-while orchestration or crash recovery claim",
+    "repository required checks are not confirmed; acceptance is a managed process"
+  ]
+}
