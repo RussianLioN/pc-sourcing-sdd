@@ -41,12 +41,46 @@ denial probe or any independent review. Authorization was therefore not tested.
 No permissions, credentials, security/network policy or persistent access were
 changed to work around this failure. T007 is **unaccepted**.
 
-Required next action: the cloud environment operator must provide a supported
-nested CLI execution route with writable runtime state and existing authorized
-access, while preserving the project read-only verifier sandbox. Any change to
-access/security settings requires separate user confirmation. Do not copy Mac
-credentials or bypass sandboxing. Then run a new reviewed workflow on the exact
-current commit, retain the failed run, and collect a fresh independent verdict.
+Follow-up diagnosis used file-only `strace` and the official Codex 0.157.1
+release source, commit `36650394c5b38c2990ccf2a3457165ca3e9d9726`.
+Actual rejected operations were `chmod` on `$CODEX_HOME/tmp/arg0` and writable
+opens of `$CODEX_HOME/state_5.sqlite` and `$CODEX_HOME/installation_id`.
+Supported strict-config overrides `sqlite_home` and `log_dir` successfully
+created SQLite state in an already permitted project artifact directory,
+without changing `CODEX_HOME` or touching credentials. Initialization still
+failed with exit 1 on `installation_id`. Merely relocating SQLite/logs is
+therefore insufficient. No file contents from auth were traced or published.
+
+The release's `core/src/installation_id.rs` opens that file read/write/create,
+locks it and may set its mode even for an existing identifier;
+`app-server/src/in_process.rs` unconditionally calls it during initialization.
+No alternate installation-id path is exposed in the release config schema.
+The helper alias path is likewise tied to `CODEX_HOME` in `arg0/src/lib.rs`.
+These failures occur in the outer cloud filesystem sandbox, before the nested
+verifier can execute its own project-write denial probe. `--ephemeral` and
+`--ignore-user-config` do not remove these runtime writes.
+
+Minimal operator action, requiring separate confirmation: provide the current
+CLI a writable service file at `/run/codex-environment/codex-home/installation_id`
+(including its lock/mode operations) and writable helper directory
+`/run/codex-environment/codex-home/tmp/arg0`, while keeping `auth.json` read-only
+and all project verifier permissions unchanged. SQLite/logs can use private
+already-permitted scratch paths through the documented config overrides.
+This is a service-state filesystem permission change, not a request for a new
+key/login. Authorization and further runtime requirements remain untested;
+do not promise this alone completes review. No such change was made here.
+Do not copy Mac credentials or bypass sandboxing. Then run a new reviewed
+workflow at exact current HEAD and retain the failed runs.
+
+PORT-10 requires an independent actual Codex read-only review at one integrated
+SHA; it does not explicitly require nesting. A separate cloud executor can
+provide additional independent review only after proving project-write denial,
+exact SHA, required tests/scope, and applicable isolation/deadlines. That review
+alone does not close PORT-03/04/05 launcher and actual sandbox/probe checks or
+T007's combined `actual pinned Spec Kit runner + independent read-only Codex
+review` command. The current implementation connects those through the pinned
+workflow; retain the outstanding runtime gates unless equivalent evidence is
+independently demonstrated without weakening their requirements.
 
 From Slack or a phone, send the cloud task: “Continue T007 in
 RussianLioN/pc-sourcing-sdd, feature/cloud-portability. Read docs/cloud-setup.md;
