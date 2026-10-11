@@ -43,8 +43,9 @@ lock remain. Prompts are separated from CLI options. Temporary-root verifier
 checkouts fail closed, and actual project-write denial must be demonstrated.
 
 Darwin arm64 and Linux x86_64 official Codex 0.157.1 archives were checked
-against release metadata and extracted binary hashes. The Linux binary was
-not executed. Spec Kit 1.1.3 remains pinned to official commit
+against release metadata and extracted binary hashes. During Mac preparation
+the Linux binary was not executed; the cloud checkpoint above subsequently
+verified and launched it. Spec Kit 1.1.3 remains pinned to official commit
 0282d03eb6fc3091b3deaa3a855d4030dc40cd6c; hatchling/build dependencies are locked.
 
 Mac checks before WIP publication: 297 tests passed (273 original + 24 new),
@@ -52,8 +53,9 @@ Ruff check/format and T007 scope passed; a fresh worktree-local bootstrap of
 runtime, runner and Codex passed. These are preparation checks, not independent
 acceptance of this branch. Old 544 evidence artifacts were preserved unchanged.
 
-NOT RUN: independent portability review, relocated-clone repeat, current
-runner workflow exercise and actual Linux/cloud runtime verification.
+At the Mac handoff, independent review, relocated repeat, runner workflow and
+actual Linux verification were NOT RUN. The cloud checkpoint above supersedes
+those runtime/reproduction statuses; independent review remains blocked.
 
 ## First cloud continuation
 
