@@ -7,14 +7,14 @@
 | Work | ready task | unique worktree, DB, temp, cache | one writer; bounded worker result + diff |
 | Local test | implementation | unit/contract/property reports + exits | failure opens narrow repair |
 | Integrate | scope/blob gate passed | common commit | all required tests repeated |
-| Review/repair | common snapshot | independent verdict / regression task | 2 rounds max; no new hypothesis => blocked |
+| Review/repair | common snapshot | independent verdict / regression task | continue to acceptance; new hypothesis on stalled progress |
 | Pilot | offline passes | SQLite + Markdown + manifest | live primary data blocked without access |
 | Accept | tests + independent verdict | spec/test/fixture/tree hashes + SHA | all required offline checks passed |
 
 Coordinator is Spec Kit plus project scripts; collector is deterministic
 Python with no Spec Kit/LLM dependency. No perpetual development loop or
 background collector. Converge may identify gaps inside frozen scope only.
-Budget: one writer, one verifier sequentially, 600s each, two repair rounds;
+Budget: one writer, one verifier sequentially, 600s each, supervisor 660s; continuation has no round stop;
 no additional paid APIs. Existing ChatGPT Codex authorization is used.
 Persist versions, commands, exit codes, stderr/events, failures, SHA, hashes,
 reason for stopping, next task; attempts use separate artifact directories.
@@ -44,3 +44,24 @@ Original golden/schema Git blobs and original test AST assertions remain
 protected. Final receipt is validated by scripts/check_acceptance.py; readable
 summary is generated from stored Evaluation, not a second eligibility formula.
 Final accepted scope can only be this offline pilot, never production readiness.
+
+Continuation policy 1.0.1 supersedes only the former two-round stop, following
+the explicit user instruction in tasks/continuation-policy.json. Historical
+failed receipts and immutable assignments retain their original limits. The
+current coordinator state records progress and next hypothesis; historical
+Spec Kit execution state is never edited to manufacture a resume.
+
+Row errors in a syntactically framed, decodable JSON document are isolated:
+reject with original raw JSON and a readable reason; valid neighbors survive.
+Unpaired Unicode surrogates in keys or nested values must not reach report or
+SQLite serialization. Valid Unicode scalar values/pairs are preserved exactly.
+Malformed document framing/encoding remains an explicit whole-input error,
+as required by the existing syntax tests; never guess boundaries or repair text.
+
+The coordinator drives autonomous repair/review decisions between audited
+finite runs; this is not a persistent service or automatic paid retry. A small
+Spec Kit do-while scenario checks two real collector passes and idempotency,
+with an explicit local experimental bound and exit condition. That bound does
+not stop the project repair cycle. Converge is optional gap/task discovery,
+not a mandatory acceptance gate or a substitute for tests. No parallel fan-out
+capability is claimed. Mandatory offline gates remain those listed above.

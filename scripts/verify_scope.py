@@ -35,7 +35,13 @@ def check(task_path, worktree):
         raise SystemExit("BLOCKED unowned changes: " + ", ".join(sorted(bad)))
     for p in task["protected_files"]:
         expected = subprocess.check_output(
-            ["git", "-C", task["coordinator_root"], "show", f"{base}:{p}"]
+            [
+                "git",
+                "-C",
+                task["coordinator_root"],
+                "show",
+                f"{task.get('protected_baselines', {}).get(p, base)}:{p}",
+            ]
         )
         if (Path(worktree) / p).read_bytes() != expected:
             raise SystemExit("BLOCKED protected baseline changed: " + p)

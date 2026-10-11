@@ -1,0 +1,19 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-real-collector-loop"
+  name: "Real offline collector repeat with checked loop exit"
+  version: "1.0.0"
+steps:
+  - id: repeat
+    type: do-while
+    condition: "{{ steps.collect.output.stdout == 'again' }}"
+    max_iterations: 3
+    steps:
+      - id: collect
+        type: shell
+        run: ".venv/bin/python scripts/runner_loop.py"
+        timeout: 30
+  - id: verify-loop
+    type: shell
+    run: ".venv/bin/python scripts/runner_loop.py --check"
+    timeout: 30

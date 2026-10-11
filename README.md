@@ -53,3 +53,8 @@ the project remains read-only to it, verified by `verify_readonly.py`.
 Runner resume supports paused/failed only. Running-state crash recovery and
 local live sources remain blocked. Direct Avito denial is not bypassed.
 No publication, remote push, deployment, order, seller contact or new key.
+
+Continuation policy 1.0.1 follows the user instruction to continue autonomously
+to successful offline acceptance. Historical 2/2 assignments are archived,
+not current stopping rules. See tasks/continuation-policy.json. Each process
+retains its timeout, one writer and exclusive launch protection.

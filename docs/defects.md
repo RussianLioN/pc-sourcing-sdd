@@ -45,3 +45,11 @@ failures after this round stop the pilot as blocked rather than looping.
 Round 2 writer completed in 160.120s: all 136 tests, Ruff and task scope passed.
 The bounded typed integer marker preserves raw tokens and rejects numeric id;
 no global digit setting changed. Final common-snapshot review still decides acceptance.
+
+DEF-006: final verifier at 2575afd2482ff817ea18d4f424f494556746263b
+found an unpaired Unicode surrogate accepted in Offer.title, then failing
+model_dump_json before SQLite opens. Valid neighbors and rejection were lost.
+Actual CLI repro and traces are in artifacts/final-review-evidence.
+The prior blocked receipt remains unchanged. User explicitly superseded the
+2/2 stopping policy; current task T006 repairs the Unicode error class with
+protected regression tests, preserving all product/golden expectations.

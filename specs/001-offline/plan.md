@@ -12,7 +12,7 @@ temp, cache and logs. No shared mutable database, port or browser.
 4. Run unit/contract/property tests, validate diff and protected Git blobs.
 5. Integrate sequentially; run full tests on common snapshot.
 6. Independent actual Codex read-only verifier uses same spec and commit.
-7. Findings become narrow repair with added regression tests; max 2 rounds.
+7. Findings become narrow repair with added regression tests; continue until acceptance under continuation-policy.json; finite process timeouts.
 8. Recheck whole snapshot and independent verdict; preserve failed artifacts.
 9. Accept offline only after required checks; live remains explicitly blocked.
 

@@ -1,0 +1,14 @@
+{
+  "revision": "1.0.1",
+  "authorization": "Explicit user instruction delivered through parent: Ты должен работать в автономном режиме до полностью успешного завершения пилота",
+  "supersedes": "two-repair-round stop only; product/golden/contract requirements unchanged",
+  "authorized_at": "2026-10-11",
+  "source_snapshot": "2575afd2482ff817ea18d4f424f494556746263b",
+  "repair_round_limit": null,
+  "worker_timeout_seconds": 600,
+  "supervisor_timeout_seconds": 660,
+  "max_concurrent_writers": 1,
+  "no_progress_action": "new reproducible hypothesis, diagnosis or decomposition; no blind retry",
+  "completion": "all mandatory offline checks and fresh same-SHA independent review passed",
+  "external_access": "no new keys, subscriptions, paid API, persistent credentials, security changes, publication, deployment, order or access bypass"
+}

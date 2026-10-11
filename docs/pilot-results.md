@@ -36,7 +36,8 @@ a new writer/worktree (160.120s): 136 tests, lint, format and scope passed.
 The fixed regressions reject large numeric price/id without string coercion,
 retain raw JSON and valid neighbors, and preserve Python global digit limits.
 Evidence is durably copied to artifacts/repair2-validation with hashes.
-No further repair round is authorized by this pilot budget.
+This was the old budget; the subsequent explicit user continuation instruction
+supersedes the round stop, recorded in tasks/continuation-policy.json.
 
 Final acceptance requires a new real verifier on the final common SHA and
 full regression/lint/format/scope/SQLite checks; the receipt records their
@@ -64,4 +65,11 @@ never retried by another browser/IP/proxy/hidden API. Indexed search is not run
 in this pilot and could only create candidates, not verified price or stock.
 No new paid API was started. Token usage exists in actual worker JSONL;
 monetary cost was not measured. Worker wall limit is 600s, coordinator 660s,
-repair limit two rounds; no perpetual loop is scheduled.
+no project round stop after the explicit continuation instruction. Each worker
+keeps a 600s wall limit and no perpetual background service is scheduled.
+
+Continuation from 2575afd: actual final review blocked on DEF-006 despite
+136 passing tests. Historical receipt remains archived. Current acceptance
+requires Unicode-class regression repair, finite real collector loop check,
+and fresh independent review. Converge remains optional under the frozen
+product specification; no untested parallel fan-out is promised.

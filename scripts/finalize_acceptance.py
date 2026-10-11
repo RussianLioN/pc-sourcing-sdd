@@ -182,7 +182,9 @@ def finalize(out, review_path):
         pilot_result=stored,
         coordinator_scope={"command": scope_cmd, "exit_code": 0},
         production_ready=False,
-        repair_rounds=2,
+        repair_rounds=len(list((ROOT / "tasks").glob("T003*.json")))
+        + len(list((ROOT / "tasks").glob("T006*.json"))),
+        continuation_policy=json.loads((ROOT / "tasks/continuation-policy.json").read_text()),
         new_paid_api=False,
         next_step="resolve a lawful local primary-source route and budget before any live collection",
         blocked=[
@@ -192,7 +194,7 @@ def finalize(out, review_path):
         ],
         not_run=[
             "two simultaneous writers",
-            "fan-out/fan-in and loops",
+            "parallel fan-out/fan-in",
             "Converge command",
             "live primary-source smoke",
             "24/7 deployment",
