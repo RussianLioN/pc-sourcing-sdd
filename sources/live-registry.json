@@ -1,0 +1,182 @@
+[
+  {
+    "domain": "www.regard.ru",
+    "seller": "Регард",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "www.dns-shop.ru",
+    "seller": "DNS",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "www.citilink.ru",
+    "seller": "Ситилинк",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "www.onlinetrade.ru",
+    "seller": "Онлайнтрейд",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "www.nix.ru",
+    "seller": "НИКС",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "www.oldi.ru",
+    "seller": "OLDI",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "www.kns.ru",
+    "seller": "KNS",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "www.pleer.ru",
+    "seller": "Плеер",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "www.xcom-shop.ru",
+    "seller": "XCOM",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "andpro.ru",
+    "seller": "ANDPRO",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "www.3logic.ru",
+    "seller": "3Logic",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "www.fcenter.ru",
+    "seller": "Ф-Центр",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "www.flashcom.ru",
+    "seller": "Flashcom",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "28bit.ru",
+    "seller": "28BIT",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "evenspc.ru",
+    "seller": "EVENS PC",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "tdvat.ru",
+    "seller": "ТД ВАТ",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "spectrasoft.ru",
+    "seller": "СпектраСофт",
+    "status": "pending",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "candidate domain only; seller independence and source permission not confirmed",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  },
+  {
+    "domain": "www.avito.ru",
+    "seller": "Avito independent sellers unresolved",
+    "status": "denied",
+    "terms_url": null,
+    "reviewed_at": null,
+    "basis": "prior direct denial; no alternate access",
+    "retain_facts": false,
+    "min_interval_seconds": 5
+  }
+]

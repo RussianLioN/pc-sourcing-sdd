@@ -9,7 +9,7 @@ registry, conservative JSON-LD reader, SQLite/report/CSV, transfer verification.
 Только Python stdlib и существующий Pydantic; runtime LLM/API key не требуется.
 2. Реальный Tavily connector smoke из текущей задачи. Connector не доступен
 напрямую Python; orchestrator сохраняет полный structured response в envelope.
-Standalone search остаётся blocked, если существующий CLI отсутствует. Ни
+Standalone search использует официально документированный keyless /search API; cap/denial останавливает поиск без auth/retry. Ни
 подключение инструмента, ни envelope не доказывают разрешение первичной карточки.
 3. Разрешённые политики источников проверяются до чтения карточек. Реестр
 изначально pending; Avito locked denied. API/feed/browser adapters добавляются
@@ -23,7 +23,7 @@ e2e и воспроизведение эксплуатации. Не заявл�
 
 Новые файлы live_* не импортируют coordinator scripts. Старые файлы byte-protected.
 No credentials/deployment/accounts/cookies/proxies/CAPTCHA bypass/orders/contacts.
-Transport не использует proxy/environment identity; redirects прекращаются.
+Transport использует только уже настроенный управляемый proxy среды, если он необходим; новые proxy/identity не создаются, redirects прекращаются.
 Сохраняем только минимальные факты/выдержки, response hash, URL/time; policy
 должна явно разрешать эту минимальную retention. Cache не переиспользует цену;
 повторным наблюдениям нужен новый run directory. Единственный процесс/очередь

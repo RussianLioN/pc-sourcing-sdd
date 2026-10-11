@@ -2,8 +2,8 @@
   "id": "T009",
   "status": "ready",
   "base_commit": "5e031fcdd2daf7690585ed84f1b731c0972f4dc3",
-  "spec_revision": "1.0.0",
-  "spec_sha256": "2e7d837415dc6a3f8cedced9235f7348587763e0a041c424009705b21ceb9812",
+  "spec_revision": "1.0.1",
+  "spec_sha256": "3e49ead51b7af1432892acf89c3316b7fc2b36b3506c4a8a8d68b758e9ff7853",
   "dependencies": [
     "T008 accepted by parent"
   ],
@@ -21,7 +21,9 @@
     "sources/live-registry.json",
     "docs/live-audit.md",
     "docs/live-quickstart.md",
-    "scripts/live_scope.py"
+    "scripts/live_scope.py",
+    "workflows/live-validation.yml",
+    "scripts/live_check_workflow.py"
   ],
   "protected_files": [
     ".agents/skills/pc-cloud-setup/SKILL.md",
@@ -92,12 +94,12 @@
     "scripts/verify_readonly.py",
     "scripts/verify_scope.py",
     "sources/README.md",
-    "\"sources/SDD \\320\\270 \\320\\274\\321\\203\\320\\273\\321\\214\\321\\202\\320\\270\\320\\260\\320\\263\\320\\265\\320\\275\\321\\202\\320\\275\\320\\260\\321\\217 \\321\\200\\320\\260\\320\\267\\321\\200\\320\\260\\320\\261\\320\\276\\321\\202\\320\\272\\320\\260 \\320\\277\\320\\276\\320\\270\\321\\201\\320\\272\\320\\260 \\320\\272\\320\\276\\320\\274\\320\\277\\320\\273\\320\\265\\320\\272\\321\\202\\321\\203\\321\\216\\321\\211\\320\\270\\321\\205.docx\"",
-    "\"sources/SDD \\320\\270 \\320\\274\\321\\203\\320\\273\\321\\214\\321\\202\\320\\270\\320\\260\\320\\263\\320\\265\\320\\275\\321\\202\\320\\275\\320\\260\\321\\217 \\321\\200\\320\\260\\320\\267\\321\\200\\320\\260\\320\\261\\320\\276\\321\\202\\320\\272\\320\\260 \\320\\277\\320\\276\\320\\270\\321\\201\\320\\272\\320\\260 \\320\\272\\320\\276\\320\\274\\320\\277\\320\\273\\320\\265\\320\\272\\321\\202\\321\\203\\321\\216\\321\\211\\320\\270\\321\\205.txt\"",
+    "sources/SDD и мультиагентная разработка поиска комплектующих.docx",
+    "sources/SDD и мультиагентная разработка поиска комплектующих.txt",
     "sources/access-registry.json",
     "sources/library-manifest.json",
-    "\"sources/\\320\\237\\320\\276\\320\\270\\321\\201\\320\\272 \\320\\272\\320\\276\\320\\274\\320\\277\\320\\273\\320\\265\\320\\272\\321\\202\\321\\203\\321\\216\\321\\211\\320\\270\\321\\205 \\320\\270 Avito \\342\\200\\224 \\321\\200\\320\\265\\321\\210\\320\\265\\320\\275\\320\\270\\320\\265 \\320\\264\\320\\273\\321\\217 dodik.docx\"",
-    "\"sources/\\320\\237\\320\\276\\320\\270\\321\\201\\320\\272 \\320\\272\\320\\276\\320\\274\\320\\277\\320\\273\\320\\265\\320\\272\\321\\202\\321\\203\\321\\216\\321\\211\\320\\270\\321\\205 \\320\\270 Avito \\342\\200\\224 \\321\\200\\320\\265\\321\\210\\320\\265\\320\\275\\320\\270\\320\\265 \\320\\264\\320\\273\\321\\217 dodik.txt\"",
+    "sources/Поиск комплектующих и Avito — решение для dodik.docx",
+    "sources/Поиск комплектующих и Avito — решение для dodik.txt",
     "spec-kit-build.lock",
     "spec-kit.lock",
     "specs/001-offline/contracts/Evaluation.schema.json",
@@ -159,7 +161,7 @@
     ".venv/bin/ruff format --check .",
     ".venv/bin/python scripts/live_scope.py"
   ],
-  "writer_task_id": "01a12d45-a8b2-718c-8885-ebafb4e4c0ee",
   "reviewer": "separate parent-assigned task",
-  "authority": "User authorizes additive live product stage, commits and feature branch push; supersedes historical worker no-commit/no-live only within new task."
+  "authority": "User authorizes additive live product stage, commits and feature branch push; supersedes historical worker no-commit/no-live only within new task.",
+  "workflow_sha256": "b6884c4d909c9d6952060f9a17cd78819d6bf2deb8956375dbd9abbacc375110"
 }

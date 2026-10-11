@@ -1,0 +1,14 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-live-vertical-validation"
+  name: "T009 complete regression and additive scope"
+  version: "1.0.0"
+steps:
+  - id: quality
+    type: shell
+    run: ".venv/bin/python scripts/quality.py --out artifacts/T009/workflow-quality"
+    timeout: 480
+  - id: scope
+    type: shell
+    run: ".venv/bin/python scripts/live_scope.py"
+    timeout: 60

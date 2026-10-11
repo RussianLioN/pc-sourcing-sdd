@@ -1,10 +1,10 @@
-# Разрешённый поиск в облаке — 1.0.0
+# Разрешённый поиск в облаке — 1.0.1
 
 Основание: явное поручение пользователя продолжить продукт после T008.
 Baseline: 5e031fcdd2daf7690585ed84f1b731c0972f4dc3. T007 остаётся непринятым.
-Источники: Library libfile_89e134d178e08191b23a0d461814b7a3, разделы 9–18;
-libfile_6032ad2fa60081918e1211d8ae62ad59, особенно раздел 9, шаги 1–9.
-Исторический перечень: libfile_32d589879610819196e34b20b97c1a27;
+Источники: «Поиск комплектующих и Avito — решение для dodik», разделы 9–18;
+«SDD и мультиагентная разработка поиска комплектующих», раздел 9, шаги 1–9.
+Исторический перечень: «Комплектующие — исследование 11.10.2026»;
 цены полностью исключены. Полный актуальный перечень ожидает сверки родителя.
 
 ## Граница и истории
@@ -24,7 +24,7 @@ US3: пакет результатов переносится в другое м
 | ID | Требование | Acceptance case |
 |---|---|---|
 | LIVE-01 | Москва, непустое имя и MPN при наличии, количество > 0; GPU только MSI RTX 5090 factory liquid; OC/SOC отдельно | request validation; GPU variants |
-| LIVE-02 | поиск существующим подключением или заранее существующим tvly; ответ связан с точным запросом и временем; snippets только candidates | real connector smoke; mismatched query; no snippet prices |
+| LIVE-02 | поиск существующим подключением или документированным бесплатным keyless HTTPS API Tavily; ответ связан с точным запросом и временем; snippets только candidates | real connector smoke; mismatched query; no snippet prices |
 | LIVE-03 | реестр 15–25 потенциальных источников, проверка условий отдельно от robots; pending/denied не читаются | registry gates; Avito zero requests |
 | LIVE-04 | HTTPS, public IP only, no credentials, no redirects, bounded timeout/bytes/count, последовательная очередь домена; 403/CAPTCHA/429/timeout останавливают домен без retries | transport negatives; shared domain stop |
 | LIVE-05 | primary Product JSON-LD только для одной модели/варианта; MPN, цена RUB, stock, condition по evidence; конфликт/неполнота остаются unknown | graph/list; ambiguous products/offers; wrong currency; visible conflict |
