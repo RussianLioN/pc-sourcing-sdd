@@ -244,3 +244,97 @@ def test_oversized_price_string_is_unknown():
         NOW,
     )
     assert result.price_rub is None
+
+
+@pytest.mark.parametrize(
+    "updates",
+    [
+        {"price": "²"},
+        {"availability": []},
+        {"availability": {}},
+        {"itemCondition": []},
+        {"priceCurrency": []},
+        {"price": {"value": 450000}},
+        {"price": "٤٥٠٠٠٠"},
+    ],
+)
+def test_reviewer_malformed_fields_unresolved_without_crash(updates):
+    offer = {
+        "@type": "Offer",
+        "price": "450000",
+        "priceCurrency": "RUB",
+        "availability": "https://schema.org/InStock",
+    }
+    result = parse_card(GPU, candidate(), card(offers=offer | updates), NOW)
+    assert result.status == "unresolved" and not result.eligible
+
+
+def test_reviewer_visible_5000_digits_unresolved():
+    result = parse_card(GPU, candidate(), card() + "Цена: " + "9" * 5000 + " ₽", NOW)
+    assert result.price_rub is None and result.status == "unresolved"
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "MSI RTX 50900 SUPRIM LIQUID OC",
+        "MSI RTX 5090 SUPRIM LIQUID OC AIR WATER BLOCK",
+        "MSI RTX 5090 SUPRIM LIQUID OC WATER-BLOCK",
+        "MSI RTX 5090 SUPRIM LIQUID OC AIR",
+    ],
+)
+def test_reviewer_model_tokens_and_cooling_conflict_excluded(title):
+    assert identity(GPU, title, GPU.mpn)[0] == "excluded"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Цена со скидкой при оплате наличными 450000 ₽",
+        "Цена по промокоду 450000 ₽",
+        "Скидка по подписке",
+        "450000 ₽ при оплате картой",
+        "Discount cash only",
+    ],
+)
+def test_reviewer_conditional_discount_price_unknown(text):
+    assert parse_card(GPU, candidate(), card() + text, NOW).price_rub is None
+
+
+@pytest.mark.parametrize("error", [ValueError, TypeError, UnicodeError, RecursionError])
+def test_card_failure_isolated_and_package_survives(tmp_path, error):
+    calls = []
+
+    class TwoCards:
+        def read(self, url, now):
+            calls.append(url)
+            if url.endswith("bad"):
+                raise error("untrusted card")
+            return card()
+
+    data = envelopes("https://first.example/bad")
+    data[0]["response"]["results"].append({"url": "https://second.example/good", "title": GPU.name})
+    out = tmp_path / error.__name__
+    result = run(GPU, out, envelopes=data, now=NOW, reader=TwoCards())
+    assert len(calls) == 2
+    assert result["observations"][0]["status"] == "unresolved"
+    assert result["observations"][1]["price_rub"] == 450000
+    assert verify(out)["status"] == "passed"
+
+
+def test_retained_search_response_hashes_recomputable_and_secrets_removed(tmp_path):
+    data = envelopes()
+    data[0]["response"].update(api_key="secret", raw_content="full forbidden page")
+    data[0]["response"]["results"][0]["content"] = "Bearer secretcredential"
+    out = tmp_path / "search-evidence"
+    result = run(GPU, out, envelopes=data, now=NOW)
+    receipt = json.loads((out / "search.json").read_text())[0]
+    from pc_sourcing.live_sourcing import dumps
+
+    assert digest(dumps(receipt["response"]).encode()) == receipt["response_sha256"]
+    assert result["observations"][0]["candidate"]["response_sha256"] == receipt["response_sha256"]
+    text = (out / "search.json").read_text()
+    assert "secretcredential" not in text and "full forbidden page" not in text
+    assert receipt["response"]["api_key"] == "[omitted]"
+    assert result["search_provenance"] == "imported_response_unverified"
+    assert verify(out)["status"] == "passed"

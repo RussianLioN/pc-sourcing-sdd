@@ -88,3 +88,33 @@ connector. При cap сохраняется blocked; создание ключ�
 а не запрос случайного API key. Прямой Avito требует отдельного подтверждения
 допустимого пути; платежи не угадываются. Telegram/deployment/постоянный доступ —
 отдельные разрешения только если выбран соответствующий этап.
+
+## Repair после независимого review fb07134
+
+Review отверг snapshot. Подтверждённые findings: robots HTTP200 denial/HTML может
+дать доступ к карточке; malformed price/stock/visible numbers обрывают run;
+substring GPU identity пропускает 50900/cooling conflicts; cash/discount price
+ошибочно безусловная; DNS precheck не доказывает proxy destination pin.
+
+Исправлено в новом snapshot с воспроизводящими negative tests: проверка robots
+status/MIME/body/directives до can_fetch, domain stop; неподдержанные wildcard,
+encoded/ambiguous allow-disallow правила fail-closed; strict ASCII/type/length
+на numeric fields и per-card isolation; token-aware GPU model/OC/SOC/cooling;
+conditional discounts/cash/subscription unknown. Полный RFC9309 не заявлен.
+
+Managed gateway ограничен ровно keyless POST https://api.tavily.com/search.
+Произвольные primary/robots destinations блокируются до обращения. Direct TLS
+pin поддержан, но доступность direct path в текущей среде не доказана. Это честный
+source transport blocker; настройки сети/identity не менялись. Sites pending.
+
+Узкий CP-T009-01 явно утверждён координатором после reviewer addendum. Изменена
+только setup fixture исторического T008, exact patch/ownership проверяются scope.
+127 остальных baseline-файлов byte-identical; checker/contract/criteria/receipts
+T008 неизменны. Все 30 native tests должны реально пройти на новом интеграционном
+SHA; прошлые 27 errors и rejected review сохраняются как история.
+
+Новые search receipts хранят bounded sanitized canonical responses, hashes которых
+можно пересчитать. Credentials/full page data очищаются до вычисления retained
+hash; схема redaction названа. TLS/proxy receipt не является подписью сервера.
+Импорт явно unverified; snippets всё ещё только candidates. Старые пакеты не
+переписываются и не приобретают доказательства задним числом.

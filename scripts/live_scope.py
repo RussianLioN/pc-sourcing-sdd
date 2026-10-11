@@ -23,6 +23,14 @@ def check(root=ROOT):
         raise ValueError("protected inventory changed")
     for name in names:
         expected = subprocess.check_output(["git", "show", f"{base}:{name}"], cwd=root)
+        if name == "tests/test_native_cloud.py":
+            anchor = b'    shutil.copy2(ROOT / "scripts/native_cloud.py", root / "scripts/native_cloud.py")\n'
+            patch = b'    subprocess.run(\n        [\n            "git",\n            "-C",\n            str(root),\n            "checkout",\n            "--detach",\n            "5e031fcdd2daf7690585ed84f1b731c0972f4dc3",\n        ],\n        check=True,\n    )\n'
+            if set(task.get("approved_protected_patches", {})) != {name}:
+                raise ValueError("approved fixture-only CP binding missing")
+            if expected.count(anchor) != 1:
+                raise ValueError("unexpected historical fixture anchor")
+            expected = expected.replace(anchor, patch + anchor)
         if (root / name).read_bytes() != expected:
             raise ValueError("baseline changed: " + name)
     changed = (

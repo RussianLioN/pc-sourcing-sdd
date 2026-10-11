@@ -49,7 +49,7 @@ Orchestrator берёт полный structured response actual tool call; quote
 авторизует чтение источника. Snippet цена никогда не попадает в price_rub.
 Результаты synthetic unit fixtures нельзя представлять как live smoke.
 
-В result: result.json, search.json (минимальные ссылки/queries/hash, без snippets),
+В result: result.json, search.json (ограниченные очищенные ответы с воспроизводимым canonical JSON hash; snippets только кандидаты),
 observations.sqlite, offers.csv, report.md, manifest.json. Directory нельзя
 перезаписывать: для повторного чтения нужен новый out. Перенесите directory целиком
 и выполните verify; сохраните manifest SHA отдельно как trusted handoff value.
@@ -66,3 +66,9 @@ exclusive coordinator lock, finite process timeout, full quality и byte scope.
 Нужна уже установленная optional runner toolchain; отсутствие даёт blocked,
 без login/новой установки. No nested agent/model claim. Review нового точного
 SHA запускает родитель отдельно. T008 receipt не переносится на новый commit.
+
+После review: managed proxy допускает только фиксированный keyless search endpoint.
+Generic primary-card/robots HTTPS через него blocked: локальная DNS проверка не
+доказывает destination IP proxy. Без изменения сети direct transport pin сохраняется.
+Robots content/status/denial валидируется; unsupported wildcard/precedence правила
+дают fail-closed domain stop. Это не полная реализация RFC9309.

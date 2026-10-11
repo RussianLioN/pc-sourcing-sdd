@@ -46,6 +46,17 @@ def commit(root, message):
 def bundle(tmp_path):
     root = tmp_path / "unit checkout with spaces"
     subprocess.run(["git", "clone", "--shared", "--quiet", str(ROOT), str(root)], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "checkout",
+            "--detach",
+            "5e031fcdd2daf7690585ed84f1b731c0972f4dc3",
+        ],
+        check=True,
+    )
     shutil.copy2(ROOT / "scripts/native_cloud.py", root / "scripts/native_cloud.py")
     expected = commit(root, "unit candidate; no real cloud tasks")
     profile, binding, current = native.verify_project(root, expected, CONTRACT)

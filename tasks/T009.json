@@ -24,7 +24,10 @@
     "scripts/live_scope.py",
     "workflows/live-validation.yml",
     "scripts/live_check_workflow.py",
-    "scripts/live_quality.py"
+    "scripts/live_quality.py",
+    "tests/test_native_cloud.py",
+    "tests/test_stage_acceptance.py",
+    "docs/adr/0002-t008-historical-test-fixture.md"
   ],
   "protected_files": [
     ".agents/skills/pc-cloud-setup/SKILL.md",
@@ -164,5 +167,8 @@
   ],
   "reviewer": "separate parent-assigned task",
   "authority": "User authorizes additive live product stage, commits and feature branch push; supersedes historical worker no-commit/no-live only within new task.",
-  "workflow_sha256": "9fcff7bf4e973a4f8ada8e214f93ef0d9193f3977da0298ac75b2debceb0a1b5"
+  "workflow_sha256": "9fcff7bf4e973a4f8ada8e214f93ef0d9193f3977da0298ac75b2debceb0a1b5",
+  "approved_protected_patches": {
+    "tests/test_native_cloud.py": "CP-T009-01: fixture setup checkout accepted T008 SHA only; every assertion preserved; coordinator explicitly approved"
+  }
 }

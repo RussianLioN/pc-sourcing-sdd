@@ -32,6 +32,39 @@ def digest(value):
     return hashlib.sha256(value).hexdigest()
 
 
+def safe_search_response(value):
+    """Retain a reproducible bounded response while removing credentials/full pages."""
+    sensitive = {
+        "api_key",
+        "authorization",
+        "cookie",
+        "cookies",
+        "password",
+        "secret",
+        "access_token",
+        "refresh_token",
+        "download_url",
+        "raw_content",
+    }
+    if isinstance(value, dict):
+        return {
+            k: "[omitted]" if k.lower() in sensitive else safe_search_response(v)
+            for k, v in value.items()
+        }
+    if isinstance(value, list):
+        return [safe_search_response(v) for v in value]
+    if isinstance(value, str):
+        value = re.sub(r"(?:sk-proj-|ghp_|tvly-)[A-Za-z0-9_-]{12,}", "[redacted]", value)
+        value = re.sub(r"(?i)Bearer\s+[A-Za-z0-9._-]+", "Bearer [redacted]", value)
+        value = re.sub(
+            r"(?i)([?&](?:token|api_key|access_token|signature|sig|key)=)[^&\s]*",
+            r"\1[redacted]",
+            value,
+        )
+        return value
+    return value
+
+
 class CardHTML(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -77,16 +110,24 @@ def products(value):
 def identity(request, title, mpn):
     """Conservative matching of primary identities, never inferred from a snippet."""
     text = (title or "").upper()
+    tokens = set(re.findall(r"[A-Z0-9]+", text))
     if request.category == "gpu":
         if (
-            any(x in text for x in ("5090D", "WATERBLOCK", "ВОДОБЛОК"))
-            or "MSI" not in text
-            or "5090" not in text
-            or "SUPRIM LIQUID" not in text
+            not {"MSI", "RTX", "5090", "SUPRIM", "LIQUID"} <= tokens
+            or "AIR" in tokens
+            or "WATERBLOCK" in tokens
+            or "ВОДОБЛОК" in text
+            or re.search(r"\bWATER[\s_-]*BLOCK\b", text)
+            or any(t.startswith("5090") and t != "5090" for t in tokens)
         ):
             return "excluded", ("Не подтверждена полная заводская MSI RTX 5090 SUPRIM LIQUID",)
-    if request.category == "gpu" and " SOC" in text and " OC" in request.name.upper():
-        return "analogue", ("SOC вместо OC; отдельный вариант, не точный SKU",)
+        requested = set(re.findall(r"[A-Z0-9]+", request.name.upper()))
+        if {"OC", "SOC"} <= tokens:
+            return "unresolved", ("Конфликт вариантов OC/SOC",)
+        if ("SOC" in tokens and "OC" in requested) or ("OC" in tokens and "SOC" in requested):
+            return "analogue", ("Другой вариант OC/SOC; не точный SKU",)
+        if ("OC" in requested or "SOC" in requested) and not {"OC", "SOC"} & tokens:
+            return "unresolved", ("Вариант OC/SOC не подтверждён",)
     if request.mpn:
         if mpn == request.mpn:
             return "exact", ()
@@ -143,6 +184,7 @@ def parse_card(request, candidate, html, now):
     offers = offers if isinstance(offers, list) else [offers]
     price, stock, condition = None, "unknown", "unknown"
     reasons = []
+    invalid_field = False
     if len(offers) != 1 or not isinstance(offers[0], dict) or offers[0].get("@type") != "Offer":
         reasons.append("Single unconditional Offer not confirmed")
     else:
@@ -151,23 +193,41 @@ def parse_card(request, candidate, html, now):
         # No floats, ranges, first payments, zero, discount or foreign conversion.
         if (
             offer.get("priceCurrency") == "RUB"
-            and not isinstance(value, bool)
-            and str(value).isdigit()
-            and len(str(value)) <= 10
+            and type(value) in (int, str)
+            and re.fullmatch(r"[0-9]{1,10}", str(value)) is not None
             and 0 < int(value) < 10**10
             and not offer.get("priceSpecification")
         ):
             price = int(value)
+        if value is not None and (
+            type(value) not in (int, str) or re.fullmatch(r"[0-9]{1,10}", str(value)) is None
+        ):
+            invalid_field = True
+            reasons.append("Malformed or unsupported price field")
         availability = offer.get("availability")
-        stock = {
-            "https://schema.org/InStock": "in_stock",
-            "https://schema.org/PreOrder": "preorder",
-            "https://schema.org/OutOfStock": "unavailable",
-        }.get(availability, "unknown")
-        condition = {
-            "https://schema.org/NewCondition": "new",
-            "https://schema.org/UsedCondition": "used",
-        }.get(offer.get("itemCondition"), "unknown")
+        if any(
+            offer.get(k) is not None and not isinstance(offer.get(k), str)
+            for k in ("availability", "itemCondition", "priceCurrency")
+        ):
+            invalid_field = True
+            reasons.append("Malformed stock/condition/currency field")
+        stock = (
+            {
+                "https://schema.org/InStock": "in_stock",
+                "https://schema.org/PreOrder": "preorder",
+                "https://schema.org/OutOfStock": "unavailable",
+            }.get(availability, "unknown")
+            if isinstance(availability, str)
+            else "unknown"
+        )
+        condition = (
+            {
+                "https://schema.org/NewCondition": "new",
+                "https://schema.org/UsedCondition": "used",
+            }.get(offer.get("itemCondition"), "unknown")
+            if isinstance(offer.get("itemCondition"), str)
+            else "unknown"
+        )
         visible = " ".join(document.visible).casefold()
         if stock == "in_stock" and any(
             x in visible
@@ -175,20 +235,37 @@ def parse_card(request, candidate, html, now):
         ):
             stock, price = "unknown", None
             reasons.append("Visible text contradicts JSON-LD; price/stock unresolved")
-        visible_prices = {
-            int(re.sub(r"[ \u00a0\u202f]", "", m))
-            for m in re.findall(
-                r"(?<![\d.,])([\d][\d \u00a0\u202f]*)\s*(?:₽|руб\.?|RUB)",
-                " ".join(document.visible),
-                flags=re.IGNORECASE,
-            )
-        }
+        visible_prices = set()
+        invalid_visible_price = False
+        for raw_price in re.findall(
+            r"(?<![0-9.,])([0-9][0-9 \u00a0\u202f]*)\s*(?:₽|руб\.?|RUB)",
+            " ".join(document.visible),
+            flags=re.IGNORECASE,
+        ):
+            digits = re.sub(r"[ \u00a0\u202f]", "", raw_price)
+            if not re.fullmatch(r"[0-9]{1,10}", digits):
+                invalid_visible_price = True
+            else:
+                visible_prices.add(int(digits))
+        if invalid_visible_price:
+            invalid_field = True
+            price = None
+            reasons.append("Visible price exceeds supported bounds; price unresolved")
         if price is not None and any(p != price for p in visible_prices):
             price = None
             reasons.append("Visible prices differ from JSON-LD; price unresolved")
         if any(
             x in visible
             for x in (
+                "скидк",
+                "наличными",
+                "при оплате",
+                "промокод",
+                "подписк",
+                "бонус",
+                "по карте",
+                "discount",
+                "cash only",
                 "первый платёж",
                 "первый платеж",
                 "кешбэк",
@@ -209,7 +286,7 @@ def parse_card(request, candidate, html, now):
     reasons.append("Moscow fulfillment, seller review, quantity and full costs not confirmed")
     return Observation(
         candidate=candidate,
-        status="observed",
+        status="unresolved" if invalid_field else "observed",
         reason="; ".join(reasons),
         title=title,
         mpn=mpn,
@@ -274,6 +351,7 @@ def run(
     output.mkdir(parents=True)
     events = []
     queries = request.queries()
+    actual_search = envelopes is None
     if envelopes is None:
         envelopes = []
         for query in queries:
@@ -291,6 +369,13 @@ def run(
                 break
         # Clock is read after the response, not before it.
         now = datetime.now(UTC)
+    bounded_envelopes = []
+    for envelope in envelopes:
+        cleaned = {**envelope, "response": safe_search_response(envelope["response"])}
+        if len(dumps(cleaned).encode()) > 1_000_000:
+            raise ValueError("search receipt exceeds retention byte budget")
+        bounded_envelopes.append(cleaned)
+    envelopes = bounded_envelopes
     reader = reader or Reader(policies)
     rows, rejects = candidates(envelopes, queries, now)
     observations = []
@@ -309,6 +394,12 @@ def run(
                 if avito
                 else "кандидат: первичный источник не проверен",
             )
+        except (ValueError, TypeError, UnicodeError, RecursionError) as exc:
+            result = Observation(
+                candidate=row,
+                status="unresolved",
+                reason=f"Malformed primary card: {type(exc).__name__}",
+            )
         observations.append(result.model_dump(mode="json"))
     data = {
         "schema_version": "live/1.0.0",
@@ -317,6 +408,9 @@ def run(
         "observations": observations,
         "rejections": rejects,
         "events": events,
+        "search_provenance": "live_keyless_https"
+        if actual_search
+        else "imported_response_unverified",
         "queries_planned": queries,
         "queries_completed": [e["query"] for e in envelopes],
         "independent_sellers_confirmed": 0,
@@ -324,15 +418,18 @@ def run(
         "stop_reason": "bounded query/card budget; unconfirmed sources remain blocked",
     }
     (output / "result.json").write_text(dumps(data) + "\n")
-    # Strip snippets and raw content: they never establish facts and are not retained.
+    # Hash the exact retained sanitized response; this is integrity, not a server signature.
     search_receipt = [
         {
             "query": e["query"],
             "observed_at": e["observed_at"],
             "response_sha256": digest(dumps(e["response"]).encode()),
-            "results": [
-                {"url": r.get("url"), "title": r.get("title")} for r in e["response"]["results"]
-            ],
+            "hash_scheme": "sha256/canonical-json-sanitized-v1",
+            "response": e["response"],
+            "origin": "live_keyless_https" if actual_search else "imported_response_unverified",
+            "endpoint": "https://api.tavily.com/search" if actual_search else None,
+            "access_mode": "keyless" if actual_search else None,
+            "redaction": "credentials/full page content omitted; snippets are candidates only",
         }
         for e in envelopes
     ]
@@ -420,6 +517,13 @@ def verify(output):
         if path.is_symlink() or digest(path.read_bytes()) != sha:
             raise ValueError("artifact changed: " + name)
     data = json.loads((output / "result.json").read_text())
+    receipts = json.loads((output / "search.json").read_text())
+    for receipt in receipts:
+        if digest(dumps(receipt["response"]).encode()) != receipt["response_sha256"]:
+            raise ValueError("search response digest mismatch")
+    retained_hashes = {r["response_sha256"] for r in receipts}
+    if any(o["candidate"]["response_sha256"] not in retained_hashes for o in data["observations"]):
+        raise ValueError("candidate response evidence missing")
     with sqlite3.connect(f"file:{output / 'observations.sqlite'}?mode=ro", uri=True) as con:
         if json.loads(con.execute("SELECT result FROM runs").fetchone()[0]) != data:
             raise ValueError("SQLite/result mismatch")

@@ -55,7 +55,7 @@ def test_domain_stop_no_retry(failure):
     def fetch(url):
         calls.append(url)
         if url.endswith("robots.txt"):
-            return Response(b"User-agent: *\nAllow: /", {}, 200)
+            return Response(b"User-agent: *\nAllow: /", {"content-type": "text/plain"}, 200)
         raise AccessBlocked(failure)
 
     reader = Reader([policy()], transport=fetch, sleep=lambda _: None)
@@ -68,7 +68,9 @@ def test_domain_stop_no_retry(failure):
 def test_robots_and_captcha_block():
     reader = Reader(
         [policy()],
-        transport=lambda url: Response(b"User-agent: *\nDisallow: /", {}, 200),
+        transport=lambda url: Response(
+            b"User-agent: *\nDisallow: /", {"content-type": "text/plain"}, 200
+        ),
         sleep=lambda _: None,
     )
     with pytest.raises(AccessBlocked, match="robots"):
@@ -77,7 +79,7 @@ def test_robots_and_captcha_block():
         [policy()],
         transport=lambda url: Response(
             b"User-agent: *\nAllow: /" if url.endswith("robots.txt") else b"captcha",
-            {"content-type": "text/html"},
+            {"content-type": "text/plain" if url.endswith("robots.txt") else "text/html"},
             200,
         ),
         sleep=lambda _: None,
@@ -94,7 +96,7 @@ def test_single_domain_queue_and_card_budget():
             b"User-agent: *\nAllow: /\nCrawl-delay: 10"
             if url.endswith("robots.txt")
             else card().encode(),
-            {"content-type": "text/html"},
+            {"content-type": "text/plain" if url.endswith("robots.txt") else "text/html"},
             200,
         ),
         sleep=delays.append,
@@ -160,9 +162,60 @@ def test_managed_proxy_respects_redirect_and_denial(monkeypatch):
 
     monkeypatch.setattr(transport.urllib.request, "build_opener", lambda *a: Denied())
     with pytest.raises(AccessBlocked, match="HTTP 403"):
-        transport.managed_https("https://shop.example/card", None, {})
-    assert calls == ["https://shop.example/card"]
+        transport.managed_https(
+            "https://api.tavily.com/search", b"{}", {"X-Tavily-Access-Mode": "keyless"}
+        )
+    assert calls == ["https://api.tavily.com/search"]
     assert (
         transport.NoRedirect().redirect_request(None, None, 302, None, {}, "https://else.example")
         is None
     )
+
+
+@pytest.mark.parametrize(
+    "body,mime",
+    [
+        (b"<html>captcha access denied</html>", "text/html"),
+        (b"captcha access denied", "text/plain"),
+        (b"<html>ordinary error</html>", "text/plain"),
+        (b"unknown text", "text/plain"),
+        (b"", "text/plain"),
+        (b"User-agent: *\nAllow: /", "application/json"),
+        (b"User-agent: *\nDisallow: */api/*", "text/plain"),
+        (b"User-agent: *\nAllow: /\nDisallow: /private", "text/plain"),
+    ],
+)
+def test_invalid_or_unsupported_robots_stops_before_card(body, mime):
+    calls = []
+
+    def fetch(url):
+        calls.append(url)
+        return Response(body, {"content-type": mime}, 200)
+
+    reader = Reader([policy()], transport=fetch, sleep=lambda _: None)
+    for url in ["https://shop.example/card", "https://shop.example/neighbor"]:
+        with pytest.raises(AccessBlocked):
+            reader.read(url, NOW)
+    assert calls == ["https://shop.example/robots.txt"]
+
+
+def test_managed_proxy_arbitrary_target_rejected_before_dns_or_request(monkeypatch):
+    monkeypatch.setattr(transport, "public_address", lambda host: pytest.fail("must not resolve"))
+    monkeypatch.setattr(
+        transport.urllib.request, "build_opener", lambda *a: pytest.fail("must not connect")
+    )
+    for url in [
+        "https://shop.example/card",
+        "https://api.tavily.com/extract",
+        "https://api.tavily.com/search?url=private",
+        "https://api.tavily.com.evil/search",
+    ]:
+        with pytest.raises(AccessBlocked, match="cannot be pinned"):
+            transport.managed_https(url, b"{}", {"X-Tavily-Access-Mode": "keyless"})
+
+
+def test_proxy_branch_never_uses_local_dns_as_destination_proof(monkeypatch):
+    monkeypatch.setattr(transport.urllib.request, "getproxies", lambda: {"https": "managed"})
+    monkeypatch.setattr(transport, "public_address", lambda host: pytest.fail("must not resolve"))
+    with pytest.raises(AccessBlocked, match="primary access blocked"):
+        transport.https("https://shop.example/card")

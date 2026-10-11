@@ -23,7 +23,7 @@ e2e и воспроизведение эксплуатации. Не заявл�
 
 Новые файлы live_* не импортируют coordinator scripts. Старые файлы byte-protected.
 No credentials/deployment/accounts/cookies/proxies/CAPTCHA bypass/orders/contacts.
-Transport использует только уже настроенный управляемый proxy среды, если он необходим; новые proxy/identity не создаются, redirects прекращаются.
+Transport использует штатный managed proxy только для фиксированного keyless search endpoint; primary-card URLs blocked без подтверждённого destination pin. Direct HTTPS pin сохраняется; сеть/identity не изменяются.
 Сохраняем только минимальные факты/выдержки, response hash, URL/time; policy
 должна явно разрешать эту минимальную retention. Cache не переиспользует цену;
 повторным наблюдениям нужен новый run directory. Единственный процесс/очередь

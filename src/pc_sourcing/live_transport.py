@@ -1,8 +1,9 @@
-"""Bounded public HTTPS, pinned DNS address, no redirects, cookies or retry."""
+"""Pinned direct HTTPS; managed proxy restricted to one fixed search endpoint."""
 
 import http.client
 import ipaddress
 import json
+import re
 import socket
 import ssl
 import time
@@ -69,8 +70,15 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 def managed_https(url, payload, headers):
-    # Use only the pre-existing platform proxy. Never configure a new route.
-    public_address(urlsplit(url).hostname)
+    # The proxy resolves its own destination: local DNS is not a binding proof.
+    # Block arbitrary source URLs; only this fixed service request is permitted.
+    if (
+        url != "https://api.tavily.com/search"
+        or payload is None
+        or headers.get("X-Tavily-Access-Mode") != "keyless"
+    ):
+        raise AccessBlocked("managed proxy destination cannot be pinned; primary access blocked")
+    public_address("api.tavily.com")
     request = urllib.request.Request(url, data=payload, headers=headers)
     opener = urllib.request.build_opener(NoRedirect())
     try:
@@ -148,6 +156,60 @@ def keyless_search(query):
         raise AccessBlocked("invalid search response; no retry") from exc
 
 
+DENIAL_MARKERS = (
+    "captcha",
+    "access denied",
+    "verify you are human",
+    "доступ ограничен",
+    "login required",
+    "authentication required",
+)
+
+
+def checked_robots(response):
+    """Support only unambiguous stdlib rules; unsupported syntax stops the domain."""
+    if response.status != 200 or not response.headers.get("content-type", "").lower().startswith(
+        "text/plain"
+    ):
+        raise AccessBlocked("invalid robots response status/content type")
+    text = response.body.decode("utf-8", errors="strict").lstrip("\ufeff")
+    if any(marker in text.lower() for marker in DENIAL_MARKERS) or "<" in text or ">" in text:
+        raise AccessBlocked("robots CAPTCHA/access denial/HTML; no bypass")
+    agent, allow, deny = False, False, False
+    known = {"user-agent", "allow", "disallow", "crawl-delay", "request-rate", "sitemap"}
+    for line in text.splitlines():
+        line = line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        name, sep, value = line.partition(":")
+        name, value = name.lower().strip(), value.strip()
+        if not sep or name not in known:
+            raise AccessBlocked("unsupported or malformed robots directive")
+        if name == "user-agent":
+            if not value:
+                raise AccessBlocked("empty robots user-agent")
+            agent = True
+        elif name in {"allow", "disallow", "crawl-delay", "request-rate"}:
+            if not agent:
+                raise AccessBlocked("robots rule without user-agent")
+            if name in {"allow", "disallow"}:
+                if any(c in value for c in "*$%") or (value and not value.startswith("/")):
+                    raise AccessBlocked("unsupported robots wildcard/encoded pattern")
+                allow |= name == "allow" and bool(value)
+                deny |= name == "disallow" and bool(value)
+            elif name == "crawl-delay" and not re.fullmatch(r"[0-9]{1,2}", value):
+                raise AccessBlocked("unsupported robots crawl-delay")
+            elif name == "request-rate" and not re.fullmatch(
+                r"[1-9][0-9]{0,2}/[1-9][0-9]{0,2}", value
+            ):
+                raise AccessBlocked("unsupported robots request-rate")
+    if not agent or (allow and deny):
+        raise AccessBlocked("robots empty/ambiguous allow-disallow precedence")
+    robots = RobotFileParser()
+    robots.parse(text.splitlines())
+    return robots
+
+
 class Reader:
     """One sequential run, max 10 cards. No background or multi-process claim."""
 
@@ -178,8 +240,7 @@ class Reader:
         try:
             if host not in self.robots:
                 response = self.transport(f"https://{host}/robots.txt")
-                robots = RobotFileParser()
-                robots.parse(response.body.decode("utf-8", errors="strict").splitlines())
+                robots = checked_robots(response)
                 self.robots[host] = robots
                 self.last[host] = time.monotonic()
             robots = self.robots[host]
@@ -196,19 +257,11 @@ class Reader:
             response = self.transport(url)
             self.last[host] = time.monotonic()
             text = response.body.decode("utf-8", errors="strict")
-            if any(
-                marker in text.lower()
-                for marker in (
-                    "captcha",
-                    "access denied",
-                    "verify you are human",
-                    "доступ ограничен",
-                )
-            ):
+            if any(marker in text.lower() for marker in DENIAL_MARKERS):
                 raise AccessBlocked("CAPTCHA/access denial; no bypass")
             if "text/html" not in response.headers.get("content-type", ""):
                 raise AccessBlocked("unsupported card content type")
             return text
-        except (AccessBlocked, UnicodeError, ValueError) as exc:
+        except (AccessBlocked, UnicodeError, ValueError, TypeError, OSError) as exc:
             self.stopped[host] = str(exc)
             raise AccessBlocked(str(exc)) from exc
