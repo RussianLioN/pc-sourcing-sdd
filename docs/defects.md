@@ -27,3 +27,17 @@ Actual repair writer: task T003, fresh worktree, only evaluate/pipeline and
 optional repair-worker test; cannot alter goldens/contracts/regressions.
 Domain repair round 1 of at most 2. Recheck full integrated snapshot and a
 fresh independent verifier. Stop if no new hypothesis or budget exhausted.
+
+
+DEF-005: fresh actual verifier at 19d3fcc0bc0f2ac9167287107623a90f0d69ae71
+confirmed all 119 tests, both previous fixes and snapshot immutability, but
+reproduced Python's integer-conversion limit on a valid JSON literal of 5000
+digits. Decoder aborted the entire batch before rejection retention (OUT-02).
+Reproducer and exact result were archived in artifacts/review-round2.
+Regression covers both price and a numeric id: oversized literals must not
+be silently converted into strings and accepted. Keep raw JSON unchanged,
+retain valid rows and a clear rejected-row reason. Do not disable global
+Python integer safety limits or change system security settings.
+Actual narrow repair round 2/2 is assigned to pipeline.py and an optional
+worker-owned test only. Final fresh review is mandatory; further material
+failures after this round stop the pilot as blocked rather than looping.

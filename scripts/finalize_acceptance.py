@@ -182,7 +182,7 @@ def finalize(out, review_path):
         pilot_result=stored,
         coordinator_scope={"command": scope_cmd, "exit_code": 0},
         production_ready=False,
-        repair_rounds=1,
+        repair_rounds=2,
         new_paid_api=False,
         next_step="resolve a lawful local primary-source route and budget before any live collection",
         blocked=[

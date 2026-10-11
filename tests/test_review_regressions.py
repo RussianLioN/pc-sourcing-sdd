@@ -4,6 +4,8 @@ import json
 import sqlite3
 from decimal import Decimal
 
+import pytest
+
 from pc_sourcing.evaluate import evaluate
 from pc_sourcing.models import Offer
 from pc_sourcing.pipeline import run
@@ -41,3 +43,31 @@ def test_large_json_number_retained_without_losing_valid_rows(tmp_path, sample, 
         assert con.execute("SELECT count(*) FROM offers").fetchone()[0] == 1
     assert "overflow" in report.read_text()
     assert run(inp, db, report, as_of=as_of, run_id="overflow") == summary
+
+
+@pytest.mark.parametrize("field", ["price_rub", "id"])
+def test_oversized_integer_retained_without_type_coercion(tmp_path, sample, as_of, field):
+    inp, db, report = (tmp_path / p for p in ("input.json", "db.sqlite", "report.md"))
+    token = "9" * 5000
+    data = sample.model_dump(mode="json")
+    if field == "price_rub":
+        data["id"] = "oversized-price"
+        for e in data["evidence"]:
+            e["offer_id"] = data["id"]
+        encoded = json.dumps(data).replace('"price_rub": 100000', '"price_rub": ' + token, 1)
+    else:
+        data["id"] = token
+        for e in data["evidence"]:
+            e["offer_id"] = token
+        encoded = json.dumps(data).replace('"id": "' + token + '"', '"id": ' + token, 1)
+    inp.write_text("[" + sample.model_dump_json() + "," + encoded + "]")
+    summary = run(inp, db, report, as_of=as_of, run_id="oversized")
+    assert summary["valid"] == 1
+    assert summary["rejected"] == 1
+    with sqlite3.connect(db) as con:
+        rejected, reason = con.execute("SELECT data,reason FROM rejections").fetchone()
+        assert rejected == encoded
+        assert reason
+        assert con.execute("SELECT count(*) FROM offers").fetchone()[0] == 1
+    assert token in report.read_text()
+    assert run(inp, db, report, as_of=as_of, run_id="oversized") == summary
