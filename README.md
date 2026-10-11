@@ -1,4 +1,6 @@
 # pc-sourcing-sdd
+
+[Cloud handoff and verified offline summary](docs/cloud-handoff.md).
 Offline pilot on the user's Mac. **Every fixture is synthetic.** No real
 price, stock, protected transaction or production readiness is confirmed.
 
@@ -52,7 +54,9 @@ One writer at a time. Verifier's writable workspace is private /tmp scratch;
 the project remains read-only to it, verified by `verify_readonly.py`.
 Runner resume supports paused/failed only. Running-state crash recovery and
 local live sources remain blocked. Direct Avito denial is not bypassed.
-No publication, remote push, deployment, order, seller contact or new key.
+Pilot execution performed no deployment, order, seller contact or new key.
+Repository publication is a separate explicitly authorized user action;
+it grants no publication or external-access authority to future workers.
 
 Continuation policy 1.0.1 follows the user instruction to continue autonomously
 to successful offline acceptance. Historical 2/2 assignments are archived,
