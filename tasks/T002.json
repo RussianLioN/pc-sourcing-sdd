@@ -52,7 +52,16 @@
     "workflows/repair2.yml",
     "workflows/verifier.yml",
     "workflows/worker-crash.yml",
-    "workflows/writer.yml"
+    "workflows/writer.yml",
+    "tasks/continuation-policy.json",
+    "tasks/T006.json",
+    "workflows/repair3.yml",
+    "tests/test_unicode_regression.py",
+    "tests/test_unicode_worker.py",
+    "tests/test_policy_gate.py",
+    "scripts/runner_loop.py",
+    "workflows/collector-loop.yml",
+    ".specify/memory/constitution.md"
   ],
   "protected_files": [
     "fixtures/golden.json",
@@ -75,5 +84,8 @@
   "commands": [
     ".venv/bin/python scripts/verify_scope.py tasks/T002.json ."
   ],
-  "stop_condition": "any unowned change, golden or behavioral expectation change"
+  "stop_condition": "any unowned change, golden or behavioral expectation change",
+  "protected_baselines": {
+    ".specify/memory/constitution.md": "bf0d5165b5d7ffe2fc88ed1ab15ff53e45af23ca"
+  }
 }

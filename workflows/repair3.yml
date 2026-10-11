@@ -1,0 +1,46 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-unicode-repair"
+  name: "Actual Unicode error-class repair under authorized continuation"
+  version: "1.0.0"
+inputs:
+  review: {type: string, default: ""}
+steps:
+  - id: repair
+    type: prompt
+    integration: codex
+    prompt: |
+      Execute T006 from /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/tasks/T006.json.
+      Explicitly read AGENTS.md, constitution, continuation policy, spec/plan,
+      pc-payment-audit and pc-snapshot-check SKILL.md, current pipeline and
+      coordinator-owned tests/test_unicode_regression.py. Only edit pipeline.py
+      and optional tests/test_unicode_worker.py. All other files frozen.
+      Fix DEF-006 for the entire decoded Unicode row error class: unpaired high
+      or low surrogate in any key/value/nested string must be rejected with
+      exact original raw JSON and UTF-8-safe explanatory reason. Valid Cyrillic,
+      emoji, scalar text, correct surrogate pairs remain unchanged. A bad row
+      between two valid rows must not change their stored data or Evaluation.
+      Consider rejected raw serialization and safe diagnostics, not only title.
+      Input document syntax/encoding errors with unknown boundaries are whole
+      input errors: do not guess framing or silently repair characters.
+      Preserve numeric guards and 1e400 handling; do not disable Python limits,
+      convert invalid numbers to null/string, or catch transaction/SQLite errors
+      as row rejections. Keep actual DB rollback/report recovery/idempotency.
+      Prefer a narrow iterative prevalidation or row-local serializability guard
+      with precise error handling; no new dependency or product feature.
+      Run all actual pytest, Ruff check and format using project .venv absolute
+      paths; preserve initial failure, final commands/exits/diff and source
+      evidence in unique /tmp. No commits, delegation, network, credentials,
+      security changes or writes to coordinator. 600s per process. The previous
+      two-round stop was superseded by explicit user instruction, not by weaker
+      requirements. Report precise progress/blocker/next hypothesis if needed.
+  - id: tests
+    type: shell
+    run: "PYTHONPATH=src /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/python -m pytest -q --junitxml=artifacts/unicode-tests.xml"
+    timeout: 120
+  - id: integration
+    type: gate
+    message: "Coordinator verifies Unicode diff, raw retention and immutable baseline"
+    options: [approve, reject]
+    verdict_input: review
+    on_reject: abort

@@ -25,8 +25,8 @@ Regressions: tests/test_review_regressions.py, fixed expectations owned by
 coordinator. Initial failures retained in artifacts/repair-regressions-before.log.
 Actual repair writer: task T003, fresh worktree, only evaluate/pipeline and
 optional repair-worker test; cannot alter goldens/contracts/regressions.
-Domain repair round 1 of at most 2. Recheck full integrated snapshot and a
-fresh independent verifier. Stop if no new hypothesis or budget exhausted.
+Historically repair round 1 used a two-round budget. That stop was later
+superseded by continuation policy 1.0.1; historical failures remain preserved.
 
 
 DEF-005: fresh actual verifier at 19d3fcc0bc0f2ac9167287107623a90f0d69ae71
@@ -38,9 +38,9 @@ Regression covers both price and a numeric id: oversized literals must not
 be silently converted into strings and accepted. Keep raw JSON unchanged,
 retain valid rows and a clear rejected-row reason. Do not disable global
 Python integer safety limits or change system security settings.
-Actual narrow repair round 2/2 is assigned to pipeline.py and an optional
-worker-owned test only. Final fresh review is mandatory; further material
-failures after this round stop the pilot as blocked rather than looping.
+The historical narrow repair round 2/2 owned pipeline.py and an optional
+worker test. Its subsequent blocked verdict was preserved. The old stopping
+rule was later superseded by the explicit user continuation instruction.
 
 Round 2 writer completed in 160.120s: all 136 tests, Ruff and task scope passed.
 The bounded typed integer marker preserves raw tokens and rejects numeric id;
@@ -53,3 +53,10 @@ Actual CLI repro and traces are in artifacts/final-review-evidence.
 The prior blocked receipt remains unchanged. User explicitly superseded the
 2/2 stopping policy; current task T006 repairs the Unicode error class with
 protected regression tests, preserving all product/golden expectations.
+
+T006 actual Codex writer completed in 150.275s; 273 tests,
+Ruff check/format and task scope passed. Iterative Unicode validation checks
+all decoded keys/values before duplicate handling or model diagnostics. It
+preserves original raw JSON, UTF-8-safe reasons and valid neighboring offers.
+Evidence copied to artifacts/unicode-validation with hashes. Fresh final
+independent review remains required; process success alone cannot accept.

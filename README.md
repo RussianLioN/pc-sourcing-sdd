@@ -30,7 +30,7 @@ a changed snapshot needs new evidence paths):
 ```
 
 This validates the offline collector, not a new independent Codex review or
-acceptance. Actual worker workflows are `writer.yml`, `repair.yml`, `repair2.yml` and
+acceptance. Actual worker workflows are `writer.yml`, historic `repair.yml`/`repair2.yml`, current `repair3.yml` and
 `verifier.yml`; do not start a second writer or blindly resume a killed run.
 
 Read `specs/001-offline/methodology.md`, `spec.md`, `plan.md`, `traceability.md`
@@ -58,3 +58,17 @@ Continuation policy 1.0.1 follows the user instruction to continue autonomously
 to successful offline acceptance. Historical 2/2 assignments are archived,
 not current stopping rules. See tasks/continuation-policy.json. Each process
 retains its timeout, one writer and exclusive launch protection.
+
+The required small runner-loop check uses the real collector twice, then checks
+unchanged data/report and a condition exit before its experimental safety cap:
+
+```bash
+PC_LOOP_DIR="$PWD/artifacts/collector-loop-final" .venv/bin/python \
+  scripts/run_workflow.py run workflows/collector-loop.yml
+```
+
+Its receipt is bound to the current snapshot. For a changed snapshot use a new
+resource directory and preserve the old evidence; do not blindly reuse state.
+Converge is optional gap/task discovery, not an offline acceptance prerequisite.
+The autonomous coordinator continues narrow tasks across finite runs; no
+persistent service or parallel fan-out capability is claimed.

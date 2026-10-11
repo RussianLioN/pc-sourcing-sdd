@@ -8,6 +8,8 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
+from quality import snapshot
+
 from pc_sourcing.pipeline import run
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +23,7 @@ out.mkdir(parents=True, exist_ok=True)
 ledger = out / "ledger.json"
 entries = json.loads(ledger.read_text()) if ledger.exists() else []
 if args.check:
+    assert all(e["snapshot"] == snapshot() for e in entries), "loop snapshot changed"
     assert len(entries) == 2, "loop must stop on its condition, before max_iterations=3"
     assert entries[0]["summary"] == entries[1]["summary"]
     assert entries[0]["report_hash"] == entries[1]["report_hash"]
@@ -35,6 +38,7 @@ if args.check:
                 "status": "passed",
                 "kind": "real_offline_collector_loop",
                 "iterations": 2,
+                "snapshot": snapshot(),
                 "entries": entries,
             },
             indent=2,
@@ -63,6 +67,7 @@ else:
             "summary": result,
             "report_hash": hashlib.sha256(report.read_bytes()).hexdigest(),
             "synthetic": True,
+            "snapshot": snapshot(),
         }
     )
     ledger.write_text(json.dumps(entries, indent=2))

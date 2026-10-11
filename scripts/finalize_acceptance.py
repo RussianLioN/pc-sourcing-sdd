@@ -172,6 +172,15 @@ def finalize(out, review_path):
     (out / "scope.json").write_text(scope.stdout + scope.stderr)
     if scope.returncode != 0:
         raise ValueError("common snapshot scope check failed")
+    loop_path = ROOT / "artifacts/collector-loop-final/result.json"
+    loop = json.loads(loop_path.read_text())
+    if (
+        loop.get("status") != "passed"
+        or loop.get("kind") != "real_offline_collector_loop"
+        or loop.get("iterations") != 2
+        or loop.get("snapshot") != evidence["snapshot"]
+    ):
+        raise ValueError("required real collector loop did not pass the same snapshot")
     readable, stored = summary(out / "pilot.sqlite", evidence)
     (out / "summary.md").write_text(readable)
     evidence.update(
@@ -181,6 +190,8 @@ def finalize(out, review_path):
         accepted_scope="offline pilot only",
         pilot_result=stored,
         coordinator_scope={"command": scope_cmd, "exit_code": 0},
+        required_runner_loop=loop,
+        accepted=True,
         production_ready=False,
         repair_rounds=len(list((ROOT / "tasks").glob("T003*.json")))
         + len(list((ROOT / "tasks").glob("T006*.json"))),
@@ -203,6 +214,7 @@ def finalize(out, review_path):
     checked = [
         out / n for n in ("pilot.sqlite", "report.md", "summary.md", "tests.xml", "scope.json")
     ]
+    checked += [loop_path, ROOT / "artifacts/collector-loop-final/ledger.json"]
     checked += [
         review_path,
         review_path.parent / "invocation.json",

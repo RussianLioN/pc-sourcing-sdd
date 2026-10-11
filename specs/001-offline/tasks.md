@@ -26,3 +26,7 @@ a lawful local primary-source route with explicit budget before live smoke.
 Continuation 1.0.1: user superseded the former 2/2 stop. Historic tasks remain
 immutable evidence; T006 Unicode repair and runner loop verification are
 new narrow work. Final acceptance remains receipt-bound, never checkbox-only.
+
+- [x] T006 Actual Unicode writer; protected regression suite and scope gate
+  passed (273 tests). Sequentially integrated; final independent review is
+  evaluated only by the same-SHA receipt.
