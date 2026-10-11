@@ -1,0 +1,108 @@
+[
+  {
+    "id": "invalid-zero",
+    "product": "gpu",
+    "sku": "G5090-32SLC",
+    "title": "G5090-32SLC",
+    "source": "avito",
+    "url": "https://fixture.example.test/unknown-both",
+    "observed_at": "2026-10-11T10:00:00Z",
+    "synthetic": true,
+    "price_rub": 0,
+    "currency": "RUB",
+    "stock": "preorder",
+    "region": "Москва",
+    "condition": "new",
+    "seller_checked": true,
+    "factory_liquid": true,
+    "global_advance_required": false,
+    "global_payment_conflict": false,
+    "optional_risky_alternative": false,
+    "evidence": [
+      {
+        "id": "unknown-both:sku",
+        "offer_id": "unknown-both",
+        "url": "https://fixture.example.test/unknown-both",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "field": "sku",
+        "value": "G5090-32SLC",
+        "origin": "seller_statement",
+        "synthetic": true
+      },
+      {
+        "id": "unknown-both:price_rub",
+        "offer_id": "unknown-both",
+        "url": "https://fixture.example.test/unknown-both",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "field": "price_rub",
+        "value": "100000",
+        "origin": "seller_statement",
+        "synthetic": true
+      },
+      {
+        "id": "unknown-both:stock",
+        "offer_id": "unknown-both",
+        "url": "https://fixture.example.test/unknown-both",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "field": "stock",
+        "value": "preorder",
+        "origin": "seller_statement",
+        "synthetic": true
+      },
+      {
+        "id": "unknown-both:region",
+        "offer_id": "unknown-both",
+        "url": "https://fixture.example.test/unknown-both",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "field": "region",
+        "value": "Москва",
+        "origin": "seller_statement",
+        "synthetic": true
+      },
+      {
+        "id": "unknown-both:condition",
+        "offer_id": "unknown-both",
+        "url": "https://fixture.example.test/unknown-both",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "field": "condition",
+        "value": "new",
+        "origin": "seller_statement",
+        "synthetic": true
+      },
+      {
+        "id": "unknown-both:seller_checked",
+        "offer_id": "unknown-both",
+        "url": "https://fixture.example.test/unknown-both",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "field": "seller_checked",
+        "value": "true",
+        "origin": "seller_statement",
+        "synthetic": true
+      },
+      {
+        "id": "unknown-both:factory_liquid",
+        "offer_id": "unknown-both",
+        "url": "https://fixture.example.test/unknown-both",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "field": "factory_liquid",
+        "value": "true",
+        "origin": "seller_statement",
+        "synthetic": true
+      },
+      {
+        "id": "unknown-both:global_advance_required",
+        "offer_id": "unknown-both",
+        "url": "https://fixture.example.test/unknown-both",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "field": "global_advance_required",
+        "value": "false",
+        "origin": "seller_statement",
+        "synthetic": true
+      }
+    ]
+  },
+  {
+    "id": "broken-input",
+    "source": "avito"
+  }
+]

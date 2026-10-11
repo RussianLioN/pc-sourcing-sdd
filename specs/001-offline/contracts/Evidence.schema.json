@@ -1,0 +1,66 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "offer_id": {
+      "minLength": 1,
+      "title": "Offer Id",
+      "type": "string"
+    },
+    "url": {
+      "pattern": "^https?://[^\\s]+$",
+      "title": "Url",
+      "type": "string"
+    },
+    "observed_at": {
+      "format": "date-time",
+      "title": "Observed At",
+      "type": "string"
+    },
+    "field": {
+      "minLength": 1,
+      "title": "Field",
+      "type": "string"
+    },
+    "value": {
+      "title": "Value",
+      "type": "string"
+    },
+    "origin": {
+      "enum": [
+        "store_card",
+        "seller_statement",
+        "platform_transaction",
+        "search_snippet"
+      ],
+      "title": "Origin",
+      "type": "string"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "offer_id",
+    "url",
+    "observed_at",
+    "field",
+    "value",
+    "origin",
+    "synthetic"
+  ],
+  "title": "Evidence",
+  "type": "object"
+}

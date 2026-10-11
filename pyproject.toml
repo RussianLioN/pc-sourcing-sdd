@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "pc-sourcing-sdd"
+version = "0.1.0"
+requires-python = ">=3.13,<3.14"
+dependencies = ["pydantic==2.14.0"]
+[project.optional-dependencies]
+dev = ["pytest==8.4.2", "hypothesis==6.142.1", "ruff==0.14.0"]
+[project.scripts]
+pc-sourcing = "pc_sourcing.pipeline:main"
+[tool.setuptools.packages.find]
+where = ["src"]
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-ra"
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]

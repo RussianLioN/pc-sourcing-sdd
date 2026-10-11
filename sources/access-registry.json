@@ -1,0 +1,18 @@
+{
+  "local_tavily": {
+    "status": "blocked",
+    "reason": "CLI, module and environment API key absent; no secret transfer or new API"
+  },
+  "avito_direct": {
+    "status": "blocked",
+    "reason": "prior environment policy denial; no retry by another channel"
+  },
+  "indexed_search": {
+    "status": "not_run",
+    "scope": "candidate links only, not primary facts"
+  },
+  "stores": {
+    "status": "not_run",
+    "scope": "first authorized primary source after live access approval"
+  }
+}

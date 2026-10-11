@@ -1,0 +1,2631 @@
+{
+  "schema_version": "1.0.0",
+  "as_of": "2026-10-11T10:00:00Z",
+  "cases": [
+    {
+      "offer": {
+        "id": "unknown-both",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/unknown-both",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "unknown-both:sku",
+            "offer_id": "unknown-both",
+            "url": "https://fixture.example.test/unknown-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-both:price_rub",
+            "offer_id": "unknown-both",
+            "url": "https://fixture.example.test/unknown-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-both:stock",
+            "offer_id": "unknown-both",
+            "url": "https://fixture.example.test/unknown-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-both:region",
+            "offer_id": "unknown-both",
+            "url": "https://fixture.example.test/unknown-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-both:condition",
+            "offer_id": "unknown-both",
+            "url": "https://fixture.example.test/unknown-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-both:seller_checked",
+            "offer_id": "unknown-both",
+            "url": "https://fixture.example.test/unknown-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-both:factory_liquid",
+            "offer_id": "unknown-both",
+            "url": "https://fixture.example.test/unknown-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-both:global_advance_required",
+            "offer_id": "unknown-both",
+            "url": "https://fixture.example.test/unknown-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          }
+        ]
+      },
+      "expected": {
+        "payment_gate_passed": false,
+        "passed_routes": [],
+        "eligibility": "manual",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "unavailable-both",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/unavailable-both",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "unavailable-both:sku",
+            "offer_id": "unavailable-both",
+            "url": "https://fixture.example.test/unavailable-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unavailable-both:price_rub",
+            "offer_id": "unavailable-both",
+            "url": "https://fixture.example.test/unavailable-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unavailable-both:stock",
+            "offer_id": "unavailable-both",
+            "url": "https://fixture.example.test/unavailable-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unavailable-both:region",
+            "offer_id": "unavailable-both",
+            "url": "https://fixture.example.test/unavailable-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unavailable-both:condition",
+            "offer_id": "unavailable-both",
+            "url": "https://fixture.example.test/unavailable-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unavailable-both:seller_checked",
+            "offer_id": "unavailable-both",
+            "url": "https://fixture.example.test/unavailable-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unavailable-both:factory_liquid",
+            "offer_id": "unavailable-both",
+            "url": "https://fixture.example.test/unavailable-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unavailable-both:global_advance_required",
+            "offer_id": "unavailable-both",
+            "url": "https://fixture.example.test/unavailable-both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          }
+        ],
+        "protected": {
+          "status": "confirmed_unavailable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [],
+          "reason": "synthetic transaction-specific confirmation"
+        },
+        "postpay": {
+          "status": "confirmed_unavailable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": false,
+        "passed_routes": [],
+        "eligibility": "manual",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "postpay-only",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/postpay-only",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "postpay-only:sku",
+            "offer_id": "postpay-only",
+            "url": "https://fixture.example.test/postpay-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-only:price_rub",
+            "offer_id": "postpay-only",
+            "url": "https://fixture.example.test/postpay-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-only:stock",
+            "offer_id": "postpay-only",
+            "url": "https://fixture.example.test/postpay-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-only:region",
+            "offer_id": "postpay-only",
+            "url": "https://fixture.example.test/postpay-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-only:condition",
+            "offer_id": "postpay-only",
+            "url": "https://fixture.example.test/postpay-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-only:seller_checked",
+            "offer_id": "postpay-only",
+            "url": "https://fixture.example.test/postpay-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-only:factory_liquid",
+            "offer_id": "postpay-only",
+            "url": "https://fixture.example.test/postpay-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-only:global_advance_required",
+            "offer_id": "postpay-only",
+            "url": "https://fixture.example.test/postpay-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-only:postpay_route",
+            "offer_id": "postpay-only",
+            "url": "https://fixture.example.test/postpay-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "postpay_route",
+            "value": "confirmed_applicable",
+            "origin": "seller_statement",
+            "synthetic": true
+          }
+        ],
+        "postpay": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "postpay-only:postpay_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": true,
+        "passed_routes": [
+          "postpay"
+        ],
+        "eligibility": "conditional",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "protected-only",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/protected-only",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "protected-only:sku",
+            "offer_id": "protected-only",
+            "url": "https://fixture.example.test/protected-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-only:price_rub",
+            "offer_id": "protected-only",
+            "url": "https://fixture.example.test/protected-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-only:stock",
+            "offer_id": "protected-only",
+            "url": "https://fixture.example.test/protected-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-only:region",
+            "offer_id": "protected-only",
+            "url": "https://fixture.example.test/protected-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-only:condition",
+            "offer_id": "protected-only",
+            "url": "https://fixture.example.test/protected-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-only:seller_checked",
+            "offer_id": "protected-only",
+            "url": "https://fixture.example.test/protected-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-only:factory_liquid",
+            "offer_id": "protected-only",
+            "url": "https://fixture.example.test/protected-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-only:global_advance_required",
+            "offer_id": "protected-only",
+            "url": "https://fixture.example.test/protected-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-only:protected_route",
+            "offer_id": "protected-only",
+            "url": "https://fixture.example.test/protected-only",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "protected_route",
+            "value": "confirmed_applicable",
+            "origin": "platform_transaction",
+            "synthetic": true
+          }
+        ],
+        "protected": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "protected-only:protected_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": true,
+        "passed_routes": [
+          "protected"
+        ],
+        "eligibility": "conditional",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "both",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/both",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "both:sku",
+            "offer_id": "both",
+            "url": "https://fixture.example.test/both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "both:price_rub",
+            "offer_id": "both",
+            "url": "https://fixture.example.test/both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "both:stock",
+            "offer_id": "both",
+            "url": "https://fixture.example.test/both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "both:region",
+            "offer_id": "both",
+            "url": "https://fixture.example.test/both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "both:condition",
+            "offer_id": "both",
+            "url": "https://fixture.example.test/both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "both:seller_checked",
+            "offer_id": "both",
+            "url": "https://fixture.example.test/both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "both:factory_liquid",
+            "offer_id": "both",
+            "url": "https://fixture.example.test/both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "both:global_advance_required",
+            "offer_id": "both",
+            "url": "https://fixture.example.test/both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "both:protected_route",
+            "offer_id": "both",
+            "url": "https://fixture.example.test/both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "protected_route",
+            "value": "confirmed_applicable",
+            "origin": "platform_transaction",
+            "synthetic": true
+          },
+          {
+            "id": "both:postpay_route",
+            "offer_id": "both",
+            "url": "https://fixture.example.test/both",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "postpay_route",
+            "value": "confirmed_applicable",
+            "origin": "seller_statement",
+            "synthetic": true
+          }
+        ],
+        "protected": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "both:protected_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        },
+        "postpay": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "both:postpay_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": true,
+        "passed_routes": [
+          "protected",
+          "postpay"
+        ],
+        "eligibility": "conditional",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "protected-conflict",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/protected-conflict",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "protected-conflict:sku",
+            "offer_id": "protected-conflict",
+            "url": "https://fixture.example.test/protected-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-conflict:price_rub",
+            "offer_id": "protected-conflict",
+            "url": "https://fixture.example.test/protected-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-conflict:stock",
+            "offer_id": "protected-conflict",
+            "url": "https://fixture.example.test/protected-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-conflict:region",
+            "offer_id": "protected-conflict",
+            "url": "https://fixture.example.test/protected-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-conflict:condition",
+            "offer_id": "protected-conflict",
+            "url": "https://fixture.example.test/protected-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-conflict:seller_checked",
+            "offer_id": "protected-conflict",
+            "url": "https://fixture.example.test/protected-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-conflict:factory_liquid",
+            "offer_id": "protected-conflict",
+            "url": "https://fixture.example.test/protected-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-conflict:global_advance_required",
+            "offer_id": "protected-conflict",
+            "url": "https://fixture.example.test/protected-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "protected-conflict:postpay_route",
+            "offer_id": "protected-conflict",
+            "url": "https://fixture.example.test/protected-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "postpay_route",
+            "value": "confirmed_applicable",
+            "origin": "seller_statement",
+            "synthetic": true
+          }
+        ],
+        "protected": {
+          "status": "conflict",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [],
+          "reason": "synthetic transaction-specific confirmation"
+        },
+        "postpay": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "protected-conflict:postpay_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": true,
+        "passed_routes": [
+          "postpay"
+        ],
+        "eligibility": "conditional",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "postpay-conflict",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/postpay-conflict",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "postpay-conflict:sku",
+            "offer_id": "postpay-conflict",
+            "url": "https://fixture.example.test/postpay-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-conflict:price_rub",
+            "offer_id": "postpay-conflict",
+            "url": "https://fixture.example.test/postpay-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-conflict:stock",
+            "offer_id": "postpay-conflict",
+            "url": "https://fixture.example.test/postpay-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-conflict:region",
+            "offer_id": "postpay-conflict",
+            "url": "https://fixture.example.test/postpay-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-conflict:condition",
+            "offer_id": "postpay-conflict",
+            "url": "https://fixture.example.test/postpay-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-conflict:seller_checked",
+            "offer_id": "postpay-conflict",
+            "url": "https://fixture.example.test/postpay-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-conflict:factory_liquid",
+            "offer_id": "postpay-conflict",
+            "url": "https://fixture.example.test/postpay-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-conflict:global_advance_required",
+            "offer_id": "postpay-conflict",
+            "url": "https://fixture.example.test/postpay-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "postpay-conflict:protected_route",
+            "offer_id": "postpay-conflict",
+            "url": "https://fixture.example.test/postpay-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "protected_route",
+            "value": "confirmed_applicable",
+            "origin": "platform_transaction",
+            "synthetic": true
+          }
+        ],
+        "postpay": {
+          "status": "conflict",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [],
+          "reason": "synthetic transaction-specific confirmation"
+        },
+        "protected": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "postpay-conflict:protected_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": true,
+        "passed_routes": [
+          "protected"
+        ],
+        "eligibility": "conditional",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "optional-risk",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/optional-risk",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": true,
+        "evidence": [
+          {
+            "id": "optional-risk:sku",
+            "offer_id": "optional-risk",
+            "url": "https://fixture.example.test/optional-risk",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "optional-risk:price_rub",
+            "offer_id": "optional-risk",
+            "url": "https://fixture.example.test/optional-risk",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "optional-risk:stock",
+            "offer_id": "optional-risk",
+            "url": "https://fixture.example.test/optional-risk",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "optional-risk:region",
+            "offer_id": "optional-risk",
+            "url": "https://fixture.example.test/optional-risk",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "optional-risk:condition",
+            "offer_id": "optional-risk",
+            "url": "https://fixture.example.test/optional-risk",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "optional-risk:seller_checked",
+            "offer_id": "optional-risk",
+            "url": "https://fixture.example.test/optional-risk",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "optional-risk:factory_liquid",
+            "offer_id": "optional-risk",
+            "url": "https://fixture.example.test/optional-risk",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "optional-risk:global_advance_required",
+            "offer_id": "optional-risk",
+            "url": "https://fixture.example.test/optional-risk",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "optional-risk:protected_route",
+            "offer_id": "optional-risk",
+            "url": "https://fixture.example.test/optional-risk",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "protected_route",
+            "value": "confirmed_applicable",
+            "origin": "platform_transaction",
+            "synthetic": true
+          }
+        ],
+        "protected": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "optional-risk:protected_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": true,
+        "passed_routes": [
+          "protected"
+        ],
+        "eligibility": "conditional",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "global-advance",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/global-advance",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": true,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "global-advance:sku",
+            "offer_id": "global-advance",
+            "url": "https://fixture.example.test/global-advance",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-advance:price_rub",
+            "offer_id": "global-advance",
+            "url": "https://fixture.example.test/global-advance",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-advance:stock",
+            "offer_id": "global-advance",
+            "url": "https://fixture.example.test/global-advance",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-advance:region",
+            "offer_id": "global-advance",
+            "url": "https://fixture.example.test/global-advance",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-advance:condition",
+            "offer_id": "global-advance",
+            "url": "https://fixture.example.test/global-advance",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-advance:seller_checked",
+            "offer_id": "global-advance",
+            "url": "https://fixture.example.test/global-advance",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-advance:factory_liquid",
+            "offer_id": "global-advance",
+            "url": "https://fixture.example.test/global-advance",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-advance:global_advance_required",
+            "offer_id": "global-advance",
+            "url": "https://fixture.example.test/global-advance",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-advance:protected_route",
+            "offer_id": "global-advance",
+            "url": "https://fixture.example.test/global-advance",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "protected_route",
+            "value": "confirmed_applicable",
+            "origin": "platform_transaction",
+            "synthetic": true
+          },
+          {
+            "id": "global-advance:postpay_route",
+            "offer_id": "global-advance",
+            "url": "https://fixture.example.test/global-advance",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "postpay_route",
+            "value": "confirmed_applicable",
+            "origin": "seller_statement",
+            "synthetic": true
+          }
+        ],
+        "protected": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "global-advance:protected_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        },
+        "postpay": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "global-advance:postpay_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": false,
+        "passed_routes": [],
+        "eligibility": "manual",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "global-conflict",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/global-conflict",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": true,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "global-conflict:sku",
+            "offer_id": "global-conflict",
+            "url": "https://fixture.example.test/global-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-conflict:price_rub",
+            "offer_id": "global-conflict",
+            "url": "https://fixture.example.test/global-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-conflict:stock",
+            "offer_id": "global-conflict",
+            "url": "https://fixture.example.test/global-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-conflict:region",
+            "offer_id": "global-conflict",
+            "url": "https://fixture.example.test/global-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-conflict:condition",
+            "offer_id": "global-conflict",
+            "url": "https://fixture.example.test/global-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-conflict:seller_checked",
+            "offer_id": "global-conflict",
+            "url": "https://fixture.example.test/global-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-conflict:factory_liquid",
+            "offer_id": "global-conflict",
+            "url": "https://fixture.example.test/global-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-conflict:global_advance_required",
+            "offer_id": "global-conflict",
+            "url": "https://fixture.example.test/global-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "global-conflict:protected_route",
+            "offer_id": "global-conflict",
+            "url": "https://fixture.example.test/global-conflict",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "protected_route",
+            "value": "confirmed_applicable",
+            "origin": "platform_transaction",
+            "synthetic": true
+          }
+        ],
+        "protected": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "global-conflict:protected_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": false,
+        "passed_routes": [],
+        "eligibility": "manual",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "partial",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/partial",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "partial:sku",
+            "offer_id": "partial",
+            "url": "https://fixture.example.test/partial",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "partial:price_rub",
+            "offer_id": "partial",
+            "url": "https://fixture.example.test/partial",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "partial:stock",
+            "offer_id": "partial",
+            "url": "https://fixture.example.test/partial",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "partial:region",
+            "offer_id": "partial",
+            "url": "https://fixture.example.test/partial",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "partial:condition",
+            "offer_id": "partial",
+            "url": "https://fixture.example.test/partial",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "partial:seller_checked",
+            "offer_id": "partial",
+            "url": "https://fixture.example.test/partial",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "partial:factory_liquid",
+            "offer_id": "partial",
+            "url": "https://fixture.example.test/partial",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "partial:global_advance_required",
+            "offer_id": "partial",
+            "url": "https://fixture.example.test/partial",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "partial:protected_route",
+            "offer_id": "partial",
+            "url": "https://fixture.example.test/partial",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "protected_route",
+            "value": "confirmed_applicable",
+            "origin": "platform_transaction",
+            "synthetic": true
+          }
+        ],
+        "protected": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": false,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "partial:protected_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": false,
+        "passed_routes": [],
+        "eligibility": "manual",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "generic-badge",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/generic-badge",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "generic-badge:sku",
+            "offer_id": "generic-badge",
+            "url": "https://fixture.example.test/generic-badge",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "generic-badge:price_rub",
+            "offer_id": "generic-badge",
+            "url": "https://fixture.example.test/generic-badge",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "generic-badge:stock",
+            "offer_id": "generic-badge",
+            "url": "https://fixture.example.test/generic-badge",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "generic-badge:region",
+            "offer_id": "generic-badge",
+            "url": "https://fixture.example.test/generic-badge",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "generic-badge:condition",
+            "offer_id": "generic-badge",
+            "url": "https://fixture.example.test/generic-badge",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "generic-badge:seller_checked",
+            "offer_id": "generic-badge",
+            "url": "https://fixture.example.test/generic-badge",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "generic-badge:factory_liquid",
+            "offer_id": "generic-badge",
+            "url": "https://fixture.example.test/generic-badge",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "generic-badge:global_advance_required",
+            "offer_id": "generic-badge",
+            "url": "https://fixture.example.test/generic-badge",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "generic-badge:protected_route",
+            "offer_id": "generic-badge",
+            "url": "https://fixture.example.test/generic-badge",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "protected_route",
+            "value": "confirmed_applicable",
+            "origin": "seller_statement",
+            "synthetic": true
+          }
+        ],
+        "protected": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "generic-badge:protected_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": false,
+        "passed_routes": [],
+        "eligibility": "manual",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "soc-analogue",
+        "product": "gpu",
+        "sku": "G5090-32SL-SOC",
+        "title": "G5090-32SL-SOC",
+        "source": "avito",
+        "url": "https://fixture.example.test/soc-analogue",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "soc-analogue:sku",
+            "offer_id": "soc-analogue",
+            "url": "https://fixture.example.test/soc-analogue",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SL-SOC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "soc-analogue:price_rub",
+            "offer_id": "soc-analogue",
+            "url": "https://fixture.example.test/soc-analogue",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "soc-analogue:stock",
+            "offer_id": "soc-analogue",
+            "url": "https://fixture.example.test/soc-analogue",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "soc-analogue:region",
+            "offer_id": "soc-analogue",
+            "url": "https://fixture.example.test/soc-analogue",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "soc-analogue:condition",
+            "offer_id": "soc-analogue",
+            "url": "https://fixture.example.test/soc-analogue",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "soc-analogue:seller_checked",
+            "offer_id": "soc-analogue",
+            "url": "https://fixture.example.test/soc-analogue",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "soc-analogue:factory_liquid",
+            "offer_id": "soc-analogue",
+            "url": "https://fixture.example.test/soc-analogue",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "soc-analogue:global_advance_required",
+            "offer_id": "soc-analogue",
+            "url": "https://fixture.example.test/soc-analogue",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "soc-analogue:postpay_route",
+            "offer_id": "soc-analogue",
+            "url": "https://fixture.example.test/soc-analogue",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "postpay_route",
+            "value": "confirmed_applicable",
+            "origin": "seller_statement",
+            "synthetic": true
+          }
+        ],
+        "postpay": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "soc-analogue:postpay_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": true,
+        "passed_routes": [
+          "postpay"
+        ],
+        "eligibility": "excluded",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "missing-liquid",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/missing-liquid",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": false,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "missing-liquid:sku",
+            "offer_id": "missing-liquid",
+            "url": "https://fixture.example.test/missing-liquid",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "missing-liquid:price_rub",
+            "offer_id": "missing-liquid",
+            "url": "https://fixture.example.test/missing-liquid",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "missing-liquid:stock",
+            "offer_id": "missing-liquid",
+            "url": "https://fixture.example.test/missing-liquid",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "missing-liquid:region",
+            "offer_id": "missing-liquid",
+            "url": "https://fixture.example.test/missing-liquid",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "missing-liquid:condition",
+            "offer_id": "missing-liquid",
+            "url": "https://fixture.example.test/missing-liquid",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "missing-liquid:seller_checked",
+            "offer_id": "missing-liquid",
+            "url": "https://fixture.example.test/missing-liquid",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "missing-liquid:factory_liquid",
+            "offer_id": "missing-liquid",
+            "url": "https://fixture.example.test/missing-liquid",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "missing-liquid:global_advance_required",
+            "offer_id": "missing-liquid",
+            "url": "https://fixture.example.test/missing-liquid",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "missing-liquid:postpay_route",
+            "offer_id": "missing-liquid",
+            "url": "https://fixture.example.test/missing-liquid",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "postpay_route",
+            "value": "confirmed_applicable",
+            "origin": "seller_statement",
+            "synthetic": true
+          }
+        ],
+        "postpay": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "missing-liquid:postpay_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": true,
+        "passed_routes": [
+          "postpay"
+        ],
+        "eligibility": "excluded",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "unknown-price",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/unknown-price",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": null,
+        "currency": "RUB",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "unknown-price:sku",
+            "offer_id": "unknown-price",
+            "url": "https://fixture.example.test/unknown-price",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-price:stock",
+            "offer_id": "unknown-price",
+            "url": "https://fixture.example.test/unknown-price",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-price:region",
+            "offer_id": "unknown-price",
+            "url": "https://fixture.example.test/unknown-price",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-price:condition",
+            "offer_id": "unknown-price",
+            "url": "https://fixture.example.test/unknown-price",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-price:seller_checked",
+            "offer_id": "unknown-price",
+            "url": "https://fixture.example.test/unknown-price",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-price:factory_liquid",
+            "offer_id": "unknown-price",
+            "url": "https://fixture.example.test/unknown-price",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-price:global_advance_required",
+            "offer_id": "unknown-price",
+            "url": "https://fixture.example.test/unknown-price",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "unknown-price:postpay_route",
+            "offer_id": "unknown-price",
+            "url": "https://fixture.example.test/unknown-price",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "postpay_route",
+            "value": "confirmed_applicable",
+            "origin": "seller_statement",
+            "synthetic": true
+          }
+        ],
+        "postpay": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "unknown-price:postpay_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": true,
+        "passed_routes": [
+          "postpay"
+        ],
+        "eligibility": "excluded",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "wrong-currency",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "avito",
+        "url": "https://fixture.example.test/wrong-currency",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "USD",
+        "stock": "preorder",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "wrong-currency:sku",
+            "offer_id": "wrong-currency",
+            "url": "https://fixture.example.test/wrong-currency",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "wrong-currency:price_rub",
+            "offer_id": "wrong-currency",
+            "url": "https://fixture.example.test/wrong-currency",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "wrong-currency:stock",
+            "offer_id": "wrong-currency",
+            "url": "https://fixture.example.test/wrong-currency",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "preorder",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "wrong-currency:region",
+            "offer_id": "wrong-currency",
+            "url": "https://fixture.example.test/wrong-currency",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "wrong-currency:condition",
+            "offer_id": "wrong-currency",
+            "url": "https://fixture.example.test/wrong-currency",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "wrong-currency:seller_checked",
+            "offer_id": "wrong-currency",
+            "url": "https://fixture.example.test/wrong-currency",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "wrong-currency:factory_liquid",
+            "offer_id": "wrong-currency",
+            "url": "https://fixture.example.test/wrong-currency",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "wrong-currency:global_advance_required",
+            "offer_id": "wrong-currency",
+            "url": "https://fixture.example.test/wrong-currency",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "seller_statement",
+            "synthetic": true
+          },
+          {
+            "id": "wrong-currency:postpay_route",
+            "offer_id": "wrong-currency",
+            "url": "https://fixture.example.test/wrong-currency",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "postpay_route",
+            "value": "confirmed_applicable",
+            "origin": "seller_statement",
+            "synthetic": true
+          }
+        ],
+        "postpay": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "wrong-currency:postpay_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": true,
+        "passed_routes": [
+          "postpay"
+        ],
+        "eligibility": "excluded",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "snippet",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "snippet",
+        "url": "https://fixture.example.test/snippet",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "in_stock",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "snippet:sku",
+            "offer_id": "snippet",
+            "url": "https://fixture.example.test/snippet",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "search_snippet",
+            "synthetic": true
+          },
+          {
+            "id": "snippet:price_rub",
+            "offer_id": "snippet",
+            "url": "https://fixture.example.test/snippet",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "search_snippet",
+            "synthetic": true
+          },
+          {
+            "id": "snippet:stock",
+            "offer_id": "snippet",
+            "url": "https://fixture.example.test/snippet",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "in_stock",
+            "origin": "search_snippet",
+            "synthetic": true
+          },
+          {
+            "id": "snippet:region",
+            "offer_id": "snippet",
+            "url": "https://fixture.example.test/snippet",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "search_snippet",
+            "synthetic": true
+          },
+          {
+            "id": "snippet:condition",
+            "offer_id": "snippet",
+            "url": "https://fixture.example.test/snippet",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "search_snippet",
+            "synthetic": true
+          },
+          {
+            "id": "snippet:seller_checked",
+            "offer_id": "snippet",
+            "url": "https://fixture.example.test/snippet",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "search_snippet",
+            "synthetic": true
+          },
+          {
+            "id": "snippet:factory_liquid",
+            "offer_id": "snippet",
+            "url": "https://fixture.example.test/snippet",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "search_snippet",
+            "synthetic": true
+          },
+          {
+            "id": "snippet:global_advance_required",
+            "offer_id": "snippet",
+            "url": "https://fixture.example.test/snippet",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "search_snippet",
+            "synthetic": true
+          },
+          {
+            "id": "snippet:postpay_route",
+            "offer_id": "snippet",
+            "url": "https://fixture.example.test/snippet",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "postpay_route",
+            "value": "confirmed_applicable",
+            "origin": "search_snippet",
+            "synthetic": true
+          }
+        ],
+        "postpay": {
+          "status": "confirmed_applicable",
+          "covers_item": true,
+          "covers_amount": true,
+          "covers_region": true,
+          "covers_order": true,
+          "external_advance_required": false,
+          "evidence_ids": [
+            "snippet:postpay_route"
+          ],
+          "reason": "synthetic transaction-specific confirmation"
+        }
+      },
+      "expected": {
+        "payment_gate_passed": false,
+        "passed_routes": [],
+        "eligibility": "candidate",
+        "eligible": false
+      }
+    },
+    {
+      "offer": {
+        "id": "gpu-verified",
+        "product": "gpu",
+        "sku": "G5090-32SLC",
+        "title": "G5090-32SLC",
+        "source": "store",
+        "url": "https://fixture.example.test/gpu-verified",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "in_stock",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": true,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "gpu-verified:sku",
+            "offer_id": "gpu-verified",
+            "url": "https://fixture.example.test/gpu-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "G5090-32SLC",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "gpu-verified:price_rub",
+            "offer_id": "gpu-verified",
+            "url": "https://fixture.example.test/gpu-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "gpu-verified:stock",
+            "offer_id": "gpu-verified",
+            "url": "https://fixture.example.test/gpu-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "in_stock",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "gpu-verified:region",
+            "offer_id": "gpu-verified",
+            "url": "https://fixture.example.test/gpu-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "gpu-verified:condition",
+            "offer_id": "gpu-verified",
+            "url": "https://fixture.example.test/gpu-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "gpu-verified:seller_checked",
+            "offer_id": "gpu-verified",
+            "url": "https://fixture.example.test/gpu-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "gpu-verified:factory_liquid",
+            "offer_id": "gpu-verified",
+            "url": "https://fixture.example.test/gpu-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "true",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "gpu-verified:global_advance_required",
+            "offer_id": "gpu-verified",
+            "url": "https://fixture.example.test/gpu-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "store_card",
+            "synthetic": true
+          }
+        ]
+      },
+      "expected": {
+        "payment_gate_passed": false,
+        "passed_routes": [],
+        "eligibility": "verified",
+        "eligible": true
+      }
+    },
+    {
+      "offer": {
+        "id": "ram-verified",
+        "product": "ram",
+        "sku": "F5-6000J3036F48GX2-TZ5NR",
+        "title": "F5-6000J3036F48GX2-TZ5NR",
+        "source": "store",
+        "url": "https://fixture.example.test/ram-verified",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "in_stock",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": false,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "ram-verified:sku",
+            "offer_id": "ram-verified",
+            "url": "https://fixture.example.test/ram-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "F5-6000J3036F48GX2-TZ5NR",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "ram-verified:price_rub",
+            "offer_id": "ram-verified",
+            "url": "https://fixture.example.test/ram-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "ram-verified:stock",
+            "offer_id": "ram-verified",
+            "url": "https://fixture.example.test/ram-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "in_stock",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "ram-verified:region",
+            "offer_id": "ram-verified",
+            "url": "https://fixture.example.test/ram-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "ram-verified:condition",
+            "offer_id": "ram-verified",
+            "url": "https://fixture.example.test/ram-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "ram-verified:seller_checked",
+            "offer_id": "ram-verified",
+            "url": "https://fixture.example.test/ram-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "ram-verified:factory_liquid",
+            "offer_id": "ram-verified",
+            "url": "https://fixture.example.test/ram-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "false",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "ram-verified:global_advance_required",
+            "offer_id": "ram-verified",
+            "url": "https://fixture.example.test/ram-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "store_card",
+            "synthetic": true
+          }
+        ]
+      },
+      "expected": {
+        "payment_gate_passed": false,
+        "passed_routes": [],
+        "eligibility": "verified",
+        "eligible": true
+      }
+    },
+    {
+      "offer": {
+        "id": "mouse-verified",
+        "product": "mouse",
+        "sku": "Logitech G PRO X2 SUPERSTRIKE",
+        "title": "Logitech G PRO X2 SUPERSTRIKE",
+        "source": "store",
+        "url": "https://fixture.example.test/mouse-verified",
+        "observed_at": "2026-10-11T10:00:00Z",
+        "synthetic": true,
+        "price_rub": 100000,
+        "currency": "RUB",
+        "stock": "in_stock",
+        "region": "Москва",
+        "condition": "new",
+        "seller_checked": true,
+        "factory_liquid": false,
+        "global_advance_required": false,
+        "global_payment_conflict": false,
+        "optional_risky_alternative": false,
+        "evidence": [
+          {
+            "id": "mouse-verified:sku",
+            "offer_id": "mouse-verified",
+            "url": "https://fixture.example.test/mouse-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "sku",
+            "value": "Logitech G PRO X2 SUPERSTRIKE",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "mouse-verified:price_rub",
+            "offer_id": "mouse-verified",
+            "url": "https://fixture.example.test/mouse-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "price_rub",
+            "value": "100000",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "mouse-verified:stock",
+            "offer_id": "mouse-verified",
+            "url": "https://fixture.example.test/mouse-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "stock",
+            "value": "in_stock",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "mouse-verified:region",
+            "offer_id": "mouse-verified",
+            "url": "https://fixture.example.test/mouse-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "region",
+            "value": "Москва",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "mouse-verified:condition",
+            "offer_id": "mouse-verified",
+            "url": "https://fixture.example.test/mouse-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "condition",
+            "value": "new",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "mouse-verified:seller_checked",
+            "offer_id": "mouse-verified",
+            "url": "https://fixture.example.test/mouse-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "seller_checked",
+            "value": "true",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "mouse-verified:factory_liquid",
+            "offer_id": "mouse-verified",
+            "url": "https://fixture.example.test/mouse-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "factory_liquid",
+            "value": "false",
+            "origin": "store_card",
+            "synthetic": true
+          },
+          {
+            "id": "mouse-verified:global_advance_required",
+            "offer_id": "mouse-verified",
+            "url": "https://fixture.example.test/mouse-verified",
+            "observed_at": "2026-10-11T10:00:00Z",
+            "field": "global_advance_required",
+            "value": "false",
+            "origin": "store_card",
+            "synthetic": true
+          }
+        ]
+      },
+      "expected": {
+        "payment_gate_passed": false,
+        "passed_routes": [],
+        "eligibility": "verified",
+        "eligible": true
+      }
+    }
+  ]
+}

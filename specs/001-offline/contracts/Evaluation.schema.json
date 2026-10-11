@@ -1,0 +1,91 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "offer_id": {
+      "title": "Offer Id",
+      "type": "string"
+    },
+    "evaluated_at": {
+      "format": "date-time",
+      "title": "Evaluated At",
+      "type": "string"
+    },
+    "exact_sku": {
+      "title": "Exact Sku",
+      "type": "boolean"
+    },
+    "payment_gate_passed": {
+      "title": "Payment Gate Passed",
+      "type": "boolean"
+    },
+    "passed_routes": {
+      "items": {
+        "enum": [
+          "protected",
+          "postpay"
+        ],
+        "type": "string"
+      },
+      "title": "Passed Routes",
+      "type": "array"
+    },
+    "eligibility": {
+      "enum": [
+        "verified",
+        "conditional",
+        "manual",
+        "excluded",
+        "candidate"
+      ],
+      "title": "Eligibility",
+      "type": "string"
+    },
+    "eligible": {
+      "title": "Eligible",
+      "type": "boolean"
+    },
+    "label": {
+      "title": "Label",
+      "type": "string"
+    },
+    "reasons": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Reasons",
+      "type": "array"
+    },
+    "evidence_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence Ids",
+      "type": "array"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "offer_id",
+    "evaluated_at",
+    "exact_sku",
+    "payment_gate_passed",
+    "passed_routes",
+    "eligibility",
+    "eligible",
+    "label",
+    "reasons",
+    "evidence_ids",
+    "synthetic"
+  ],
+  "title": "Evaluation",
+  "type": "object"
+}

@@ -1,0 +1,10 @@
+.venv/
+.tools/
+.worktrees/
+artifacts/
+.specify/workflows/runs/
+__pycache__/
+.pytest_cache/
+.hypothesis/
+.ruff_cache/
+*.egg-info/
