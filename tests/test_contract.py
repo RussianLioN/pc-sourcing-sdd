@@ -3,9 +3,9 @@ from datetime import timedelta
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
-from pc_sourcing.evaluate import evaluate
 from pydantic import ValidationError
 
+from pc_sourcing.evaluate import evaluate
 from pc_sourcing.models import Evaluation, Evidence, Offer
 
 

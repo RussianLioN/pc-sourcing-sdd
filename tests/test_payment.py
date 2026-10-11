@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
-from pc_sourcing.evaluate import evaluate
 
+from pc_sourcing.evaluate import evaluate
 from pc_sourcing.models import Offer
 
 GOLDEN = json.loads((Path(__file__).resolve().parents[1] / "fixtures/golden.json").read_text())

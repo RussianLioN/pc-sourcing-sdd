@@ -7,6 +7,7 @@ import os
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -39,6 +40,8 @@ cmd = [
     "--ephemeral",
     "--sandbox",
     sandbox,
+    "--model",
+    PIN["model"],
     "-c",
     'approval_policy="never"',
     "-c",
@@ -56,8 +59,7 @@ env = os.environ.copy()
 for name in list(env):
     if name.endswith("API_KEY") or name.startswith("SPECKIT_INTEGRATION_"):
         env.pop(name, None)
-env["TMPDIR"] = str(out / "tmp")
-Path(env["TMPDIR"]).mkdir()
+env["TMPDIR"] = tempfile.mkdtemp(prefix="pc-" + mode + "-")
 env["PYTHONDONTWRITEBYTECODE"] = "1"
 start = time.monotonic()
 record = {
@@ -66,6 +68,7 @@ record = {
     "sandbox": sandbox,
     "executable": str(real),
     "version": PIN["version"],
+    "model": PIN["model"],
     "cwd": str(cwd),
     "argv_without_prompt": cmd[:-1],
     "prompt_sha256": hashlib.sha256(args[1].encode()).hexdigest(),

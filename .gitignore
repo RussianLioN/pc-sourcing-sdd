@@ -8,3 +8,4 @@ __pycache__/
 .hypothesis/
 .ruff_cache/
 *.egg-info/
+.specify/workflows/coordinator.lock

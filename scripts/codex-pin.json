@@ -1,5 +1,7 @@
 {
   "executable": "/opt/homebrew/Caskroom/codex/0.157.1/bin/codex",
   "sha256": "27ceb5f9b957b43a519efe4eaa3816a0bffb0a531a2c89af18840c0a3c016a7d",
-  "version": "0.157.1"
+  "version": "0.157.1",
+  "model": "gpt-6-astra",
+  "initial_writer_model_evidence": "artifacts/workers/writer-1791711139777498000/stderr.log"
 }

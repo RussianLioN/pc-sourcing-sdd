@@ -1,6 +1,7 @@
 """Coordinator-only scope gate: base commit comes from coordinator task."""
 
 import argparse
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -9,6 +10,19 @@ from pathlib import Path
 def check(task_path, worktree):
     task = json.loads(Path(task_path).read_text())
     base = task["base_commit"]
+    if task.get("status") != "ready":
+        raise SystemExit("BLOCKED task not ready")
+    spec = Path(worktree) / "specs/001-offline/spec.md"
+    if hashlib.sha256(spec.read_bytes()).hexdigest() != task["spec_sha256"]:
+        raise SystemExit("BLOCKED task spec hash stale")
+    if task["spec_revision"] != "1.0.0":
+        raise SystemExit("BLOCKED task spec revision unsupported")
+    for dependency in task["dependencies"]:
+        receipt = (
+            Path(task["coordinator_root"]) / "artifacts/task-receipts" / (dependency + ".json")
+        )
+        if not receipt.exists() or json.loads(receipt.read_text()).get("status") != "passed":
+            raise SystemExit("BLOCKED unmet task dependency: " + dependency)
 
     def git(*args):
         return subprocess.check_output(["git", "-C", str(worktree), *args], text=True).strip()
