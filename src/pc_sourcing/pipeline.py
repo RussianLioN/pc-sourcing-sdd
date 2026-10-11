@@ -22,6 +22,28 @@ def _json(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, allow_nan=False)
 
 
+def _validate_unicode(row):
+    # Проверяем и неизвестные поля до построения диагностик модели. Обход без
+    # рекурсии не добавляет ограничения глубины к уже декодированному JSON.
+    pending = [row]
+    while pending:
+        value = pending.pop()
+        if isinstance(value, str):
+            try:
+                value.encode("utf-8")
+            except UnicodeEncodeError as exc:
+                # Не включаем исходную строку: сама причина должна быть пригодна
+                # для SQLite и отчёта. Корректную пару JSON уже превратил в символ.
+                raise ValueError(
+                    f"Недопустимый Unicode: непарный суррогат U+{ord(value[exc.start]):04X}"
+                ) from exc
+        elif isinstance(value, dict):
+            pending.extend(value.keys())
+            pending.extend(value.values())
+        elif isinstance(value, list):
+            pending.extend(value)
+
+
 class _OversizedInteger:
     """Маркер числа без преобразования в строковое поле или большой int."""
 
@@ -149,11 +171,12 @@ def run(input_path, db_path, report_path, *, as_of, run_id) -> dict:
     fingerprint = _fingerprint(raw, as_of)
     pairs, rejections, seen = [], [], set()
     for index, (row, serialized) in enumerate(rows):
-        row_id = row.get("id") if isinstance(row, dict) else None
-        duplicate = isinstance(row_id, str) and row_id in seen
-        if isinstance(row_id, str):
-            seen.add(row_id)
         try:
+            _validate_unicode(row)
+            row_id = row.get("id") if isinstance(row, dict) else None
+            duplicate = isinstance(row_id, str) and row_id in seen
+            if isinstance(row_id, str):
+                seen.add(row_id)
             if duplicate:
                 raise ValueError(f"Повторный идентификатор: {row_id}")
             offer = Offer.model_validate(row)
