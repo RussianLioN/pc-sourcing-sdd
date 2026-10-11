@@ -28,3 +28,9 @@ sets workspace-write/read-only explicitly and applies wall-time termination.
 Runner resume is only paused/failed, with project advisory exclusive lock.
 A killed running coordinator is blocked, never reported recovered by editing
 state.json. Recovery from a running state requires a new task after audit.
+
+Verifier execution uses a private /tmp scratch as workspace-write root to
+permit pytest temporary files. Project remains outside writable roots and
+read-only; scripts/verify_readonly.py tests this before review. Direct
+read-only mode was tested and blocked pytest before collection. Global
+security settings are not changed and no bypass is used.

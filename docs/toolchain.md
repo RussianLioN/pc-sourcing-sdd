@@ -36,3 +36,9 @@ on the payment corpus and protected-snapshot rejection probes. Official
 Spec Kit skills bundled with release are installed repo-locally and relevant
 constitution/specify/plan/tasks/implement/converge files explicitly read.
 No new third-party plugin, API key, subscription or permanent authorization.
+
+Verifier execution uses a private /tmp scratch as workspace-write root to
+permit pytest temporary files. Project remains outside writable roots and
+read-only; scripts/verify_readonly.py tests this before review. Direct
+read-only mode was tested and blocked pytest before collection. Global
+security settings are not changed and no bypass is used.
