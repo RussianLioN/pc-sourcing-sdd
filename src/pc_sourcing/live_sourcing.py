@@ -298,7 +298,8 @@ def run(
             html = reader.read(row.url, now)
             result = parse_card(request, row, html, datetime.now(UTC))
         except AccessBlocked as exc:
-            avito = urlsplit_host(row.url).endswith("avito.ru")
+            host = urlsplit_host(row.url)
+            avito = host == "avito.ru" or host.endswith(".avito.ru")
             result = Observation(
                 candidate=row,
                 status="blocked",

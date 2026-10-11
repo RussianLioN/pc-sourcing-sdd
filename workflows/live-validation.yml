@@ -6,7 +6,7 @@ workflow:
 steps:
   - id: quality
     type: shell
-    run: ".venv/bin/python scripts/quality.py --out artifacts/T009/workflow-quality"
+    run: ".venv/bin/python scripts/live_quality.py"
     timeout: 480
   - id: scope
     type: shell

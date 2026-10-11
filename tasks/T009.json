@@ -23,7 +23,8 @@
     "docs/live-quickstart.md",
     "scripts/live_scope.py",
     "workflows/live-validation.yml",
-    "scripts/live_check_workflow.py"
+    "scripts/live_check_workflow.py",
+    "scripts/live_quality.py"
   ],
   "protected_files": [
     ".agents/skills/pc-cloud-setup/SKILL.md",
@@ -163,5 +164,5 @@
   ],
   "reviewer": "separate parent-assigned task",
   "authority": "User authorizes additive live product stage, commits and feature branch push; supersedes historical worker no-commit/no-live only within new task.",
-  "workflow_sha256": "b6884c4d909c9d6952060f9a17cd78819d6bf2deb8956375dbd9abbacc375110"
+  "workflow_sha256": "9fcff7bf4e973a4f8ada8e214f93ef0d9193f3977da0298ac75b2debceb0a1b5"
 }

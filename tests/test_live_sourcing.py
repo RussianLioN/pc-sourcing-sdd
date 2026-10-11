@@ -227,3 +227,10 @@ def test_visible_price_conflict_is_unknown():
 def test_matching_visible_price_retained():
     result = parse_card(GPU, candidate(), card() + "Цена: 450 000 ₽", NOW)
     assert result.price_rub == 450000
+
+
+def test_avito_lookalike_is_not_platform(tmp_path):
+    data = run(
+        GPU, tmp_path / "lookalike", envelopes=envelopes("https://fakeavito.ru/item"), now=NOW
+    )
+    assert data["observations"][0]["label"] != "требует ручной проверки"
