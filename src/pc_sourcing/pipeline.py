@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sqlite3
 import tempfile
 from datetime import datetime
@@ -18,6 +19,26 @@ from pc_sourcing.models import Offer
 
 def _json(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, allow_nan=False)
+
+
+def _input_rows(raw):
+    def reject_constant(value):
+        raise ValueError(f"Недопустимая константа JSON: {value}")
+
+    text = raw.decode(json.detect_encoding(raw))
+    decoder = json.JSONDecoder(parse_constant=reject_constant)
+    # Сначала проверяем весь документ, включая разделители и остаток после списка.
+    rows = decoder.decode(text)
+    if not isinstance(rows, list):
+        raise ValueError("Вход JSON должен быть списком предложений")
+    whitespace = re.compile(r"[ \t\n\r]*")
+    cursor = whitespace.match(text, 0).end() + 1
+    for row in rows:
+        start = whitespace.match(text, cursor).end()
+        _, end = decoder.raw_decode(text, start)
+        # Срез сохраняет исходные числовые токены, даже если float переполнился.
+        yield row, text[start:end]
+        cursor = whitespace.match(text, end).end() + 1
 
 
 def _fingerprint(raw, as_of):
@@ -104,13 +125,10 @@ def run(input_path, db_path, report_path, *, as_of, run_id) -> dict:
     ):
         raise ValueError("Ввод, база и отчёт должны быть разными файлами")
     raw = inp.read_bytes()
-    rows = json.loads(raw)
-    if not isinstance(rows, list):
-        raise ValueError("Вход JSON должен быть списком предложений")
+    rows = _input_rows(raw)
     fingerprint = _fingerprint(raw, as_of)
     pairs, rejections, seen = [], [], set()
-    for index, row in enumerate(rows):
-        serialized = _json(row)
+    for index, (row, serialized) in enumerate(rows):
         row_id = row.get("id") if isinstance(row, dict) else None
         duplicate = isinstance(row_id, str) and row_id in seen
         if isinstance(row_id, str):

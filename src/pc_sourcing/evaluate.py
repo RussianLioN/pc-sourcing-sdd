@@ -59,7 +59,9 @@ def evaluate(offer: Offer, as_of: datetime) -> Evaluation:
             reasons.append(f"{name}: полная применимость подтверждена; {route.reason}")
 
     global_ok = True
-    if offer.global_payment_conflict:
+    if offer.global_payment_conflict or any(
+        e.field == "global_payment_conflict" and e.value == "true" for e in current
+    ):
         reasons.append("Глобальный конфликт условий оплаты")
         global_ok = False
     if offer.global_advance_required is not False or not confirmed(
