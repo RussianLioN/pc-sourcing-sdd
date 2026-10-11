@@ -199,8 +199,7 @@ def read_record(path, role, task_id, binding, current, profile, expected_quality
     )
     evidence = data["evidence"]
     require(bool(evidence), "evidence missing")
-    for name, expected in evidence.items():
-        require(sha(artifact_path(path.parent, name)) == expected, "evidence hash differs: " + name)
+    evidence_preflight(path)
     for name in (
         "quality/manifest.json",
         "quality/tests.xml",
@@ -239,6 +238,25 @@ def read_record(path, role, task_id, binding, current, profile, expected_quality
         "repeat evidence differs",
     )
     return data
+
+
+def evidence_preflight(record_path):
+    """Check local evidence bytes only; this cannot grant acceptance or test a network route."""
+    path = Path(record_path).resolve()
+    evidence = json.loads(path.read_text())["evidence"]
+    require(isinstance(evidence, dict) and bool(evidence), "evidence missing")
+    paths = {name: artifact_path(path.parent, name) for name in evidence}
+    missing = sorted(name for name, local in paths.items() if not local.is_file())
+    require(
+        not missing,
+        "BLOCKED evidence bytes unavailable: "
+        + ", ".join(missing)
+        + "; preserve the complete evidence directory via an approved transfer; "
+        "record hashes alone cannot establish acceptance",
+    )
+    for name, local in paths.items():
+        require(sha(local) == evidence[name], "evidence hash differs: " + name)
+    return {"status": "available", "files": len(paths), "acceptance": "not evaluated"}
 
 
 def reference(path):
@@ -584,6 +602,8 @@ def finalize(
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="action", required=True)
+    preflight = sub.add_parser("evidence-preflight", help="local byte readiness; never acceptance")
+    preflight.add_argument("--record", required=True)
     for action in ("collect", "finalize", "check"):
         command = sub.add_parser(action)
         command.add_argument("--expected-sha", required=True)
@@ -606,8 +626,11 @@ def main():
                     command.add_argument("--" + name, required=True)
     args = vars(parser.parse_args())
     action = args.pop("action")
-    expected = args.pop("expected_sha")
     try:
+        if action == "evidence-preflight":
+            print(json.dumps(evidence_preflight(args["record"])))
+            return 0
+        expected = args.pop("expected_sha")
         if action == "collect":
             return collect(ROOT, expected=expected, **args)
         if action == "finalize":

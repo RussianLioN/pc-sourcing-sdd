@@ -352,3 +352,33 @@ def test_actual_checker_cli_nonzero_for_wrong_sha(bundle):
     )
     assert result.returncode == 1
     assert json.loads(result.stdout)["status"] == "blocked"
+
+
+def test_evidence_preflight_lists_missing_bytes_without_acceptance(tmp_path):
+    record = tmp_path / "record.json"
+    write_json(record, {"evidence": {"b.log": "0" * 64, "a.log": "0" * 64}})
+    with pytest.raises(native.AcceptanceError, match="a.log, b.log"):
+        native.evidence_preflight(record)
+    assert not (tmp_path / "manifest.json").exists()
+
+
+def test_evidence_preflight_checks_bytes_and_rejects_tampering(tmp_path):
+    artifact = tmp_path / "check.log"
+    artifact.write_text("synthetic local evidence")
+    record = tmp_path / "record.json"
+    write_json(record, {"evidence": {"check.log": native.sha(artifact)}})
+    assert native.evidence_preflight(record) == {
+        "status": "available",
+        "files": 1,
+        "acceptance": "not evaluated",
+    }
+    artifact.write_text("tampered")
+    with pytest.raises(native.AcceptanceError, match="evidence hash differs"):
+        native.evidence_preflight(record)
+
+
+def test_evidence_preflight_rejects_escape(tmp_path):
+    record = tmp_path / "record.json"
+    write_json(record, {"evidence": {"../outside": "0" * 64}})
+    with pytest.raises(native.AcceptanceError, match="escapes"):
+        native.evidence_preflight(record)

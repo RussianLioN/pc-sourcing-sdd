@@ -6,6 +6,39 @@ Read ADR-0001, specs/003-native-cloud/{spec,plan,acceptance-profile}.md/json
 and tasks/T008.json before proceeding. The profile is user-authorized for
 future native cloud tasks only. T007 remains unaccepted, unchanged.
 
+## Evidence delivery readiness before launching tasks
+
+The parent owns delivery and consolidation. Choose the finalizer checkout and
+an existing approved private transfer capability before expensive role runs.
+Check its documented contract and, only where permitted, perform a small
+non-sensitive end-to-end transfer to that finalizer. Record the observed result,
+not just upload success or returned metadata. No route test is allowed after an
+access denial without explicit authorization. If delivery is untested or blocked,
+report acceptance delivery as blocked; local role checks may still be preserved
+but cannot be called acceptance. Keep original executors/evidence available until
+consolidation succeeds where the platform permits retention.
+
+Library can supply a workspace path or a short-lived signed download URL.
+Preparation and private storage do not prove the finalizer can download bytes.
+Separate executors' absolute paths are not shared storage. A proxy CONNECT 403
+is a tunnel denial before the origin response; it does not identify the denying
+rule, prove an allowlist omission, or prove an expired URL. Stop on denial,
+retain safe metadata, and request platform diagnosis without credentials or URLs.
+Do not change proxy, identity, or transport to evade it.
+
+Immediately after each permitted transfer, before shutting down its source,
+validate the complete preserved directory locally:
+
+```sh
+.venv/bin/python scripts/native_cloud.py evidence-preflight --record "$LOCAL_RECORD"
+```
+
+Run this for writer and reviewer in the intended finalizer. It lists missing
+referenced files and verifies hashes, with no network access or acceptance
+receipt. It cannot authenticate tasks, validate review, or replace finalize/check.
+Library is a delivery option, not a profile requirement; all referenced bytes
+and the unchanged final gate remain mandatory regardless of approved transport.
+
 ## Writer and reviewer commands
 
 The parent supplies the full published code SHA and real cloud task/environment
@@ -134,3 +167,39 @@ task deadline is asserted. Clean before/after detects final changes, not tempora
 writes. Required server-side checks are not confirmed: acceptance is a managed
 process, not an enforced merge block. There are no new credentials, security or
 network changes; live Avito, purchasing and seller contact remain out of scope.
+
+## RCA iteration: delivery and evidence lifetime
+
+The verified process gap was late delivery readiness: seven role checks cover
+application behavior and checkout integrity, not a finalizer's ability to obtain
+bytes from another executor. Successful role checks alone therefore cannot
+establish acceptance. Library preparation can return metadata without placing
+local bytes; a signed URL is not proof of successful delivery. A reported proxy
+tunnel denial does not identify the denying policy. No denied transfer was retried
+in this RCA iteration, and no network or credential settings were changed.
+
+A manifest stores absolute paths to records, review and provenance. It is a
+receipt for that materialized layout, not a self-contained portable archive.
+Preserve the complete evidence directories and receipts privately, including
+relative names and hashes. Saving only the manifest does not preserve the bytes
+needed by check after an executor closes. Do not edit old records or manifests
+to claim recovery. If an approved transfer relocates preserved evidence, use
+finalize to create a new manifest against the actual local layout, then run check
+at the same exact code SHA and contract with verified parent provenance. Keep the
+old receipt as history. This works only with every required byte and valid review;
+it cannot transfer acceptance to a different code SHA.
+
+Local evidence-preflight verifies only files already present and their hashes.
+It has not demonstrated a real transfer between executors. Real delivery readiness
+and later rechecking after environment closure remain unverified until observed
+through a permitted route. A blocked route remains blocked; an offline process
+fix cannot repair or authorize platform network policy.
+
+RCA patch validation: bootstrap and bootstrap --check passed; 357 pytest tests
+passed, including missing bytes, tampering and directory escape regressions;
+Ruff check/format, T008 scope and diff whitespace checks passed. These are local
+implementation checks, not independent same-SHA acceptance. Every new published
+commit needs fresh role evidence and independent review. Original T007 status,
+contract/profile and protected baseline are unchanged. Detailed incident IDs,
+private artifact identifiers and executor diagnostics are retained privately and
+excluded from this public handoff.
