@@ -6,7 +6,11 @@ Read the task JSON and `specs/001-offline/plan.md`. Check its base commit,
 spec revision, dependencies and owned files. Compare golden, contract and
 acceptance-test files against base Git blobs in the coordinator checkout,
 outside the worker's writable cwd. Reject scope or protected-file changes;
-a worker-written digest is not approval. Run `scripts/verify_scope.py`.
+a worker-written digest is not approval. Run `scripts/verify_scope.py tasks/T002.json .` for the common snapshot.
+T001 and T003 are historical writer-only scopes; apply them only to their
+assigned worktrees. Integration includes separately owned coordinator files.
+Original golden/schema files are byte-protected; original test behavior
+is AST-checked, ignoring only coordinator-approved import ordering.
 Run unit/contract/property suites on the integrated commit using a unique
 temporary DB. Compare the same Evaluation in DB, report and verified list.
 Record spec/fixture/test hashes, exact commit, commands and exits. Read-only

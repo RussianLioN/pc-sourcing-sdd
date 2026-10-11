@@ -8,7 +8,9 @@
   "spec_sha256": "1c788cc7e777571f587b855860f3d63f351db9b509db67b05e8d1657cc206432",
   "dependencies": [],
   "owned_files": [
+    ".agents/skills/pc-snapshot-check/SKILL.md",
     ".gitignore",
+    "README.md",
     "docs/defects.md",
     "docs/pilot-results.md",
     "docs/toolchain.md",
@@ -24,6 +26,7 @@
     "scripts/verify_readonly.py",
     "scripts/verify_scope.py",
     "sources/access-registry.json",
+    "specs/001-offline/methodology.md",
     "specs/001-offline/plan.md",
     "specs/001-offline/tasks.md",
     "specs/001-offline/traceability.md",

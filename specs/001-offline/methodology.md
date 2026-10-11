@@ -34,3 +34,13 @@ Killed coordinator leaves running state, which Spec Kit cannot resume.
 Never edit state to manufacture recovery; inspect processes and start a new
 audited task. Shell steps execute with current user rights: use only reviewed
 fixed commands, never interpolate offer/agent text into shell commands.
+
+Final verification writes only to a private /tmp scratch; project code remains
+read-only to verifier. Direct read-only sandbox was observed to block pytest
+temp files; a separate scratch root solved this without making project code
+writable. The actual negative project-write probe is required in review.
+Use T002 for integrated scope, T001/T003 only for historical worker scopes.
+Original golden/schema Git blobs and original test AST assertions remain
+protected. Final receipt is validated by scripts/check_acceptance.py; readable
+summary is generated from stored Evaluation, not a second eligibility formula.
+Final accepted scope can only be this offline pilot, never production readiness.
