@@ -1,0 +1,4 @@
+#!/bin/sh
+# Spec Kit accepts an executable path, not a Python argv prefix.
+pc_worker_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd) || exit 70
+exec "$pc_worker_root/.venv/bin/python" "$pc_worker_root/scripts/codex_worker.py" "$@"

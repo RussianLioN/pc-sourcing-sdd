@@ -1,6 +1,8 @@
 # pc-sourcing-sdd
 Read `.specify/memory/constitution.md`, `specs/001-offline/spec.md`,
 `specs/001-offline/plan.md`, and the assigned task JSON before changing code.
+For T007 also read specs/002-portability/spec.md and plan.md, plus
+.agents/skills/pc-cloud-setup/SKILL.md. Old T001–T006 are historical assignments.
 Use project `.agents/skills/pc-payment-audit` for payment decisions and
 `pc-snapshot-check` for integration checks. Explicitly read their SKILL.md.
 Application: `src/pc_sourcing/`; coordinator: `scripts/`, `workflows/`.

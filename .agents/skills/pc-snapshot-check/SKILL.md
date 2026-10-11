@@ -6,7 +6,9 @@ Read the task JSON and `specs/001-offline/plan.md`. Check its base commit,
 spec revision, dependencies and owned files. Compare golden, contract and
 acceptance-test files against base Git blobs in the coordinator checkout,
 outside the worker's writable cwd. Reject scope or protected-file changes;
-a worker-written digest is not approval. Run `scripts/verify_scope.py tasks/T002.json .` for the common snapshot.
+a worker-written digest is not approval. Run `scripts/verify_scope.py tasks/T007.json .` for the current portability snapshot.
+T002 is the historical offline acceptance scope and must not approve new tooling.
+T007 pins both specs and anchors a relative coordinator root to the script repository.
 T001/T003 are historical writer-only scopes; T006 is the Unicode writer scope; apply them only to their
 assigned worktrees. Integration includes separately owned coordinator files.
 Original golden/schema files are byte-protected; original test behavior

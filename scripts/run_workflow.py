@@ -10,7 +10,18 @@ import subprocess
 import sys
 from pathlib import Path
 
+from toolchain import ToolchainError, pins, require_spec_kit
+
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def validate_workflow(path):
+    path = Path(path).resolve()
+    if not path.is_relative_to(ROOT / "workflows") or not path.is_file():
+        raise ToolchainError("only reviewed project workflow files")
+    if path.relative_to(ROOT / "workflows").as_posix() not in pins(ROOT)["allowed_workflows"]:
+        raise ToolchainError("historical or unreviewed workflow is not current dispatch")
+    return path
 
 
 def launch(action, source, inputs=(), cwd=ROOT):
@@ -21,11 +32,10 @@ def launch(action, source, inputs=(), cwd=ROOT):
         raise ValueError("unexpected integration extra args")
     if action == "run":
         path = (ROOT / source).resolve()
-        if not path.is_relative_to(ROOT / "workflows") or not path.is_file():
-            raise ValueError("only reviewed project workflow files")
-        source = str(path)
+        source = str(validate_workflow(path))
     elif not re.fullmatch(r"[a-zA-Z0-9_-]{1,64}", source):
         raise ValueError("invalid run id")
+    runner = require_spec_kit(ROOT)
     lockpath = cwd / ".specify/workflows/coordinator.lock"
     lockpath.parent.mkdir(parents=True, exist_ok=True)
     with lockpath.open("a") as lock:
@@ -38,9 +48,27 @@ def launch(action, source, inputs=(), cwd=ROOT):
                 )
             )
             return 75
+        if action == "resume":
+            state_path = cwd / ".specify/workflows/runs" / source / "state.json"
+            state = json.loads(state_path.read_text())
+            allowed_ids = set()
+            for name in pins(ROOT)["allowed_workflows"]:
+                text = validate_workflow(ROOT / "workflows" / name).read_text()
+                match = re.search(r'^  id: "([^"\n]+)"$', text, re.MULTILINE)
+                if match:
+                    allowed_ids.add(match.group(1))
+            if (
+                state["workflow_id"] not in allowed_ids
+                or Path(state["workflow_dir"]).resolve() != ROOT / "workflows"
+            ):
+                raise ToolchainError("historical or foreign run cannot resume as current dispatch")
+            if state["status"] not in ("paused", "failed"):
+                raise ToolchainError(
+                    "resume supports paused/failed only; inspect running crash before new task"
+                )
         env = os.environ.copy()
-        env["SPECKIT_INTEGRATION_CODEX_EXECUTABLE"] = str(ROOT / "scripts/codex_worker.py")
-        args = [str(ROOT / ".tools/spec-kit-env/bin/specify"), "workflow", action, source, "--json"]
+        env["SPECKIT_INTEGRATION_CODEX_EXECUTABLE"] = str(ROOT / "scripts/codex-worker")
+        args = [runner["executable"], "workflow", action, source, "--json"]
         for value in inputs:
             args += ["--input", value]
         proc = subprocess.Popen(args, cwd=cwd, env=env, start_new_session=True)
