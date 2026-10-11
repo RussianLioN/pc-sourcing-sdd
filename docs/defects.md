@@ -41,3 +41,7 @@ Python integer safety limits or change system security settings.
 Actual narrow repair round 2/2 is assigned to pipeline.py and an optional
 worker-owned test only. Final fresh review is mandatory; further material
 failures after this round stop the pilot as blocked rather than looping.
+
+Round 2 writer completed in 160.120s: all 136 tests, Ruff and task scope passed.
+The bounded typed integer marker preserves raw tokens and rejects numeric id;
+no global digit setting changed. Final common-snapshot review still decides acceptance.

@@ -22,14 +22,15 @@ mkdir -p artifacts/repeat
   --as-of 2026-10-11T10:00:00Z --run-id offline-repeat
 ```
 
-For a fresh full deterministic workflow evidence directory:
+Run the deterministic workflow (its output directory is artifacts/offline-workflow;
+a changed snapshot needs new evidence paths):
 
 ```bash
 .venv/bin/python scripts/run_workflow.py run workflows/offline.yml
 ```
 
 This validates the offline collector, not a new independent Codex review or
-acceptance. Actual worker workflows are `writer.yml`, `repair.yml` and
+acceptance. Actual worker workflows are `writer.yml`, `repair.yml`, `repair2.yml` and
 `verifier.yml`; do not start a second writer or blindly resume a killed run.
 
 Read `specs/001-offline/methodology.md`, `spec.md`, `plan.md`, `traceability.md`

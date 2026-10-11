@@ -1,0 +1,44 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-repair-2"
+  name: "Last bounded actual repair writer"
+  version: "1.0.0"
+inputs:
+  review:
+    type: string
+    default: ""
+steps:
+  - id: repair
+    type: prompt
+    integration: codex
+    prompt: |
+      Execute task T003-r2 from /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/tasks/T003-r2.json.
+      Read AGENTS.md, spec, docs/defects.md, existing pipeline and fixed regression
+      tests/test_review_regressions.py. Only write pipeline.py and optional
+      tests/test_repair2_worker.py. All other files, golden and expectations frozen.
+      Actual independent verifier proved that a valid JSON integer of 5000 digits
+      aborts the entire batch before rejecting its row, dropping a valid neighbor.
+      Preserve exact rejected raw JSON and the valid rows. Do not silently convert
+      numerals into strings: a numeric id must remain invalid. Preserve integer
+      conversion safety limits; do not call sys.set_int_max_str_digits or change
+      global security settings. A bounded typed marker or non-coercing decimal
+      handling may be used; no new dependencies or huge unconditional int conversion.
+      Keep JSON syntax errors explicit; preserve all current idempotency, rollback,
+      evidence, report and 1e400 behavior. Add focused tests within your owned test.
+      Run PYTHONPATH=src /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/python -m pytest -q;
+      /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/ruff check src tests;
+      /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/ruff format --check src tests.
+      Preserve initial failure and commands/exits/diff in a unique temp directory.
+      No commits, delegation, network, credentials, publication, bypass or writes
+      to coordinator. This is last repair round 2/2, 600 seconds maximum.
+      Return result and actual evidence. Stop if requirements cannot be met.
+  - id: tests
+    type: shell
+    run: "PYTHONPATH=src /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/python -m pytest -q --junitxml=artifacts/repair2-tests.xml"
+    timeout: 120
+  - id: integration
+    type: gate
+    message: "Coordinator reviews last repair diff and immutable baseline"
+    options: [approve, reject]
+    verdict_input: review
+    on_reject: abort

@@ -9,7 +9,7 @@ The final receipt is `artifacts/acceptance/manifest.json`, validated using
 hashes and real independent review. Current receipt is authoritative; historical
 green reports do not accept a changed snapshot. The readable sourcing report
 is `artifacts/acceptance/summary.md`; detailed audit is `report.md` in the same
-directory. Both are derived from the same stored Evaluation as SQLite.
+directory. Both use the same stored Offer and Evaluation as SQLite; eligibility is not recomputed.
 
 Actual initial writer: Codex CLI 0.157.1, 243.580s, 84 tests passed; protected
 baseline/scope passed. Ruff found an import classification issue; coordinator
@@ -28,6 +28,15 @@ sequentially after worker scope gate. A Mac transport outage interrupted the
 first integration attempt; reconnect confirmed it had not partially executed.
 Original repair files were actually present and copied to
 `artifacts/repair-validation`, with an archive SHA-256 manifest.
+
+Second actual verifier at 19d3fcc0bc0f2ac9167287107623a90f0d69ae71
+ran 119 tests successfully but failed an independent 5000-digit integer
+reproducer. This failed verdict is retained. Final repair round 2/2 used
+a new writer/worktree (160.120s): 136 tests, lint, format and scope passed.
+The fixed regressions reject large numeric price/id without string coercion,
+retain raw JSON and valid neighbors, and preserve Python global digit limits.
+Evidence is durably copied to artifacts/repair2-validation with hashes.
+No further repair round is authorized by this pilot budget.
 
 Final acceptance requires a new real verifier on the final common SHA and
 full regression/lint/format/scope/SQLite checks; the receipt records their
