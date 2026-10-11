@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sqlite3
+import sys
 import tempfile
 from datetime import datetime
 from html import escape
@@ -21,12 +22,31 @@ def _json(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, allow_nan=False)
 
 
+class _OversizedInteger:
+    """Маркер числа без преобразования в строковое поле или большой int."""
+
+    __slots__ = ()
+
+    def __repr__(self):
+        return "<Целое JSON превышает лимит>"
+
+
 def _input_rows(raw):
     def reject_constant(value):
         raise ValueError(f"Недопустимая константа JSON: {value}")
 
+    # Соблюдаем текущий предел и ограничиваем работу даже при отключённом извне
+    # лимите. Сам маркер не хранит токен: исходный текст сохраняется срезом ниже.
+    default_limit = sys.int_info.default_max_str_digits
+    digit_limit = min(sys.get_int_max_str_digits() or default_limit, default_limit)
+
+    def parse_integer(value):
+        if len(value) - value.startswith("-") > digit_limit:
+            return _OversizedInteger()
+        return int(value)
+
     text = raw.decode(json.detect_encoding(raw))
-    decoder = json.JSONDecoder(parse_constant=reject_constant)
+    decoder = json.JSONDecoder(parse_constant=reject_constant, parse_int=parse_integer)
     # Сначала проверяем весь документ, включая разделители и остаток после списка.
     rows = decoder.decode(text)
     if not isinstance(rows, list):
