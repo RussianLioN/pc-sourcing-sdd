@@ -1,6 +1,7 @@
 """Coordinator-only scope gate: base commit comes from coordinator task."""
 
 import argparse
+import ast
 import hashlib
 import json
 import subprocess
@@ -38,6 +39,18 @@ def check(task_path, worktree):
         )
         if (Path(worktree) / p).read_bytes() != expected:
             raise SystemExit("BLOCKED protected baseline changed: " + p)
+    for p in task.get("protected_behavior_files", []):
+        before = subprocess.check_output(
+            ["git", "-C", task["coordinator_root"], "show", f"{base}:{p}"]
+        )
+
+        def behavior(raw):
+            tree = ast.parse(raw)
+            tree.body = [n for n in tree.body if not isinstance(n, (ast.Import, ast.ImportFrom))]
+            return ast.dump(tree, include_attributes=False)
+
+        if behavior(before) != behavior((Path(worktree) / p).read_bytes()):
+            raise SystemExit("BLOCKED protected test behavior changed: " + p)
     print(json.dumps({"status": "passed", "base_commit": base, "changed_files": sorted(changed)}))
 
 

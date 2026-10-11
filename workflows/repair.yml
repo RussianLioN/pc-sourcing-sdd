@@ -1,0 +1,42 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-repair-1"
+  name: "One bounded real repair writer"
+  version: "1.0.0"
+inputs:
+  review:
+    type: string
+    default: ""
+steps:
+  - id: repair
+    type: prompt
+    integration: codex
+    prompt: |
+      Repair task T003. Read /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/tasks/T003.json,
+      AGENTS.md, constitution, spec, docs/defects.md and pc-payment-audit SKILL.md.
+      Only modify task-owned evaluate.py, pipeline.py, optional tests/test_repair_worker.py.
+      Golden fixtures, models, all existing tests and regression expectations are frozen.
+      Independent real review reproduced two bugs: current global_payment_conflict
+      evidence true is ignored if Offer field is false; valid JSON number 1e400
+      converts to infinity and _json aborts whole batch before retaining the row.
+      Fix both. Preserve valid rows and lossless raw rejected JSON number tokens;
+      do not silently stringify numeric values or remove evidence. Handle current
+      purchase-wide conflicts conservatively while preserving symmetric route OR.
+      Keep invalid entire JSON a clear error, and preserve existing idempotency,
+      rollback, report recovery and origin/time checks. No new dependency.
+      Run PYTHONPATH=src /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/python -m pytest -q;
+      /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/ruff check src tests;
+      /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/ruff format --check src tests.
+      Use separate temp artifacts. No commits, integration, delegation, network,
+      extra credentials, bypass or changes to frozen tests. Stop at 600 seconds.
+      Return diff, commands, exits and limitations; this is repair round 1/2.
+  - id: tests
+    type: shell
+    run: "PYTHONPATH=src /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/python -m pytest -q --junitxml=artifacts/repair-tests.xml"
+    timeout: 120
+  - id: integration
+    type: gate
+    message: "Coordinator validates protected baseline and repair diff"
+    options: [approve, reject]
+    verdict_input: review
+    on_reject: abort

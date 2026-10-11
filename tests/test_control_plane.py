@@ -161,3 +161,15 @@ def test_acceptance_invalidated(tmp_path, changed):
     result = subprocess.run(command, cwd=root, capture_output=True, text=True)
     assert result.returncode != 0
     assert "STALE" in result.stderr + result.stdout
+
+
+def test_protected_expectation_change_rejected_even_when_owned(tmp_path):
+    root = repository(tmp_path)
+    data = task(root)
+    data["owned_files"].append("tests/test_a.py")
+    data["protected_behavior_files"] = ["tests/test_a.py"]
+    # This syntactically valid baseline expression is changed to a new assertion.
+    (root / "tests/test_a.py").write_text("assert False\n")
+    result = scope(root, data, tmp_path)
+    assert result.returncode != 0
+    assert "protected test behavior" in result.stderr + result.stdout

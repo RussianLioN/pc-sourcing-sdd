@@ -21,6 +21,12 @@ steps:
       Use only assigned temporary directory for any reproducers. Do not edit
       code, tests, golden, spec, tasks or Git. Do not delegate, use network,
       external tools, new credentials, purchases or publishing.
+      For the integrated snapshot run .venv/bin/python scripts/verify_scope.py tasks/T002.json .
+      T001 is historical writer-only scope; T003 is repair-writer-only scope.
+      Use T002 for coordinator plus integration changes. Original goldens/contracts
+      remain byte-protected; original test behavior is AST-protected against baseline.
+      Review docs/defects.md and tests/test_review_regressions.py; reproduce fixed
+      defects independently in scratch and report any remaining in-scope violation.
       Return JSON as final response: {"verdict":"passed|failed|blocked",
       "commit":"exact git rev-parse HEAD", "checks":[{"command":"...",
       "exit_code":0}], "findings":[{"severity":"...", "file":"...",

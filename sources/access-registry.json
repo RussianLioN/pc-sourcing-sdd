@@ -1,7 +1,8 @@
 {
   "local_tavily": {
     "status": "blocked",
-    "reason": "CLI, module and environment API key absent; no secret transfer or new API"
+    "reason": "tavily/tvly CLI and module absent, no Tavily local MCP configuration or env key; current search skill refers to unavailable tavily-cli setup resource. No credentials copied or new auth initiated.",
+    "keyless_note": "current skill describes capped keyless search; route not verified without CLI/setup source"
   },
   "avito_direct": {
     "status": "blocked",
