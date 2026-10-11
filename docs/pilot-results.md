@@ -53,7 +53,7 @@ Runner experiments:
   resume refused it and its synthetic child was confirmed dead. No state edit
   was used to manufacture recovery. Use a new audited task after inspection.
 - not run: actual worker retry after death, resource timeout expiry at 600s,
-  two simultaneous writers/combined snapshot, fan-out/fan-in, loops, Converge.
+  two simultaneous writers/combined snapshot, fan-out/fan-in, Converge.
 Synthetic action probes prove orchestration, not agent product performance.
 
 Live blocked: local tvly/tavily CLI, Python module, configured Tavily MCP and
@@ -73,3 +73,11 @@ Continuation from 2575afd: actual final review blocked on DEF-006 despite
 requires Unicode-class regression repair, finite real collector loop check,
 and fresh independent review. Converge remains optional under the frozen
 product specification; no untested parallel fan-out is promised.
+
+T006 real writer completed in 150.275s; all 273 tests, Ruff and protected
+scope passed. It was sequentially integrated. A real Spec Kit do-while
+experiment completed two collector passes, with identical report bytes and
+SQLite contents; its condition stopped before the experiment safety cap.
+Trial evidence: artifacts/collector-loop-trial (run 1a25dc06). Final acceptance
+requires a repeat of this real loop at the exact final SHA and a fresh actual
+independent verifier. History and failed receipts are preserved separately.

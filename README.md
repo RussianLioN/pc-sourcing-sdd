@@ -16,9 +16,9 @@ From `/Users/s060874gmail.com/coding/projects/pc-sourcing-sdd`:
 Rerun sourcing on the retained acceptance input into **new** output paths:
 
 ```bash
-mkdir -p artifacts/repeat
+PC_REPEAT_DIR="$(mktemp -d "$PWD/artifacts/repeat.XXXXXX")"
 .venv/bin/pc-sourcing --input artifacts/acceptance/input.json \
-  --db artifacts/repeat/pilot.sqlite --report artifacts/repeat/report.md \
+  --db "$PC_REPEAT_DIR/pilot.sqlite" --report "$PC_REPEAT_DIR/report.md" \
   --as-of 2026-10-11T10:00:00Z --run-id offline-repeat
 ```
 
@@ -63,11 +63,12 @@ The required small runner-loop check uses the real collector twice, then checks
 unchanged data/report and a condition exit before its experimental safety cap:
 
 ```bash
-PC_LOOP_DIR="$PWD/artifacts/collector-loop-final" .venv/bin/python \
+PC_LOOP_DIR="$(mktemp -d "$PWD/artifacts/collector-loop.XXXXXX")" .venv/bin/python \
   scripts/run_workflow.py run workflows/collector-loop.yml
 ```
 
-Its receipt is bound to the current snapshot. For a changed snapshot use a new
+The coordinator acceptance receipt uses artifacts/collector-loop-final; the
+command above makes a fresh separate proof. Its receipt is snapshot-bound. For a changed snapshot use a new
 resource directory and preserve the old evidence; do not blindly reuse state.
 Converge is optional gap/task discovery, not an offline acceptance prerequisite.
 The autonomous coordinator continues narrow tasks across finite runs; no

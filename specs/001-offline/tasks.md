@@ -30,3 +30,7 @@ new narrow work. Final acceptance remains receipt-bound, never checkbox-only.
 - [x] T006 Actual Unicode writer; protected regression suite and scope gate
   passed (273 tests). Sequentially integrated; final independent review is
   evaluated only by the same-SHA receipt.
+
+- [x] T007 Real do-while collector trial: exactly two passes, condition exit,
+  matching report and SQLite; saved run 1a25dc06. Final same-SHA loop receipt
+  is an additional mandatory gate in finalize_acceptance.py.

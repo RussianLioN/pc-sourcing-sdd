@@ -65,3 +65,7 @@ with an explicit local experimental bound and exit condition. That bound does
 not stop the project repair cycle. Converge is optional gap/task discovery,
 not a mandatory acceptance gate or a substitute for tests. No parallel fan-out
 capability is claimed. Mandatory offline gates remain those listed above.
+
+The final real collector do-while receipt is mandatory for this continuation
+pilot. It binds the exact snapshot and two actual collector passes; it does
+not imply autonomous code repair or parallel fan-out. Converge remains optional.

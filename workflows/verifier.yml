@@ -22,11 +22,25 @@ steps:
       code, tests, golden, spec, tasks or Git. Do not delegate, use network,
       external tools, new credentials, purchases or publishing.
       For the integrated snapshot run .venv/bin/python scripts/verify_scope.py tasks/T002.json .
-      T001 is historical writer-only scope; T003 is repair-writer-only scope.
+      T001/T003 and T006 are historical writer scopes, not common-snapshot tasks.
       Use T002 for coordinator plus integration changes. Original goldens/contracts
       remain byte-protected; original test behavior is AST-protected against baseline.
       Review docs/defects.md and tests/test_review_regressions.py; reproduce fixed
       defects independently in scratch and report any remaining in-scope violation.
+      Read tasks/continuation-policy.json: the user explicitly superseded the
+      historical two-round stop. Product requirements and original goldens
+      are unchanged. T002 pins only the authorized constitution revision to
+      a new coordinator Git blob; all other original protected baselines stay.
+      Review the Unicode regression/property tests. Reproduce DEF-006 and the
+      broader invalid row class in scratch: high/low/reversed surrogate text
+      in stored fields/keys/nesting, rejected raw and readable diagnostics,
+      valid Cyrillic/emoji/pairs, two valid neighbors whose data/Evaluation
+      are unchanged. Malformed document encoding/framing is a whole-source
+      error with unknown boundaries; never guess recovery. SQLite failures
+      must remain transaction failures, not arbitrary row rejections.
+      Inspect real collector-loop-final receipt and saved runner state for
+      two actual passes and condition exit on this same SHA. Converge is
+      optional; no parallel fan-out is claimed. Scope is offline pilot only.
       Return JSON as final response: {"verdict":"passed|failed|blocked",
       "commit":"exact git rev-parse HEAD", "checks":[{"command":"...",
       "exit_code":0}], "findings":[{"severity":"...", "file":"...",
