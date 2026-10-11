@@ -2,7 +2,11 @@
 
 Continue from branch `feature/cloud-portability` in
 https://github.com/RussianLioN/pc-sourcing-sdd. This preparation is WIP, not
-independently accepted as main and not verified on Linux or in a cloud task.
+independently accepted as main. The snapshot `879ce3342c807936bc00509d9374869aad7d03d3`
+was actually run on cloud Linux on 2026-10-11: 297 tests, Ruff, scope, fresh
+relocated bootstrap/repeat and synthetic SQLite/report passed. Nested independent
+review failed before initialization because existing runtime state was read-only.
+T007 remains unaccepted; no Mac evidence is reused to establish cloud success.
 Use [cloud-setup.md](cloud-setup.md) and specs/002-portability/{spec,plan}.md.
 
 ## Preserved product baseline
