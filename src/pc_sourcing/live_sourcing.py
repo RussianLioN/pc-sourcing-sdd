@@ -153,6 +153,7 @@ def parse_card(request, candidate, html, now):
             offer.get("priceCurrency") == "RUB"
             and not isinstance(value, bool)
             and str(value).isdigit()
+            and len(str(value)) <= 10
             and 0 < int(value) < 10**10
             and not offer.get("priceSpecification")
         ):

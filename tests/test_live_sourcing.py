@@ -234,3 +234,13 @@ def test_avito_lookalike_is_not_platform(tmp_path):
         GPU, tmp_path / "lookalike", envelopes=envelopes("https://fakeavito.ru/item"), now=NOW
     )
     assert data["observations"][0]["label"] != "требует ручной проверки"
+
+
+def test_oversized_price_string_is_unknown():
+    result = parse_card(
+        GPU,
+        candidate(),
+        card(offers={"@type": "Offer", "price": "9" * 5000, "priceCurrency": "RUB"}),
+        NOW,
+    )
+    assert result.price_rub is None
