@@ -1,0 +1,49 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-offline-writer"
+  name: "One real Codex writer"
+  version: "1.0.0"
+inputs:
+  review:
+    type: string
+    default: ""
+steps:
+  - id: writer
+    type: prompt
+    integration: codex
+    prompt: |
+      Implement task T001; read /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/tasks/T001.json,
+      AGENTS.md, constitution, spec, plan and both pc project SKILL.md explicitly.
+      You are the single real writer in this worktree. Implement only task-owned
+      src/pc_sourcing/evaluate.py, src/pc_sourcing/pipeline.py and optional tests/test_worker.py.
+      Existing contract and golden tests are frozen; never modify them.
+      API evaluate(Offer, as_of datetime) returns Evaluation. Confirm each field
+      using matching current non-snippet evidence with ownership, origin, value
+      and full payment applicability per spec. Retain route conflicts/reasons.
+      API run(input_path, db_path, report_path, *, as_of, run_id) returns dict
+      including valid, rejected, eligible and run_id. Input JSON is a list of raw
+      offers; reject and retain malformed and duplicate rows without losing them.
+      SQLite tables runs, offers(run_id,id,data), evaluations(run_id,offer_id,data),
+      evidence(run_id,offer_id,id,data), rejections(run_id,input_index,data,reason).
+      Use atomic persistence, fingerprint binding input + spec + code + as_of;
+      idempotent repeat same run, reject changed fingerprint. DB/report use the
+      same Evaluation; report prints every offer, reason, evidence URL/time/origin
+      and exact manual label, invalid row diagnostics and explicit ТЕСТОВЫЕ marker.
+      Implement CLI python -m pc_sourcing.pipeline with --input --db --report
+      --as-of --run-id. No live network/runtime LLM, subprocess coordinator imports,
+      commits, deployment, credentials or external writes.
+      Run PYTHONPATH=src /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/python -m pytest -q;
+      /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/ruff check src tests;
+      /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/ruff format --check src tests.
+      Fix implementation within owned files, preserve golden. Stop at 600s.
+      Return changes, commands/exits and limitations. Do not delegate further.
+  - id: tests
+    type: shell
+    run: "PYTHONPATH=src /Users/s060874gmail.com/coding/projects/pc-sourcing-sdd/.venv/bin/python -m pytest -q --junitxml=artifacts/writer-tests.xml"
+    timeout: 120
+  - id: integrate-review
+    type: gate
+    message: "Coordinator scope and protected baseline verification before integration"
+    options: [approve, reject]
+    on_reject: abort
+    verdict_input: review

@@ -1,0 +1,19 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-probe-failure"
+  name: "Deterministic failure/resume probe"
+  version: "1.0.0"
+inputs:
+  state:
+    type: string
+    default: "fail"
+    enum: [fail, pass]
+steps:
+  - id: once
+    type: shell
+    run: ".venv/bin/python scripts/probe_action.py once"
+    timeout: 10
+  - id: fault
+    type: shell
+    run: '.venv/bin/python scripts/probe_action.py fault --state "{{ inputs.state }}"'
+    timeout: 10

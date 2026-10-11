@@ -1,0 +1,10 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-real-worker-crash"
+  name: "Deliberate termination of an actual Codex process"
+  version: "1.0.0"
+steps:
+  - id: worker
+    type: prompt
+    integration: codex
+    prompt: "Infrastructure probe: read AGENTS.md and return readiness; no writes, delegation or external tools."

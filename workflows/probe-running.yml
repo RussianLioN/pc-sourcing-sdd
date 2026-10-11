@@ -1,0 +1,10 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-probe-running"
+  name: "Coordinator crash probe, synthetic subprocess"
+  version: "1.0.0"
+steps:
+  - id: hold
+    type: shell
+    run: ".venv/bin/python scripts/probe_action.py hold"
+    timeout: 10

@@ -1,0 +1,24 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-probe-pause"
+  name: "Deterministic pause/resume probe"
+  version: "1.0.0"
+inputs:
+  verdict:
+    type: string
+    default: ""
+steps:
+  - id: once
+    type: shell
+    run: ".venv/bin/python scripts/probe_action.py once"
+    timeout: 10
+  - id: gate
+    type: gate
+    message: "Synthetic checkpoint; tests do not grant purchase authorization"
+    options: [approve, reject]
+    verdict_input: verdict
+    on_reject: abort
+  - id: after
+    type: shell
+    run: ".venv/bin/python scripts/probe_action.py hold"
+    timeout: 10

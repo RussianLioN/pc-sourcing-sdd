@@ -1,0 +1,29 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-independent-verifier"
+  name: "Actual independent read-only Codex snapshot review"
+  version: "1.0.0"
+steps:
+  - id: verify
+    type: prompt
+    integration: codex
+    prompt: |
+      Independently verify this integrated pc-sourcing-sdd snapshot.
+      You are a fresh read-only verifier, not the writer or coordinator.
+      Read AGENTS.md, constitution, spec, plan, golden corpus, source code,
+      and both pc-payment-audit and pc-snapshot-check SKILL.md explicitly.
+      Verify intended eligibility/payment/provenance, invalid input preservation,
+      DB/report consistency, idempotency, failure recovery limits and scope gate.
+      Run actual tests using project interpreter with PYTHONDONTWRITEBYTECODE=1,
+      PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider
+      --basetemp="$TMPDIR/pytest"; .venv/bin/ruff check --no-cache .;
+      .venv/bin/ruff format --check --no-cache .
+      Use only assigned temporary directory for any reproducers. Do not edit
+      code, tests, golden, spec, tasks or Git. Do not delegate, use network,
+      external tools, new credentials, purchases or publishing.
+      Return JSON as final response: {"verdict":"passed|failed|blocked",
+      "commit":"exact git rev-parse HEAD", "checks":[{"command":"...",
+      "exit_code":0}], "findings":[{"severity":"...", "file":"...",
+      "reason":"...", "reproducer":"..."}], "limitations":["..."]}.
+      Describe material defects with evidence, not speculative unrelated scope.
+      Do not declare passed when required checks could not run. 600s limit.
