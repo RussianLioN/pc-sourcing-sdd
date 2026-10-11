@@ -32,7 +32,8 @@
     "scripts/verify_scope.py",
     "tests/test_portability.py",
     "workflows/portability-verifier.yml",
-    "tasks/T007.json"
+    "tasks/T007.json",
+    "spec-kit-build.lock"
   ],
   "worker_owned_files": [
     "requirements-build.lock",
@@ -45,7 +46,8 @@
     "scripts/run_workflow.py",
     "scripts/quality.py",
     "scripts/verify_scope.py",
-    "tests/test_portability.py"
+    "tests/test_portability.py",
+    "spec-kit-build.lock"
   ],
   "coordinator_owned_files": [
     "AGENTS.md",
@@ -182,5 +184,6 @@
     "historical artifacts remain unchanged; new reports use fresh paths",
     "no force push, live data, accounts, API keys, security/network changes",
     "Linux/cloud not inferred from Mac checks"
-  ]
+  ],
+  "build_pin_evidence": "Pinned Spec Kit source requires hatchling; reuse originally verified build backend 1.32.4 and constrain shared dependencies to spec-kit.lock."
 }
