@@ -1,0 +1,14 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-normalized-runtime-validation"
+  name: "T012 common snapshot regression and protected parent scope"
+  version: "1.0.0"
+steps:
+  - id: quality
+    type: shell
+    run: ".venv/bin/python scripts/normalized_quality.py"
+    timeout: 480
+  - id: scope
+    type: shell
+    run: ".venv/bin/python scripts/normalized_scope.py"
+    timeout: 60

@@ -29,8 +29,8 @@ def checkout(tmp_path):
     return target
 
 
-def test_new_scope_preserves_all_parent_blobs():
-    assert scope.check()["approved_protected_patches"] == 0
+def test_new_scope_preserves_all_parent_blobs(tmp_path):
+    assert scope.check(checkout(tmp_path))["approved_protected_patches"] == 0
 
 
 @pytest.mark.parametrize("mutation", ["old_app", "old_test", "owner", "spec", "extra"])
