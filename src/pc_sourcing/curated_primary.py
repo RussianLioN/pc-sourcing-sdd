@@ -19,6 +19,7 @@ from pc_sourcing.live_transport import DENIAL_MARKERS, AccessBlocked, public_add
 APPROVED_ORIGIN = "https://28bit.ru"
 APPROVED_PATHS = {
     "/robots.txt",
+    "/operativnaya-pamyat-96-gb-6000-mhz-g-skill-trident-z5-neo-rgb-f5-6000j3036f48gx2-tz5nr/",
     "/videokart-palit-ne75090019r5-gb2020g-geforce-rtx-5090-32gb-gamerock/",
 }
 VOID = {"meta", "link", "img", "input", "br", "hr", "source", "area", "wbr", "embed"}
@@ -234,13 +235,22 @@ def observe(request, candidate, html, provenance, now):
     # Reviewed 28BIT Palit title convention: NE-prefixed manufacturer identifier,
     # never numeric store sku. Preserve suffix exactly; conflicting declarations unknown.
     declared = re.search(r"(?i)\bPalit\s*\((NE[A-Z0-9]+-[A-Z0-9]+)\)", title)
+    if re.search(r"(?i)\bG[.]?\s*Skill\b", title):
+        ram_declared = re.search(r"\b(F5-[A-Z0-9]+(?:-[A-Z0-9]+)+)\b", title, re.IGNORECASE)
+        if ram_declared:
+            declared = ram_declared
     conflict = bool(declared and mpn and declared[1] != mpn)
     if conflict:
         mpn = None
     elif mpn is None and declared:
         mpn = declared[1]
-    mpn_selector = "Product meta[itemprop=mpn]" if mpns else "h1 Palit (NE manufacturer code)"
+    mpn_selector = "Product meta[itemprop=mpn]" if mpns else "h1 declared manufacturer code (NE/F5)"
     match, differences = identity(request, title, mpn)
+    if request.category == "ram" and (
+        not re.search(r"(?i)оперативная память|\bRAM\b|\bmemory\b", title)
+        or re.search(r"(?i)ноутбук|компьютер|\blaptop\b|\bDDR[234]\b", title)
+    ):
+        match, differences = "unresolved", ("Категория/характеристики памяти не согласованы",)
     primary = {
         "h1": title,
         "product_count": parsed.product_count,
@@ -367,7 +377,14 @@ class CuratedReader:
         self.transport, self.sleep, self.robots, self.count = transport, sleep, None, 0
         self.registry_hash = hashlib.sha256(dumps(registry).encode()).hexdigest()
 
-    def seed_candidates(self, now):
+    def seed_candidates(self, now, request=None):
+        selected = self.urls.items()
+        if request and request.mpn:
+            matching = [
+                (url, row) for url, row in selected if row.get("requested_mpn") == request.mpn
+            ]
+            if matching:
+                selected = matching
         return [
             Candidate(
                 url=url,
@@ -377,7 +394,7 @@ class CuratedReader:
                 response_sha256=self.registry_hash,
                 origin="curated_registry",
             )
-            for url, row in self.urls.items()
+            for url, row in selected
         ]
 
     def check_state(self):

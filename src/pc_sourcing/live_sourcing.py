@@ -380,7 +380,7 @@ def run(
     rows, rejects = candidates(envelopes, queries, now)
     registry_receipt = None
     if hasattr(reader, "seed_candidates"):
-        seeded = reader.seed_candidates(now)
+        seeded = reader.seed_candidates(now, request)
         known = {r.url for r in rows}
         rows.extend(r for r in seeded if r.url not in known)
         registry_receipt = {

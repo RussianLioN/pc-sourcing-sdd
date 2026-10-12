@@ -327,3 +327,40 @@ def test_frozen_t009_scope_rejects_t010_snapshot(tmp_path):
     subprocess.run(["git", "clone", "--shared", "--quiet", str(root), str(checkout)], check=True)
     with pytest.raises(ValueError, match="unowned changes"):
         historical.check(checkout)
+
+
+def test_exact_ram_title_mpn_confirmed_without_merging_timing_variant():
+    from pc_sourcing.live_models import Request
+
+    target = "F5-6000J3036F48GX2-TZ5NR"
+    request = Request(name="G.Skill 96 GB", mpn=target, category="ram")
+    body = html().replace(
+        "Palit RTX 5090 GAMEROCK", "Оперативная память 96 Gb G.Skill (" + target + ")"
+    )
+    body = body.replace('<meta itemprop="mpn" content="NE75090019R5-GB2020G">', "")
+    exact = observe(request, candidate(URL), body, {}, datetime.now(UTC))
+    assert exact.mpn == target and exact.match == "exact" and not exact.eligible
+    analogue = observe(
+        request, candidate(URL), body.replace("J3036", "J2836"), {}, datetime.now(UTC)
+    )
+    assert analogue.mpn != target and analogue.match != "exact"
+
+
+def test_target_mpn_selects_reviewed_ram_seed(tmp_path):
+    from pc_sourcing.live_models import Request
+
+    target = "F5-6000J3036F48GX2-TZ5NR"
+    ram_url = "https://28bit.ru/ram/"
+    reader = CuratedReader(
+        registry(
+            listings=[
+                {"url": URL, "title": "Palit"},
+                {"url": ram_url, "title": "G.Skill", "requested_mpn": target},
+            ]
+        ),
+        tmp_path / "state",
+    )
+    seeds = reader.seed_candidates(
+        datetime.now(UTC), Request(name="G.Skill 96 GB", mpn=target, category="ram")
+    )
+    assert len(seeds) == 1 and seeds[0].url == ram_url

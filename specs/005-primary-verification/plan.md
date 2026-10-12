@@ -13,3 +13,8 @@ bounded smoke retaining safe primary evidence, transfer, separate independent re
 No source/system credential, hosting, network configuration, proxy or account changes.
 Source fail closes; no switch to extract/browser after deny. Curated registry review
 is source/operator policy evidence, not an assertion of blanket redistribution rights.
+
+Coordinator explicitly requires a real target, not only Palit transport negative.
+Bounded domain search found exact G.Skill J3036 96 GB and separate J2836 variant.
+Add only exact J3036 canonical clean listing URL to curated capability; request MPN
+selects that seed, primary title/category/code must confirm it. J2836 remains separate.
