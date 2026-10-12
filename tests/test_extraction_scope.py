@@ -16,9 +16,25 @@ scope = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(scope)
 
 
-def test_extraction_preserves_every_parent_byte():
-    assert scope.check()["parent_identical"] == 229
-    assert scope.check()["approved_protected_patches"] == 1
+def test_extraction_preserves_every_parent_byte(tmp_path):
+    checkout = tmp_path / "historical-T015"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-hardlinks", str(ROOT), str(checkout)], check=True
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(checkout),
+            "checkout",
+            "--quiet",
+            "--detach",
+            "e772a60eb6dbdc5f8019e4a72ddf43a00ebbac18",
+        ],
+        check=True,
+    )
+    assert scope.check(checkout)["parent_identical"] == 229
+    assert scope.check(checkout)["approved_protected_patches"] == 1
 
 
 @pytest.mark.parametrize(
