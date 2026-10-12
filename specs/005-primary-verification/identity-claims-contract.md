@@ -1,0 +1,39 @@
+# Identity assertion extraction contract 1.0.0 — prospective repair
+
+Source: product §10/11, original identity/unknown rules; coordinator instructed a
+schema correction after independent holdout rejected abfe280. This changes technical
+extraction, not product restrictions, oracle labels or purchase eligibility.
+
+Each assertion records attribute, typed value, original unit, semantic scope,
+polarity (positive/negative/unknown), selector/source and literal raw declaration.
+Comparisons use compatible scopes and units only. MPN agreement never erases an
+explicit conflict or unknown material declaration. Independent assertions persist.
+
+Capacity: total kit/product versus per module; topology derives total only from
+explicit module count × module capacity. Speed: effective DDR rate MT/s versus
+physical clock MHz/GHz; GHz↔MHz is dimensional conversion, and DDR factor two is
+used only for an explicitly physical clock. A named memorySpeed vendor grade in
+MHz is labelled advertised grade, never a measured physical clock. Unscoped MHz
+is unknown. Latency: CL/CAS cycles versus ns; ns is not CAS cycles without explicit
+physical-clock evidence; with one unambiguous physical clock, cycles = ns × MHz /
+1000, preserving the original ns assertion and clock provenance. Revision unknown remains unknown.
+
+Supported structural envelope: Product scalar canonical attributes and bounded
+additionalProperty PropertyValue entries with names mapped by material concepts:
+manufacturer/model/variant/revision/regional code, memory capacity and scope,
+rate/clock/latency/profile/form factor, item role/presence and cooling provenance.
+Unsupported material declarations become unresolved. Nonmaterial properties are
+not manufacturing evidence. No property name creates a network capability.
+
+Text grammar is bounded: number+unit declarations, kit topology, named profile
+support, explicit role-only/presence/cooling declarations and clause-local negation.
+Negation is scoped to its proposition, not the whole document: 'not SUPERLIGHT'
+does not negate SUPERSTRIKE; 'not receiver-only' does not assert receiver-only.
+Unknown/unverified material values never become false or true. This is not a
+promise to interpret arbitrary prose. Unsupported descriptions/critical modifiers
+must remain unresolved rather than be made exact by the product code.
+
+Acceptance: independently frozen60, metamorphic13 and holdout72 are separate generic
+JSON-LD route metrics, never pooled with curated microdata probes. Own tests cover
+unit/scoping pairs, positive/negative inversion, structured mapping, unknown and
+both adapters. No new live reads. Exact SHA full regression and independent review.

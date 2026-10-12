@@ -39,3 +39,19 @@ hard exclusions remain explicit; missing model is unresolved. PRIMARY-06/07 →
 tests/test_identity_attributes.py (paraphrases, structural/visible conflicts and
 positive controls) + frozen60 + independent metamorphic13. No new live receipts.
 T011 WIP preserved separately until T010 reviewer authorizes continuation.
+
+Typed assertion correction (abfe280 rejected holdout) → identity-claims-contract.md
+and identity_claims.py. PRIMARY-04/06/07 → tests/test_identity_claims.py: explicit
+unit/scope/polarity/provenance; kit/module and physical/effective dimensions; ns
+conversion only with explicit unambiguous physical clock; unknown and both routes.
+Generic parse_card and curated observe retain normalized assertion excerpts with
+recomputable hash. Generic JSON-LD corpus60/holdout72/metamorphic13 are separate
+metrics, not curated source coverage. Own curated probes report separately. Original
+oracles stay unchanged; no new live reads or historical accepted status asserted.
+
+Curated route additionally retains Brand.name only through the brand/manufacturer
+relation (not Product.name), and flags unimplemented nested PropertyValue schema
+as unsupported. Generic additionalProperty mapping is not claimed for that adapter.
+Eight curated text/scope controls plus nested-schema/brand conflict regressions are
+reported separately from generic external corpora. Closed holdout72 revealed source
+coverage and negation defects; every failed prior metric remains preserved.

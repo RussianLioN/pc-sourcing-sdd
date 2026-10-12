@@ -184,9 +184,11 @@ class ProductScope(HTMLParser):
         self.price_types = []
         self.product_count = 0
         self.item_scopes = {}
+        self.scope_relations = {}
         self.visible_product_text = []
         self.visible_length = 0
         self.text_overflow = False
+        self.unsupported_material = False
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -196,27 +198,13 @@ class ProductScope(HTMLParser):
             self.product_count += 1
             self.scope = len(self.stack)
         if "itemscope" in attrs:
+            self.scope_relations[len(self.stack)] = attrs.get("itemprop")
             self.item_scopes[len(self.stack)] = (
                 attrs.get("itemtype", "").rstrip("/").rsplit("/", 1)[-1]
             )
         if tag == "h1":
             self.h1_depth = len(self.stack)
-        if self.scope and attrs.get("itemprop") in {
-            "name",
-            "sku",
-            "mpn",
-            "price",
-            "priceCurrency",
-            "availability",
-            "itemCondition",
-            "description",
-            "memorySize",
-            "memorySpeed",
-            "memoryType",
-            "casLatency",
-            "isComplete",
-            "factory_liquid",
-        }:
+        if self.scope and attrs.get("itemprop"):
             prop = attrs["itemprop"]
             owner = self.item_scopes[max(self.item_scopes)] if self.item_scopes else None
             required_owner = (
@@ -224,11 +212,29 @@ class ProductScope(HTMLParser):
                 if prop in {"price", "priceCurrency", "availability", "itemCondition"}
                 else "Product"
             )
+            if (
+                owner == "Brand"
+                and prop == "name"
+                and self.scope_relations.get(max(self.item_scopes)) in {"brand", "manufacturer"}
+            ):
+                value = attrs.get("content")
+                if value is not None and len(value) <= 300:
+                    self.properties.setdefault("manufacturer", []).append(value)
+                else:
+                    self.unsupported_material = True
+                return
+            if owner == "PropertyValue":
+                self.unsupported_material = True
             if owner != required_owner:
                 return
             value = attrs.get("content", attrs.get("href"))
-            if value is not None and len(value) <= 300:
-                self.properties.setdefault(prop, []).append(value)
+            if value is not None and len(value) <= 300 and len(prop) <= 100:
+                if sum(len(v) for v in self.properties.values()) >= 128:
+                    self.unsupported_material = True
+                else:
+                    self.properties.setdefault(prop, []).append(value)
+            elif value is not None:
+                self.unsupported_material = True
         if tag == "input" and attrs.get("name") == "pricetype_radio":
             self.price_types.append(
                 {
@@ -248,6 +254,9 @@ class ProductScope(HTMLParser):
             if self.scope and depth <= self.scope:
                 self.scope = None
             self.item_scopes = {d: kind for d, kind in self.item_scopes.items() if d < depth}
+            self.scope_relations = {
+                d: relation for d, relation in self.scope_relations.items() if d < depth
+            }
             del self.stack[depth - 1 :]
 
     def handle_data(self, text):
@@ -285,7 +294,9 @@ def observe(request, candidate, html, provenance, now):
     conflict = conflict or bool(
         names and (len(names) != 1 or normalize(names[0]) != normalize(title))
     )
-    conflict = conflict or parsed.product_count != 1 or parsed.text_overflow
+    conflict = (
+        conflict or parsed.product_count != 1 or parsed.text_overflow or parsed.unsupported_material
+    )
     if conflict:
         mpn = None
     elif not mpns and declared:
@@ -295,13 +306,15 @@ def observe(request, candidate, html, provenance, now):
     if conflict:
         match, differences = "unresolved", ("Conflicting or multiple primary Product identities",)
     from pc_sourcing.identity_attributes import conflicts
+    from pc_sourcing.identity_claims import assertions_data, extract
 
     attribute_conflicts = conflicts(
         request,
         [title, " ".join(parsed.visible_product_text), *props.get("description", [])],
         structured=props,
+        allow_variant_difference=bool(request.mpn and mpn and request.mpn != mpn),
     )
-    if attribute_conflicts:
+    if attribute_conflicts and match != "excluded":
         match, differences = (
             "unresolved",
             ("Conflicting primary attributes: " + ", ".join(attribute_conflicts),),
@@ -319,7 +332,15 @@ def observe(request, candidate, html, provenance, now):
         "price_types": parsed.price_types,
         "visible_product_text": " ".join(parsed.visible_product_text),
         "identity_conflicts": list(attribute_conflicts),
+        "identity_assertions": assertions_data(
+            extract(
+                [title, " ".join(parsed.visible_product_text), *props.get("description", [])],
+                request.category,
+                props,
+            )
+        ),
         "visible_text_truncated": parsed.text_overflow,
+        "unsupported_material_schema": parsed.unsupported_material,
     }
     retained = dumps(primary)
     retained_hash = hashlib.sha256(retained.encode()).hexdigest()

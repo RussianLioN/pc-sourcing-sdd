@@ -24,7 +24,11 @@
     "docs/adr/0004-review-identity-test-correction.md",
     "tests/test_live_sourcing.py",
     "src/pc_sourcing/identity_attributes.py",
-    "tests/test_identity_attributes.py"
+    "tests/test_identity_attributes.py",
+    "specs/005-primary-verification/identity-claims-contract.md",
+    "docs/adr/0005-typed-identity-assertions.md",
+    "src/pc_sourcing/identity_claims.py",
+    "tests/test_identity_claims.py"
   ],
   "mutable_baseline_files": [
     "src/pc_sourcing/live_models.py",

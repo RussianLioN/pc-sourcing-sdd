@@ -110,12 +110,21 @@ def products(value):
 
 def identity(request, title, mpn):
     """Conservative matching of primary identities, never inferred from a snippet."""
-    text = (title or "").upper()
-    from pc_sourcing.identity_attributes import conflicts
+    from pc_sourcing.identity_claims import extract, positive_text
+
+    text = positive_text(title or "")
+    from pc_sourcing.identity_attributes import conflicts, hard_ram_difference
 
     tokens = set(re.findall(r"[A-Z0-9]+", text))
     if not text.strip():
         return "unresolved", ("Primary model/title отсутствует",)
+    if request.category == "gpu" and any(
+        c.attribute == "factory_liquid" and c.value is False and c.polarity == "positive"
+        for c in extract([title], "gpu")
+    ):
+        return "unresolved", (
+            "Explicit non-factory cooling declaration conflicts with full-model code",
+        )
     if request.category == "gpu":
         if (
             "AIR" in tokens
@@ -128,14 +137,18 @@ def identity(request, title, mpn):
             return "excluded", ("Не полная заводская MSI RTX 5090 SUPRIM LIQUID",)
         if re.search(r"\bRTX\s+(?!5090\b)[0-9]+", text):
             return "excluded", ("Другая модель GPU",)
-    attribute_conflicts = conflicts(request, [title])
+    if request.category == "mouse" and mpn != request.mpn and "SUPERLIGHT" in tokens:
+        return "excluded", ("Different positively asserted mouse model",)
+    if request.category == "mouse" and mpn != request.mpn and "LOGITECH" not in tokens:
+        return "excluded", ("Different positively asserted mouse manufacturer",)
+    attribute_conflicts = conflicts(
+        request, [title], allow_variant_difference=bool(request.mpn and mpn and request.mpn != mpn)
+    )
     if attribute_conflicts:
         # Explicit wrong RAM total/DDR with a different code is a hard exclusion;
         # copied matching code or unapproved substitutions remain unresolved.
         hard_wrong = (
-            request.category == "ram"
-            and mpn != request.mpn
-            and set(attribute_conflicts) & {"capacity", "memory_type"}
+            request.category == "ram" and mpn != request.mpn and hard_ram_difference(request, title)
         )
         return ("excluded" if hard_wrong else "unresolved"), (
             "Conflicting primary attributes: " + ", ".join(attribute_conflicts),
@@ -155,6 +168,15 @@ def identity(request, title, mpn):
             return "analogue", ("Другой вариант OC/SOC; не точный SKU",)
         if ("OC" in requested or "SOC" in requested) and not {"OC", "SOC"} & tokens:
             return "unresolved", ("Вариант OC/SOC не подтверждён",)
+    if (
+        request.category == "ram"
+        and request.mpn == "F5-6000J3036F48GX2-TZ5NR"
+        and (
+            not re.search(r"\bG[.]?\s*SKILL\b", text)
+            or not re.search(r"\bDDR[2-9]\b|\bRAM\b|\bMEMORY\b|ОПЕРАТИВНАЯ ПАМЯТЬ", text)
+        )
+    ):
+        return "unresolved", ("Primary RAM manufacturer/category not confirmed by full title",)
     if request.category == "ram" and re.search(r"KINGSTON|ОДИН МОДУЛЬ", text):
         return ("unresolved" if mpn == request.mpn else "excluded"), ("RAM model/kit not agreed",)
     if request.category == "mouse":
@@ -205,7 +227,10 @@ def parse_card(request, candidate, html, now):
     from pc_sourcing.identity_attributes import conflicts
 
     attribute_conflicts = conflicts(
-        request, [title, product.get("description"), " ".join(document.visible)], structured=product
+        request,
+        [title, product.get("description"), " ".join(document.visible)],
+        structured=product,
+        allow_variant_difference=bool(request.mpn and mpn and request.mpn != mpn),
     )
     if attribute_conflicts and match != "excluded":
         match, differences = (
@@ -349,6 +374,22 @@ def parse_card(request, candidate, html, now):
         if condition != "unknown":
             add("condition", condition, "Product.offers.itemCondition")
     reasons.append("Moscow fulfillment, seller review, quantity and full costs not confirmed")
+    from pc_sourcing.identity_claims import assertions_data, extract
+
+    retained = dumps(
+        {
+            "title": title,
+            "mpn": mpn,
+            "identity_assertions": assertions_data(
+                extract(
+                    [title, product.get("description"), " ".join(document.visible)],
+                    request.category,
+                    product,
+                )
+            ),
+            "identity_gaps": list(attribute_conflicts),
+        }
+    )
     return Observation(
         candidate=candidate,
         status="unresolved" if invalid_field else "observed",
@@ -361,6 +402,13 @@ def parse_card(request, candidate, html, now):
         match=match,
         differences=differences,
         facts=tuple(facts),
+        primary={
+            "retained_content": retained,
+            "retained_sha256": digest(retained.encode()),
+            "response_body_sha256": page_hash,
+            "content_kind": "selected_identity_assertions",
+            "full_body_retained": False,
+        },
     )
 
 

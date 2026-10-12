@@ -67,3 +67,12 @@ no offer becomes purchase eligible from identity alone.
 
 Handoff bundles containing ^130d67 are incremental and require that exact baseline;
 they are not standalone repository archives. T010 evidence does not accept T011.
+
+Typed assertion repair: Product.additionalProperty coverage and curated microdata
+coverage are different routes. Each identity statement retains source selector,
+unit, subject and polarity. Physical DDR clock MHz and effective rate MT/s stay
+distinct. Canonical memorySpeed in vendor-grade MHz is tagged advertised-MHz,
+not physical MHz; unscoped frequency remains unknown. CAS cycles and ns are
+compared only with compatible units or explicit physical-clock conversion evidence.
+Unknown/unverified revisions, contents, unsupported material property schemas and
+text budget overflow remain unresolved. Arbitrary prose understanding is not claimed.
