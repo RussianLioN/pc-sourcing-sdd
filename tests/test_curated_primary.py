@@ -278,3 +278,20 @@ def test_legacy_dns_record_preserved_without_treating_it_as_site_ban(tmp_path):
     )
     reader.check_state()
     assert state.read_text() == raw
+
+
+def test_primary_report_time_is_not_before_source_facts(tmp_path):
+    def fetch(url):
+        return (
+            b"User-agent: *\nDisallow: /cart/" if url.endswith("robots.txt") else html().encode(),
+            {"content-type": "text/plain" if url.endswith("robots.txt") else "text/html"},
+        )
+
+    reader = CuratedReader(registry(), tmp_path / "state", transport=fetch, sleep=lambda _: None)
+    data = run(GPU, tmp_path / "timing", envelopes=[], reader=reader)
+    as_of = datetime.fromisoformat(data["as_of"])
+    assert all(
+        datetime.fromisoformat(f["observed_at"]) <= as_of
+        for o in data["observations"]
+        for f in o["facts"]
+    )

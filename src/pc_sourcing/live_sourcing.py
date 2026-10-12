@@ -414,6 +414,8 @@ def run(
                 reason=f"Malformed primary card: {type(exc).__name__}",
             )
         observations.append(result.model_dump(mode="json"))
+    if hasattr(reader, "observe"):
+        now = datetime.now(UTC)  # collection end includes actual primary observation times
     data = {
         "schema_version": "live/1.0.0",
         "request": request.model_dump(),
