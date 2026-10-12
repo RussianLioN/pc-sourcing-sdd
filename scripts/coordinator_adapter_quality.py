@@ -94,20 +94,41 @@ def main():
             }
         )
     stable = before == snapshot()
+    checks_pass = stable and all(c["exit_code"] == 0 for c in checks)
+    versions = observed_versions(ROOT)
+    pins_pass = all(value["status"] == "passed" for value in versions["tools"].values())
     result = {
-        "status": "PASS" if stable and all(c["exit_code"] == 0 for c in checks) else "FAIL",
+        "status": "PASS"
+        if checks_pass and pins_pass
+        else "CHECKS_PASS_PINS_BLOCKED"
+        if checks_pass
+        else "FAIL",
+        "checks_status": "PASS" if checks_pass else "FAIL",
+        "toolchain_pins_status": "PASS" if pins_pass else "BLOCKED",
+        "reproducibility_status": "PASS" if checks_pass and pins_pass else "BLOCKED",
         "snapshot": before,
         "unchanged_during_checks": stable,
         "checks": checks,
-        "versions": observed_versions(ROOT),
+        "versions": versions,
         "learning_enabled": False,
         "actual_authenticated_coordinator_call": "NOT_RUN",
         "merchant_HTTP": 0,
         "pytest_temp_retained": str(pytest_temp),
     }
     (out / "manifest.json").write_text(json.dumps(result, indent=2) + "\n")
-    print(json.dumps({"status": result["status"], "out": str(out), "snapshot": before}))
-    return 0 if result["status"] == "PASS" else 1
+    print(
+        json.dumps(
+            {
+                "status": result["status"],
+                "checks_status": result["checks_status"],
+                "toolchain_pins_status": result["toolchain_pins_status"],
+                "out": str(out),
+                "snapshot": before,
+            }
+        )
+    )
+    # This workflow checks code/data. Completing it never grants pin acceptance.
+    return 0 if checks_pass else 1
 
 
 if __name__ == "__main__":

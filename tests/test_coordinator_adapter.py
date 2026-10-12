@@ -380,3 +380,220 @@ def test_live_dependency_alias_drift_after_grant_is_rejected(tmp_path, monkeypat
         )
     monkeypatch.setattr(module, symbol, original)
     assert adapter.replica.current()["version"] == 0
+
+
+@pytest.mark.parametrize(
+    "method", ["__init__", "__enter__", "__exit__", "run", "object", "commit_header", "tree"]
+)
+def test_review_R1_transitive_git_run_drift_rejected_before_execution(
+    tmp_path, monkeypatch, method
+):
+    from lesson_consumer import ObjectView
+
+    adapter, request, initial, host = setup(tmp_path)
+    marker = tmp_path / "unreviewed-git-run-executed"
+    original = getattr(ObjectView, method)
+
+    def substituted(self, *args, **kwargs):
+        marker.write_text("unexpected execution")
+        return original(self, *args, **kwargs)
+
+    host.on_grant = lambda: monkeypatch.setattr(ObjectView, method, substituted)
+    blocked = False
+    try:
+        adapter.coordinator_once(
+            "promote", encoded(request), 0, initial["snapshot_sha256"], host=host
+        )
+    except Rejected:
+        blocked = True
+    assert not marker.exists(), "Unreviewed transitive ObjectView.run executed after grant"
+    assert blocked and adapter.replica.current()["version"] == 0
+    assert host.anchor["version"] == 0
+
+
+def test_review_R2_candidate_swap_after_intent_never_switches_ungranted_lesson(tmp_path):
+    import os
+    import subprocess
+
+    adapter, request, initial, host = setup(tmp_path)
+    swapped = tmp_path / "candidate-swapped"
+    script = tmp_path / "independent-candidate-swap.py"
+    script.write_text(r"""
+import ctypes,os,select,signal,struct,sys
+from pathlib import Path
+from reviewed_lessons import bind,encoded,read
+parent=int(sys.argv[1]);directory=sys.argv[2];candidate=Path(sys.argv[3]);marker=Path(sys.argv[4])
+libc=ctypes.CDLL(None,use_errno=True)
+fd=libc.inotify_init1(os.O_CLOEXEC)
+assert fd >= 0
+assert libc.inotify_add_watch(fd,directory.encode(),0x100|0x2|0x8) >= 0
+print("READY",flush=True)
+assert select.select([fd],[],[],5)[0], "intent publication not observed"
+found=False
+while not found:
+    events=os.read(fd,65536);offset=0
+    while offset<len(events):
+        _wd,_mask,_cookie,length=struct.unpack_from("iIII",events,offset)
+        name=events[offset+16:offset+16+length].split(b"\0",1)[0]
+        offset+=16+length
+        if name==b"audit.jsonl":found=True
+    if not found:assert select.select([fd],[],[],5)[0]
+stopped=False
+try:
+    os.kill(parent,signal.SIGSTOP);stopped=True
+    value=read(candidate)
+    value["knowledge_text"]="Different valid synthetic candidate"
+    candidate.write_bytes(encoded(bind(value,"lesson_sha256")))
+    marker.write_text("done")
+finally:
+    if stopped:os.kill(parent,signal.SIGCONT)
+    os.close(fd)
+""")
+    original_commit = host.commit_verified_result
+
+    def independent_anchored_lesson_check(grant, receipt):
+        current = adapter.replica.current()
+        if (
+            current["entries"]
+            and current["entries"][0]["lesson"]["lesson_sha256"] != host.anchor["lesson_hash"]
+        ):
+            raise Rejected("independent host: visible lesson differs from adjudicated anchor")
+        return original_commit(grant, receipt)
+
+    host.commit_verified_result = independent_anchored_lesson_check
+    child = subprocess.Popen(
+        [
+            sys.executable,
+            str(script),
+            str(os.getpid()),
+            str(adapter.replica.root),
+            request["lesson_path"],
+            str(swapped),
+        ],
+        env=os.environ.copy() | {"PYTHONPATH": str(ROOT / "scripts")},
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    blocked = False
+    try:
+        assert child.stdout.readline().strip() == "READY"
+        try:
+            adapter.coordinator_once(
+                "promote", encoded(request), 0, initial["snapshot_sha256"], host=host
+            )
+        except Rejected:
+            blocked = True
+        _output, error = child.communicate(timeout=10)
+        assert child.returncode == 0, error
+    finally:
+        if child.poll() is None:
+            child.kill()
+            child.communicate()
+        # This only addresses the test's own controlled process.
+        os.kill(os.getpid(), __import__("signal").SIGCONT)
+    assert swapped.exists()
+    assert adapter.replica.current()["version"] == 0, (
+        "Changed candidate became visible without exact grant"
+    )
+    assert blocked and host.anchor["version"] == 0
+
+
+@pytest.mark.parametrize("check_exit", [0, 1])
+def test_review_pins_blocked_never_report_full_PASS(tmp_path, monkeypatch, check_exit):
+    import json
+    import shutil
+    import types
+
+    import coordinator_adapter_quality as quality
+
+    (tmp_path / "fixtures").mkdir()
+    for name in ["golden.json", "invalid.json"]:
+        shutil.copyfile(ROOT / "fixtures" / name, tmp_path / "fixtures" / name)
+    monkeypatch.setattr(quality, "ROOT", tmp_path)
+    monkeypatch.setattr(quality, "snapshot", lambda: {"fixed": "snapshot"})
+    monkeypatch.setattr(
+        quality,
+        "observed_versions",
+        lambda _root: {
+            "tools": {
+                "codex": {"status": "blocked", "reason": "hash mismatch"},
+                "uv": {
+                    "status": "blocked",
+                    "observed_version": "0.12.23",
+                    "expected_version": "0.10.2",
+                },
+                "spec_kit": {"status": "passed"},
+            }
+        },
+    )
+    monkeypatch.setattr(
+        quality.subprocess,
+        "run",
+        lambda *_args, **_kwargs: types.SimpleNamespace(
+            stdout="Controlled check output", stderr="", returncode=check_exit
+        ),
+    )
+    assert quality.main() == check_exit
+    manifests = list((tmp_path / "artifacts/T018").glob("quality-*/manifest.json"))
+    assert len(manifests) == 1
+    result = json.loads(manifests[0].read_text())
+    assert result["status"] != "PASS"
+    assert (
+        result["toolchain_pins_status"] == "BLOCKED"
+        and result["reproducibility_status"] == "BLOCKED"
+    )
+    assert result["checks_status"] == ("PASS" if check_exit == 0 else "FAIL")
+
+
+@pytest.mark.parametrize(
+    "attack", ["adapter_proposal", "replica_audit", "replica_current", "object_constructor"]
+)
+def test_review_actual_instance_dispatch_cannot_escape_pinned_callable(
+    tmp_path, monkeypatch, attack
+):
+    import types
+
+    import coordinator_adapter as module
+    from lesson_consumer import ObjectView
+
+    adapter, request, initial, host = setup(tmp_path)
+    marker = tmp_path / "unaccepted-instance-call"
+    if attack == "object_constructor":
+        original = ObjectView.run
+
+        def forged_run(self, *args, **kwargs):
+            marker.write_text("unexpected instance run")
+            return original(self, *args, **kwargs)
+
+        # A separate class avoids corrupting CPython's original tp_new slot.
+        class ForgedObjectView(ObjectView):
+            def __new__(kind, *_args, **_kwargs):
+                marker.write_text("unexpected constructor")
+                value = object.__new__(kind)
+                value.run = types.MethodType(forged_run, value)
+                return value
+
+        host.on_grant = lambda: monkeypatch.setattr(module, "ObjectView", ForgedObjectView)
+    else:
+        target, name = {
+            "adapter_proposal": (adapter, "proposal"),
+            "replica_audit": (adapter.replica, "audit"),
+            "replica_current": (adapter.replica, "current"),
+        }[attack]
+        original = getattr(target, name)
+
+        def substitute(*args, **kwargs):
+            marker.write_text("unexpected bound method")
+            return original(*args, **kwargs)
+
+        host.on_grant = lambda: monkeypatch.setattr(target, name, substitute)
+    with pytest.raises(Rejected, match="dispatch|instance|binding|alias"):
+        adapter.coordinator_once(
+            "promote", encoded(request), 0, initial["snapshot_sha256"], host=host
+        )
+    assert not marker.exists()
+    assert adapter.replica.load(initial["snapshot_sha256"])["version"] == 0
+    assert (adapter.replica.root / "active.json").read_bytes() == encoded(
+        {"version": 0, "sha256": initial["snapshot_sha256"]}
+    )

@@ -340,5 +340,17 @@
     "sha256": "17adbdcdb8e9edbda34c6d4fe5584172f0ba6546ae74115b1bc012d53c607cd3",
     "purpose": "CP-T018-01 exact historical positive fixture only",
     "coordinator_approval_received": true
+  },
+  "repair_review": {
+    "reviewed_commit": "14dac4a2cc532f9a416b6f92fffb7c62caee334d",
+    "status": "CHANGES REQUIRED",
+    "library_file_id": "libfile_40ab23d5423081919fe4154d4575d48c",
+    "version": 0,
+    "sha256": "832dfa673ebf11d9026f6eff7f14a4d12f07b081c612be506c4101daa277af26",
+    "findings": [
+      "T018-R1",
+      "T018-R2"
+    ],
+    "product_fallback_sha": "f495e5294e93a281f945de6f4e1c6c89d7a6cb1e"
   }
 }

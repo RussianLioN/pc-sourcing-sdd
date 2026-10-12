@@ -56,15 +56,19 @@ def loaded_image():
         "closure",
         "source_inventory",
         "request_data",
+        "instance_image",
         "result_proof",
         "Adapter.__init__",
         "Adapter.proposal",
+        "Adapter._prepare",
         "Adapter.coordinator_once",
         "Replica.load",
         "Replica.prior",
         "Replica.lesson",
         "Replica.current",
         "Replica.audit",
+        "Replica.__init__",
+        "Replica.bootstrap_untrusted",
     ]:
         parts = name.split(".")
         value = globals()[parts[0]]
@@ -91,7 +95,12 @@ def loaded_image():
                 "validate_lesson",
             ]
         ],
-        ("lesson_consumer", "ObjectView.object", "ObjectView.object"),
+        *[
+            ("lesson_consumer", "ObjectView." + n, "ObjectView." + n)
+            for n in ["__init__", "__enter__", "__exit__", "run", "object", "commit_header", "tree"]
+        ],
+        ("lesson_consumer", "head_oid", None),
+        ("lesson_consumer", "limited_file", None),
         ("lesson_consumer", "prove_recipe", "prove_recipe"),
         ("pc_sourcing.witness_transfer", "allowed", "allowed"),
         ("pc_sourcing.witness_transfer", "validate", "validate_source"),
@@ -99,14 +108,58 @@ def loaded_image():
         proof = loaded_proof(module, name, ROOT)
         if proof["actually_loaded_matches_source"] is not True:
             raise Rejected("loaded dependency image mismatch")
-        parts = alias.split(".")
-        value = globals()[parts[0]]
-        for part in parts[1:]:
-            value = getattr(value, part)
-        if code_hash(value.__code__) != proof["loaded_code_sha256"]:
-            raise Rejected("adapter dependency alias differs from accepted loaded image")
+        if alias is not None:
+            parts = alias.split(".")
+            value = globals()[parts[0]]
+            for part in parts[1:]:
+                value = getattr(value, part)
+            if code_hash(value.__code__) != proof["loaded_code_sha256"]:
+                raise Rejected("adapter dependency alias differs from accepted loaded image")
         result[module + "." + name] = proof["loaded_code_sha256"]
+    from importlib import import_module
+
+    consumer = import_module("lesson_consumer")
+    if ObjectView is not consumer.ObjectView:
+        raise Rejected("ObjectView class alias differs from accepted module")
+    for name in ["checked", "encoded", "hash_id", "read", "safe_root"]:
+        canonical = getattr(import_module("reviewed_lessons"), name)
+        if getattr(consumer, name) is not canonical:
+            raise Rejected("consumer dependency alias differs from accepted module")
+    members = {
+        Adapter: {"__init__", "proposal", "_prepare", "coordinator_once"},
+        Replica: {"__init__", "bootstrap_untrusted", "lesson", "load", "current", "prior", "audit"},
+        ObjectView: {"__init__", "__enter__", "__exit__", "run", "object", "commit_header", "tree"},
+    }
+    metadata = {
+        "__module__",
+        "__dict__",
+        "__weakref__",
+        "__doc__",
+        "__static_attributes__",
+        "__firstlineno__",
+    }
+    for kind, expected_members in members.items():
+        if (
+            type(kind) is not type
+            or kind.__bases__ != (object,)
+            or set(kind.__dict__) - expected_members - metadata
+        ):
+            raise Rejected("loaded class dispatch differs from accepted image")
     return result
+
+
+def instance_image(value, kind):
+    # Inspect binding without invoking an instance-supplied descriptor/hook.
+    if type(value) is not kind:
+        raise Rejected("unexpected gate instance type")
+    state = object.__getattribute__(value, "__dict__")
+    for name, function in kind.__dict__.items():
+        if callable(function) and hasattr(function, "__code__"):
+            if name in state:
+                raise Rejected("instance method shadows accepted gate binding")
+            actual = object.__getattribute__(value, name)
+            if getattr(actual, "__func__", None) is not function or actual.__self__ is not value:
+                raise Rejected("actual gate callable differs from accepted class binding")
 
 
 def closure(root=ROOT):
@@ -382,7 +435,10 @@ def result_proof(replica, lesson, path):
     ):
         raise Rejected("new result context/realm/lesson mismatch")
     repo = safe_root(value["change_repository"])
-    with ObjectView(repo) as objects:
+    objects = ObjectView(repo)
+    instance_image(objects, ObjectView)
+    with objects:
+        instance_image(objects, ObjectView)
         from lesson_consumer import head_oid, limited_file
 
         base_tree, _ = objects.commit_header(value["base_commit"])
@@ -430,6 +486,18 @@ class Adapter:
         self.root = Path(root)
 
     def proposal(self, operation, payload, expected_version, expected_hash):
+        closure()
+        instance_image(self, Adapter)
+        instance_image(self.replica, Replica)
+        return Adapter._prepare(self, operation, payload, expected_version, expected_hash)[0]
+
+    def _prepare(self, operation, payload, expected_version, expected_hash):
+        # Validate the actually loaded call chain before any candidate/Git proof.
+        image = closure()
+        instance_image(self, Adapter)
+        instance_image(self.replica, Replica)
+        if self.root.resolve() != ROOT.resolve():
+            raise Rejected("adapter supports only its accepted project image")
         request = request_data(operation, payload)
         if type(expected_version) is not int or expected_version < 0:
             raise Rejected("expected version required")
@@ -437,14 +505,14 @@ class Adapter:
         current = self.replica.current(live=operation != "rollback")
         if current["version"] != expected_version or current["snapshot_sha256"] != expected_hash:
             raise Rejected("stale anchored state")
-        lesson, result = None, None
+        lesson, result, target = None, None, None
         if operation in {"promote", "validate_result"}:
             lesson = self.replica.lesson(read(safe_root(request["lesson_path"])))
             result = result_proof(self.replica, lesson, request["result_path"])
             if result["context"] != request["context"]:
                 raise Rejected("result applicability mismatch")
         if operation == "rollback":
-            self.replica.prior(current, request["target_hash"])
+            target = self.replica.prior(current, request["target_hash"])
         data = {
             "operation": operation,
             "request": request,
@@ -452,7 +520,7 @@ class Adapter:
             "expected_version": expected_version,
             "expected_hash": expected_hash,
             "synthetic": self.replica.synthetic,
-            "closure": closure(self.root),
+            "closure": image,
             "source_inventory": source_inventory(self.source_path),
             "replica_path": str(self.replica.root),
             "context": request["context"],
@@ -462,7 +530,14 @@ class Adapter:
             "authority": "PROPOSAL_ONLY",
             "learning_enabled": False,
         }
-        return bind(data, "proposal_hash")
+        # Private immutable bytes keep checked inputs separate from mutable paths.
+        material = {
+            "current": encoded(current),
+            "lesson": encoded(lesson) if lesson is not None else None,
+            "result": encoded(result) if result is not None else None,
+            "target": encoded(target) if target is not None else None,
+        }
+        return bind(data, "proposal_hash"), material
 
     def coordinator_once(
         self, operation, payload, expected_version, expected_hash, *, host=None, fault=None
@@ -472,7 +547,10 @@ class Adapter:
         This API does not authenticate arbitrary Python providers. Its output
         remains a receipt for external adjudication; no autonomous activation.
         """
-        proposal = self.proposal(operation, payload, expected_version, expected_hash)
+        closure()
+        instance_image(self, Adapter)
+        instance_image(self.replica, Replica)
+        proposal = Adapter.proposal(self, operation, payload, expected_version, expected_hash)
         if (
             host is None
             or isinstance(host, dict)
@@ -568,18 +646,31 @@ class Adapter:
             }
         ):
             raise Rejected("external one-operation grant mismatch")
+        closure()
+        instance_image(self, Adapter)
+        instance_image(self.replica, Replica)
         with (self.replica.root / "lock").open("a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
-            again = self.proposal(operation, payload, expected_version, expected_hash)
+            again, material = Adapter._prepare(
+                self, operation, payload, expected_version, expected_hash
+            )
             if again != proposal:
                 raise Rejected("proposal/closure/source drift after adjudication")
-            current = self.replica.current(live=operation != "rollback")
+            current = json.loads(material["current"])
             self.replica.audit({"intent": grant, "synthetic": self.replica.synthetic})
+            if closure(self.root) != proposal["closure"]:
+                raise Rejected("loaded closure changed after intent")
             if fault == "before_switch":
                 raise Rejected("interrupted granted operation; no automatic replay")
             entries = current["entries"]
             if operation == "promote":
-                lesson = read(proposal["request"]["lesson_path"])
+                lesson = json.loads(material["lesson"])
+                if (
+                    lesson["lesson_sha256"] != proposal["lesson_hash"]
+                    or encoded(read(safe_root(proposal["request"]["lesson_path"])))
+                    != material["lesson"]
+                ):
+                    raise Rejected("checked candidate changed after adjudication")
                 entries = [
                     entry
                     for entry in entries
@@ -594,7 +685,13 @@ class Adapter:
                 ]
                 entries.sort(key=lambda entry: entry["lesson"]["lesson_id"])
             elif operation == "rollback":
-                entries = self.replica.prior(current, proposal["request"]["target_hash"])["entries"]
+                target = json.loads(material["target"])
+                if (
+                    encoded(self.replica.prior(current, proposal["request"]["target_hash"]))
+                    != material["target"]
+                ):
+                    raise Rejected("checked rollback target changed after adjudication")
+                entries = target["entries"]
             if operation in {"promote", "rollback"}:
                 new = bind(
                     {
@@ -609,8 +706,19 @@ class Adapter:
                 )
                 atomic(self.replica.root / "snapshots" / (new["snapshot_sha256"] + ".json"), new)
                 self.replica.load(new["snapshot_sha256"])
+                if (
+                    operation == "promote"
+                    and encoded(read(safe_root(proposal["request"]["lesson_path"])))
+                    != material["lesson"]
+                ):
+                    raise Rejected("candidate drift before pointer switch")
                 if source_inventory(self.source_path) != proposal["source_inventory"]:
                     raise Rejected("source drift before pointer switch")
+                if (
+                    encoded(self.replica.current(live=operation != "rollback"))
+                    != material["current"]
+                ):
+                    raise Rejected("checked active snapshot changed before pointer switch")
                 atomic(
                     self.replica.root / "active.json",
                     {"version": new["version"], "sha256": new["snapshot_sha256"]},

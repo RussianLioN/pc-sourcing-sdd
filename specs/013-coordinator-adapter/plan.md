@@ -17,3 +17,5 @@ Constitution checks: product/evidence/payment/oracles unchanged; single writer; 
 The new task-owned quality runner uses a 240-second full-regression bound within the existing 480-second workflow step and 660-second supervisor. Canonical pre-CP suite took 121.50 seconds; the protected legacy quality runner is unchanged. No assertion/test/expectation is removed or weakened. Failures remain retained.
 
 Clone-heavy pytest temporary directories use unique absolute /tmp paths on the separate filesystem; they and failure logs are retained. Quality logs also retain bounded timeout and executable-start errors as FAIL evidence.
+
+Review repair order: preserve failing exact reviewer probes and pure-filesystem witness on 14dac4a; fix early complete/actual callable checks and checked-versus-used content; run neighboring controls; run unchanged reviewer probes/race/SIGKILL/retained operations on the new exact SHA; keep blocked tool pins distinct; hand off for independent review before any real start. Product fallback preparation follows on a separate accepted T016 checkout without resetting shared historical state.
