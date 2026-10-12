@@ -18,3 +18,10 @@ Coordinator explicitly requires a real target, not only Palit transport negative
 Bounded domain search found exact G.Skill J3036 96 GB and separate J2836 variant.
 Add only exact J3036 canonical clean listing URL to curated capability; request MPN
 selects that seed, primary title/category/code must confirm it. J2836 remains separate.
+
+Runtime observation: local resolver intermittently returns EAI_NONAME for 28BIT,
+while existing managed gateway previously read exact reviewed URLs with HTTP200.
+Local DNS remains a defense-in-depth check, not gateway binding proof. Known private
+answers reject; unavailable local DNS remains recorded unknown for the same fixed
+trusted-origin capability. No arbitrary URL/private literal/redirect or source-denial
+fallback is enabled. Full IP-binding is not claimed.

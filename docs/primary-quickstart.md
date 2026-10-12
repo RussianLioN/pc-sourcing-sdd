@@ -41,3 +41,11 @@ recorded separately and stops the run, without inventing a site ban. The origina
 legacy gaierror stop record remains unchanged; a newly initiated bounded run may
 probe the same approved route. Actual source denial/timeout stops remain persistent,
 with no automated retry, alternate provider or silent reset.
+
+Managed trusted-origin clarification: local DNS is attempted and any known private
+answer still rejects. If the local resolver cannot resolve a fixed reviewed public
+origin, the same managed HTTPS route may read that exact capability using its own
+resolver. Status is recorded as unknown; no proxy IP-binding/public-IP-only claim.
+Unlisted origins/paths/actions/redirects still fail before networking. Source HTTP
+denial/CAPTCHA/timeout is never retried via another route. This does not grant an
+arbitrary URL capability or change DNS/proxy configuration.

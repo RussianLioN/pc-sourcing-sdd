@@ -39,13 +39,20 @@ def fixed_get(url):
         or parts.query
     ):
         raise AccessBlocked("network helper requires fixed reviewed source capability")
-    public_address(urlsplit(url).hostname)  # defense in depth, not proxy destination pin
+    dns_status = "public_precheck_only_not_binding"
+    try:
+        public_address(urlsplit(url).hostname)  # known non-public answers still reject
+    except socket.gaierror:
+        # Only a fixed reviewed trusted-origin capability reaches this branch.
+        # Managed proxy has its own resolver; unknown local DNS is not source denial.
+        dns_status = "unknown_local_resolver_unavailable"
     request = urllib.request.Request(
         url, headers={"User-Agent": "PC-Sourcing-Research/1.0", "Accept-Encoding": "identity"}
     )
     try:
         with urllib.request.build_opener(NoRedirect()).open(request, timeout=15) as response:
             headers = {k.lower(): v for k, v in response.headers.items()}
+            headers["x-primary-local-dns-status"] = dns_status
             if response.status != 200 or response.geturl() != url:
                 raise AccessBlocked("primary response status/final URL differs")
             if headers.get("content-encoding", "identity") != "identity":
@@ -453,6 +460,7 @@ class CuratedReader:
                 "http_date": headers.get("date"),
                 "age": headers.get("age"),
                 "cache_control": headers.get("cache-control"),
+                "local_dns_status": headers.get("x-primary-local-dns-status", "not_recorded"),
                 "target_ip_binding": "unknown behind managed gateway",
             }
             return observe(request, candidate, text, provenance, datetime.now(UTC))

@@ -364,3 +364,52 @@ def test_target_mpn_selects_reviewed_ram_seed(tmp_path):
         datetime.now(UTC), Request(name="G.Skill 96 GB", mpn=target, category="ram")
     )
     assert len(seeds) == 1 and seeds[0].url == ram_url
+
+
+def test_managed_fixed_capability_records_unavailable_local_dns_without_claiming_public(
+    monkeypatch,
+):
+    import socket
+
+    from pc_sourcing import curated_primary
+
+    def unavailable(host):
+        raise socket.gaierror(-2, "local resolver unavailable")
+
+    class Response:
+        status = 200
+        headers = {"Content-Type": "text/plain"}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def geturl(self):
+            return "https://28bit.ru/robots.txt"
+
+    class Gateway:
+        def open(self, request, timeout):
+            assert request.full_url == "https://28bit.ru/robots.txt"
+            return Response()
+
+    monkeypatch.setattr(curated_primary, "public_address", unavailable)
+    monkeypatch.setattr(curated_primary.urllib.request, "build_opener", lambda *a: Gateway())
+    monkeypatch.setattr(curated_primary, "read_bounded", lambda r: b"User-agent: *")
+    _, headers = curated_primary.fixed_get("https://28bit.ru/robots.txt")
+    assert headers["x-primary-local-dns-status"] == "unknown_local_resolver_unavailable"
+
+
+def test_known_nonpublic_dns_still_rejects_fixed_origin_before_gateway(monkeypatch):
+    from pc_sourcing import curated_primary
+
+    def private(host):
+        raise AccessBlocked("non-public destination")
+
+    monkeypatch.setattr(curated_primary, "public_address", private)
+    monkeypatch.setattr(
+        curated_primary.urllib.request, "build_opener", lambda *a: pytest.fail("no gateway call")
+    )
+    with pytest.raises(AccessBlocked, match="non-public"):
+        curated_primary.fixed_get("https://28bit.ru/robots.txt")
