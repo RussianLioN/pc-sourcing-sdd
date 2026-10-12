@@ -55,3 +55,11 @@ as unsupported. Generic additionalProperty mapping is not claimed for that adapt
 Eight curated text/scope controls plus nested-schema/brand conflict regressions are
 reported separately from generic external corpora. Closed holdout72 revealed source
 coverage and negation defects; every failed prior metric remains preserved.
+
+9da97dd rejected on structured boolean negation and reversed capacity subject scope.
+PRIMARY-06 → boolean_claims/statement_polarity and clause-local nearest-subject
+capacity extraction →20 lexical/unit controls plus6 actual CuratedReader.observe
+fixture integrations. Explicit literal booleans, negative scalar strings, unknowns
+and supported positive controls remain distinct. Original reviewer NP12 grade case
+retains its original oracle disagreement; reviewer explicitly accepted nominal-grade
+interpretation, no oracle label silently changed. T011 WIP-v3 remains separate.

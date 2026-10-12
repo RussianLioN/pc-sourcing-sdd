@@ -16,3 +16,11 @@ T011 is paused separately at /workspace/T011-paused-wip-v2. It has49 focused
 acceptance cases:48 passed, one concurrency test failed during startup-lock/barrier
 coordination. It is WIP, not accepted runtime. No T011 files remain in this T010 diff.
 No new source requests, source-stop resets or protected assertion changes.
+
+Further 9da97dd review: boolean PropertyValue strings still selected positive words
+without parsing negation, and capacity scope inspected preceding text across clause
+boundaries. Correction: all boolean predicates retain prefix/postfix polarity,
+unsupported grammar is unknown, literal booleans preserve their data and inverse
+predicate polarity. Nearest capacity subject within a clause prevents prior module
+labels from capturing later total capacity. T011 WIP-v3 (startup repair and origin
+binding) is saved separately; scope Unicode inventory fix remains to verify.

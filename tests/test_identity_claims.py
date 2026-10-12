@@ -234,3 +234,156 @@ def test_marketed_mhz_label_never_becomes_physical_or_transfer_unit():
     assert claims[0].unit == "advertised-MHz" and claims[0].scope == "advertised"
     assert not validate(RAM, claims)  # agrees with requested nominal DDR grade only
     assert validate(RAM, extract([], "ram", {"memorySpeed": "3000 MHz"}))
+
+
+@pytest.mark.parametrize(
+    "field,raw,desired",
+    [
+        ("factory_liquid", "not factory liquid", GPU),
+        ("factory_liquid", "factory liquid not installed", GPU),
+        ("factory_liquid", "заводская СЖО не установлена", GPU),
+        ("isComplete", "full mouse not supplied", MOUSE),
+        ("isComplete", "not a full mouse", MOUSE),
+        ("isComplete", "complete mouse is not included", MOUSE),
+    ],
+)
+def test_structured_boolean_negation_never_becomes_positive(field, raw, desired):
+    assert validate(desired, extract([], desired.category, {field: raw}))
+
+
+@pytest.mark.parametrize(
+    "field,raw,desired",
+    [
+        ("factory_liquid", "factory liquid", GPU),
+        ("factory_liquid", "no seller conversion; factory liquid", GPU),
+        ("factory_liquid", "factory liquid; not seller conversion", GPU),
+        ("isComplete", "full mouse supplied", MOUSE),
+        ("isComplete", "complete mouse included", MOUSE),
+        ("isComplete", "full mouse; not receiver-only", MOUSE),
+    ],
+)
+def test_positive_boolean_statements_and_negated_alternative_remain_supported(field, raw, desired):
+    assert not validate(desired, extract([], desired.category, {field: raw}))
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "each module 48GB; total 96GB",
+        "total 96GB; each module 48GB",
+        "each module 48GB, total 96GB",
+        "total 96GB, each module 48GB",
+        "each module 48GB total 96GB",
+        "total 96GB each module 48GB",
+    ],
+)
+def test_capacity_subject_is_bound_to_declaration_not_prior_clause(text):
+    assert not validate(RAM, extract([text], "ram"))
+
+
+def test_conflicting_boolean_assertions_both_survive():
+    claims = extract([], "mouse", {"isComplete": "full mouse supplied; full mouse not supplied"})
+    assert {c.polarity for c in claims} == {"positive", "negative"}
+    assert validate(MOUSE, claims) == ("full_item",)
+
+
+def test_unknown_boolean_does_not_gain_truth_from_positive_word():
+    claims = extract([], "gpu", {"factory_liquid": "factory liquid unconfirmed"})
+    assert all(c.polarity == "unknown" and c.value is None for c in claims)
+    assert validate(GPU, claims) == ("factory_liquid",)
+
+
+@pytest.mark.parametrize(
+    "field,value,desired,expected",
+    [
+        ("factory_liquid", "not factory liquid", GPU, "unresolved"),
+        ("factory_liquid", "factory liquid not installed", GPU, "unresolved"),
+        ("isComplete", "full mouse not supplied", MOUSE, "unresolved"),
+        ("factory_liquid", "factory liquid installed", GPU, "exact"),
+        ("isComplete", "full mouse supplied", MOUSE, "exact"),
+        ("isComplete", "unknown; full mouse unconfirmed", MOUSE, "unresolved"),
+    ],
+)
+def test_boolean_statements_through_actual_curated_reader(
+    field, value, desired, expected, tmp_path
+):
+    from datetime import UTC, datetime
+    from html import escape
+
+    from pc_sourcing.curated_primary import CuratedReader
+    from pc_sourcing.live_models import Candidate
+
+    now = datetime.now(UTC)
+    url = "https://28bit.ru/palit-card/"
+    registry = {
+        "origin": "https://28bit.ru",
+        "status": "bounded_public_read",
+        "reviewed_at": now.isoformat(),
+        "listings": [{"url": url, "title": "SYNTHETIC CARD"}],
+    }
+    page = (
+        "<h1>"
+        + desired.name
+        + '</h1><div itemscope itemtype="https://schema.org/Product"><meta itemprop="mpn" content="'
+        + desired.mpn
+        + '"><meta itemprop="'
+        + field
+        + '" content="'
+        + escape(value, quote=True)
+        + '"></div>'
+    )
+    calls = []
+
+    def fetch(target):
+        calls.append(target)
+        if target.endswith("robots.txt"):
+            return b"User-agent: *\nAllow: /", {"content-type": "text/plain"}
+        return page.encode(), {"content-type": "text/html"}
+
+    reader = CuratedReader(
+        registry,
+        tmp_path / "synthetic-source-state.json",
+        transport=fetch,
+        sleep=lambda delay: None,
+    )
+    candidate = Candidate(
+        url=url, title="SYNTHETIC", queries=(), observed_at=now, response_sha256="a" * 64
+    )
+    observed = reader.observe(desired, candidate, now)
+    assert observed.match == expected and observed.eligible is False
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "factory liquid possibly supplied",
+        "factory liquid cannot be confirmed",
+        "factory liquid?",
+        "factory liquid not good",
+        "factory liquid expected",
+    ],
+)
+def test_unsupported_boolean_prose_is_unknown_instead_of_positive_substring(text):
+    claims = extract([], "gpu", {"factory_liquid": text})
+    assert all(c.polarity == "unknown" for c in claims)
+    assert validate(GPU, claims) == ("factory_liquid",)
+
+
+def test_completeness_module_count_is_a_scoped_assertion_not_just_matched_word():
+    assert not validate(
+        RAM,
+        extract(
+            [],
+            "ram",
+            {"additionalProperty": [{"name": "Kit completeness", "value": "2 matched modules"}]},
+        ),
+    )
+    assert validate(
+        RAM,
+        extract(
+            [],
+            "ram",
+            {"additionalProperty": [{"name": "Kit completeness", "value": "1 matched module"}]},
+        ),
+    ) == ("modules",)

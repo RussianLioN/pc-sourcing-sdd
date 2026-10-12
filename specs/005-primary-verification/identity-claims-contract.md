@@ -43,3 +43,17 @@ grade. It is a separate expectation, not a unit conversion into MT/s or a physic
 clock assertion. A value explicitly in MT/s compares with effective transfer;
 a value explicitly labelled clock compares with physical MHz. Raw source unit
 remains in retained assertions. No measured clock is inferred from a vendor label.
+
+Boolean scalar correction: explicit JSON/string true/false preserve their value and
+source polarity; inverse predicates retain negation rather than inventing a positive
+fact. Free-form boolean strings yield all supported propositions with clause-local
+prefix and predicate-postfix negation. Positive-word occurrence alone is never True.
+Unknown, unconfirmed or unsupported strings yield unknown. Contradictory propositions
+are retained. Capacity subject binds to the nearest role marker within its declaration
+clause, with separators delimiting scope; prior module labels never capture later totals.
+
+Boolean free strings use a bounded declaration grammar with domain predicate words,
+connectors, negation and supported presence/install verbs. Unparsed words/questions
+produce unknown, never positive truth from a recognised substring. Explicit module
+count in a completeness declaration becomes a separate kit-scoped assertion. This
+restricts technical parser capability, not the product rules or frozen oracle.

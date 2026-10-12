@@ -32,7 +32,7 @@ def polarity(text, start, end):
         return "unknown"
     return (
         "negative"
-        if any(w in {"NOT", "NO", "WITHOUT", "НЕ", "НЕТ", "БЕЗ"} for w in words)
+        if any(w in {"NOT", "NO", "WITHOUT", "NON", "НЕ", "НЕТ", "БЕЗ"} for w in words)
         else "positive"
     )
 
@@ -73,6 +73,87 @@ def number(raw, default_unit):
     if unit == "GHz":
         return amount * 1000, "MHz"
     return amount, unit
+
+
+def statement_polarity(text, match):
+    prefix = polarity(text, match.start(), match.end())
+    suffix = re.split(r"[;,\n—]|\bBUT\b|\bА\b", text[match.end() :])[0][:80]
+    if re.search(
+        r"UNKNOWN|UNVERIFIED|UNCLEAR|UNCONFIRMED|NO CONFIRMATION|НЕИЗВЕСТ|НЕТ ПОДТВЕРЖ", suffix
+    ):
+        return "unknown"
+    denied = bool(
+        re.search(
+            r"\b(?:NOT|НЕ)\s+(?:(?:IS|ARE|WAS|БЫЛА|БЫЛО)\s+)?"
+            r"(?:INSTALLED|INCLUDED|SUPPLIED|SUPPORTED|PROVIDED|PRESENT|COMPLETE|LIQUID|FACTORY|MOUSE|MEMORY|"
+            r"УСТАНОВ\w*|ПОСТАВ\w*|ВКЛЮЧ\w*|ПОДДЕРЖ\w*)|"
+            r"\b(?:ABSENT|UNSUPPORTED|MISSING|DISABLED|FALSE|ОТСУТСТВУЕТ)\b",
+            suffix,
+        )
+    )
+    if prefix == "unknown" or (prefix == "negative" and denied):
+        return "unknown"
+    return "negative" if denied or prefix == "negative" else "positive"
+
+
+def boolean_claims(field, raw, source, *, invert=False, scope="product"):
+    """Parse all supported propositions; no positive substring becomes a default True."""
+    text = norm(raw)
+    if type(raw) is bool or text in {"TRUE", "FALSE"}:
+        value = raw if type(raw) is bool else text == "TRUE"
+        return [
+            Claim(field, value, "", scope, "negative" if invert else "positive", source, str(raw))
+        ]
+    if re.search(
+        r"UNKNOWN|UNVERIFIED|UNCLEAR|UNCONFIRMED|НЕИЗВЕСТ|НЕПОДТВЕРЖ|NO CONFIRMATION", text
+    ):
+        return [Claim(field, None, "", scope, "unknown", source, str(raw))]
+    allowed = (
+        r"(?:NOT|NO|NON|WITHOUT|IS|ARE|WAS|WERE|HAS|HAVE|BE|BEEN|AT|BY|AND|OR|A|AN|THE|WITH|IN|OF|AS|TO|IT|ITS|NEITHER|NOR|НЕ|НЕТ|БЕЗ|НО|И|А|В|НА|ОТ|ДЛЯ|БУДЕТ|БЫЛА|БЫЛО|ТОЛЬКО|ЛИШЬ|"
+        r"FACTORY|MANUFACTURER|LIQUID|COOLING|SYSTEM|INSTALL\w*|SUPPL\w*|INCLUD\w*|SUPPORT\w*|PROVID\w*|PRESENT|COMPLETE|FULL|ABSENT|MISSING|DISABLED|UNSUPPORTED|SELLER|RETAILER|AFTERMARKET|MODIFICATION\w*|CONVERSION|AIR|"
+        r"MOUSE|GRAPHICS|CARD|GPU|DEVICE|MEMORY|RAM|MATCHED|PAIR|MODULE\w*|KIT|BOX|PACKAG\w*|RECEIVER|DONGLE|SHELL|HOUSING|REPLACEMENT|SPARE|ONLY|RADIATOR|LOOSE|PART\w*|UNIT|RETAIL|EMPTY|REGISTERED|UNBUFFERED|ECC|EXPO|XMP|"
+        r"ЗАВОД\w*|ЖИДКОСТ\w*|ОХЛАЖД\w*|СЖО|СИСТЕМ\w*|УСТАНОВ\w*|ПОСТАВ\w*|ВКЛЮЧ\w*|ПОДДЕРЖ\w*|ПРОДАВ\w*|ВОЗДУШ\w*|ПОЛН\w*|МЫШЬ|ВИДЕОКАРТ\w*|КАРТ\w*|ПАМЯТЬ|КОМПЛЕКТ\w*|РАДИАТОР\w*|ПРИЕМНИК|НОЖК\w*|ЗАПЧАСТ\w*|ОТСУТСТВ\w*|РЕГИСТР\w*)"
+    )
+    words = re.findall(r"[A-ZА-Я0-9]+", text)
+    count = (
+        re.search(r"\b(\d+)\s+(?:MATCHED\s+)?MODULES?\b", text) if field == "full_item" else None
+    )
+    if "?" in text or any(
+        not re.fullmatch(allowed, word) and not (count and word == count[1]) for word in words
+    ):
+        return [Claim(field, None, "", scope, "unknown", source, str(raw))]
+    patterns = {
+        "factory_liquid": (
+            r"FACTORY|MANUFACTURER|ЗАВОД\w*",
+            r"SELLER|RETAILER|AFTERMARKET|AIR|ПРОДАВ\w*|ВОЗДУШ\w*",
+        ),
+        "full_item": (
+            r"COMPLETE|FULL|ПОЛН\w*|MOUSE(?![ -]?PAD)|GRAPHICS CARD|MATCHED|МЫШЬ|ВИДЕОКАРТ\w*|MEMORY|ПАМЯТЬ",
+            r"REPLACEMENT|SPARE|ONLY|MOUSE.?PAD|RADIATOR|ПРИЕМНИК|НОЖК\w*|ЗАПЧАСТ\w*",
+        ),
+        "registered": (r"REGISTERED|РЕГИСТР\w*", r"UNBUFFERED"),
+        "ecc": (r"ECC", r"NON[ -]?ECC"),
+        "accessory_included": (
+            r"INCLUDED|SUPPLIED|PROVIDED|PRESENT|ВКЛЮЧ\w*",
+            r"ABSENT|MISSING|ОТСУТСТВ\w*",
+        ),
+    }
+    if field.startswith("profile_"):
+        patterns[field] = (field[8:] + r"|SUPPORTED", r"UNSUPPORTED|DISABLED")
+    result = []
+    for value, pattern in zip((True, False), patterns.get(field, (r"(?!)", r"(?!)")), strict=True):
+        for match in re.finditer(r"\b(?:" + pattern + r")\b", text):
+            pol = statement_polarity(text, match)
+            result.append(Claim(field, value, "", scope, pol, source, str(raw)))
+    if count:
+        result.append(
+            Claim("modules", Decimal(count[1]), "count", "kit", "positive", source, str(raw))
+        )
+    if any(
+        word in {"NOT", "NO", "WITHOUT", "NON", "НЕ", "НЕТ", "БЕЗ"} for word in words
+    ) and not any(c.polarity != "positive" for c in result):
+        return [Claim(field, None, "", scope, "unknown", source, str(raw))]
+    return result or [Claim(field, None, "", scope, "unknown", source, str(raw))]
 
 
 def structured_claims(product, category):
@@ -246,34 +327,8 @@ def structured_claims(product, category):
                 "ecc",
                 "accessory_included",
             }:
-                if type(raw) is bool:
-                    value = not raw if invert else raw
-                elif text in {"TRUE", "FALSE"}:
-                    value = (text == "TRUE") != invert
-                elif re.search(r"UNKNOWN|UNVERIFIED|НЕИЗВЕСТ|НЕПОДТВЕРЖ|NO CONFIRMATION", text):
-                    pol = "unknown"
-                elif field == "factory_liquid":
-                    if re.search(r"SELLER|RETAILER|AFTERMARKET|AIR|ПРОДАВ|ВОЗДУШ", text):
-                        value = False
-                    elif re.search(r"FACTORY|MANUFACTURER|ЗАВОД", text):
-                        value = True
-                elif field == "full_item":
-                    if re.search(
-                        r"REPLACEMENT|SPARE|ONLY|MOUSE.?PAD|RADIATOR|ПРИЕМНИК|НОЖК|ЗАПЧАСТ", text
-                    ) and not re.search(r"COMPLETE|FULL|ПОЛН|ВИДЕОКАРТА.*РАДИАТОР", text):
-                        value = False
-                    elif re.search(
-                        r"COMPLETE|FULL|ПОЛН|MOUSE|GRAPHICS CARD|MATCHED|МЫШЬ|ВИДЕОКАРТ", text
-                    ):
-                        value = True
-                elif field.startswith("profile_"):
-                    value = (
-                        not bool(re.search(r"NOT|NO|UNSUPPORTED|НЕ |НЕТ|БЕЗ", text))
-                        if field[8:] in text or text in {"SUPPORTED", "UNSUPPORTED"}
-                        else None
-                    )
-                if value is None:
-                    pol = "unknown"
+                result.extend(boolean_claims(field, raw, source, invert=invert, scope=scope))
+                continue
             elif field == "profile":
                 result.extend(text_claims(text, category, source))
                 continue
@@ -329,14 +384,15 @@ def text_claims(raw, category, source="title"):
         add("capacity", Decimal(m[1]) * Decimal(m[2]), "GB", "kit", m)
         masked[m.start() : m.end()] = " " * len(m[0])
     for m in re.finditer(r"\b(\d+)\s*(?:GB|ГБ)\b", "".join(masked)):
-        before = text[max(0, m.start() - 30) : m.start()]
-        scope = (
-            "module"
-            if re.search(r"EACH.*MODULE|PER.*MODULE|НА.*МОДУЛ", before)
-            else "kit"
-            if category == "ram"
-            else "product"
-        )
+        before = re.split(r"[;,\n—]", text[: m.start()])[-1]
+        subjects = [
+            (s.end(), "module")
+            for s in re.finditer(
+                r"EACH\s+MODULE|PER[ -]+MODULE|НА\s+МОДУЛ\w*|КАЖД\w*\s+МОДУЛ\w*", before
+            )
+        ]
+        subjects.extend((s.end(), "kit") for s in re.finditer(r"TOTAL|ВСЕГО|KIT|КОМПЛЕКТ", before))
+        scope = max(subjects)[1] if subjects else "kit" if category == "ram" else "product"
         add("capacity", Decimal(m[1]), "GB", scope, m)
     for m in re.finditer(r"\bG?DDR\s*[2-9]X?\b", text):
         add("memory_type", re.sub(r"\s", "", m[0]), match=m)
