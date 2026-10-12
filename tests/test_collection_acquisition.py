@@ -302,3 +302,35 @@ def test_source_schema_constraints_and_indexes_are_protected(tmp_path, mutation)
     with pytest.raises(ValueError, match="schema"):
         Acquisition(state_dir=a.state_dir, registry=a.registry, transport=a.transport)
     assert a.dbpath.read_bytes() == before and calls == []
+
+
+def test_canonical_legacy_source_version_zero_preserves_spent_budget_without_migration(tmp_path):
+    a, calls, r, j = setup(tmp_path)
+    a.acquire(r, j)
+    budget = a.status()["budget"]
+    with a.connect() as db:
+        db.execute("PRAGMA user_version=0")
+    before = {
+        str(p.relative_to(a.state_dir)): p.read_bytes()
+        for p in a.state_dir.rglob("*")
+        if p.is_file()
+    }
+    again = Acquisition(state_dir=a.state_dir, registry=a.registry, transport=a.transport)
+    assert again.status()["budget"] == budget
+    assert again.acquire(r, Journal(tmp_path / "legacy-runtime"))["http_calls"] == 0
+    assert len(calls) == 2
+    assert before == {
+        str(p.relative_to(a.state_dir)): p.read_bytes()
+        for p in a.state_dir.rglob("*")
+        if p.is_file()
+    }
+
+
+def test_unknown_source_schema_version_rejected_without_migration(tmp_path):
+    a, calls, r, j = setup(tmp_path)
+    with a.connect() as db:
+        db.execute("PRAGMA user_version=2")
+    before = a.dbpath.read_bytes()
+    with pytest.raises(ValueError, match="schema version"):
+        Acquisition(state_dir=a.state_dir, registry=a.registry, transport=a.transport)
+    assert before == a.dbpath.read_bytes() and calls == []

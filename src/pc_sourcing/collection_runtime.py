@@ -62,9 +62,12 @@ def schema_fingerprint(db):
     )
 
 
-def require_schema(db, ddl):
+def require_schema(db, ddl, *, allowed_versions=(1,)):
+    version = db.execute("PRAGMA user_version").fetchone()[0]
+    if version not in allowed_versions:
+        raise ValueError("database schema version mismatch")
     with sqlite3.connect(":memory:") as expected:
-        expected.executescript(ddl + "PRAGMA user_version=1;")
+        expected.executescript(ddl + "PRAGMA user_version=" + str(version) + ";")
         wanted = schema_fingerprint(expected)
     if schema_fingerprint(db) != wanted:
         raise ValueError("database schema fingerprint/constraints/types/indexes mismatch")

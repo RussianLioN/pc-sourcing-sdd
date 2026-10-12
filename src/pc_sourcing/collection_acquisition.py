@@ -119,7 +119,9 @@ class Acquisition:
                 fsync_directory(self.state_dir)
 
     def integrity(self, db):
-        require_schema(db, SOURCE_SCHEMA)
+        # The first genuine 28BIT checkpoint used version 0 with identical DDL.
+        # Explicit legacy compatibility is read-only, never a migration/reset.
+        require_schema(db, SOURCE_SCHEMA, allowed_versions=(0, 1))
         expected = {
             "budget": {"id", "cards_reserved", "http_reserved", "http_attempted", "blocked"},
             "intents": {

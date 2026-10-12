@@ -54,7 +54,7 @@ def validate_state(root):
             continue
         with sqlite3.connect(dbpath.as_uri() + "?mode=ro", uri=True) as db:
             db.row_factory = sqlite3.Row
-            require_schema(db, SOURCE_SCHEMA)
+            require_schema(db, SOURCE_SCHEMA, allowed_versions=(0, 1))
             objects = db.execute(
                 "SELECT name,type FROM sqlite_master WHERE type IN ('table','view','trigger')"
             ).fetchall()

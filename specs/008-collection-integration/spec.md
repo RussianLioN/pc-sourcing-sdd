@@ -89,3 +89,10 @@ Second independent recheck repairs (cc5fbc3 rejected):
   source schema to acquisition and source-snapshot validation, and validate the
   CPU schema before constructor/mutations/backup. Canonical historical DBs remain
   compatible: no schema migration or original source state changes are required.
+
+Historical source schema compatibility is explicit: the genuine first 28BIT
+ledger has user_version=0, REGARD has 1, with identical canonical DDL/constraints.
+Accept source versions {0,1} only against the complete canonical fingerprint for
+that version; unknown versions fail. CPU journals require version 1. No PRAGMA
+migration, reset or new HTTP is performed. A first operational refusal at b8a8ec3
+is retained, followed by compatibility regression and full state-byte comparison.
