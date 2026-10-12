@@ -44,3 +44,19 @@ checks remain, with only this reconstructed byte-bound coordinator exception.
 Independent WIP review libfile_30af82c7e4f48191b3c3686bb285a42e, SHA256
 7b01be4f7583380a4f9b893b0d877950b02985ec69c5755debeccc3c881e6303 found
 LOW import ordering only; full exact-SHA independent acceptance still pending.
+
+Final review 2268d23 rejected WIT-07: libfile_a2664cd6f72c8191855fd9deeb8fb87b,
+SHA256 b9453df3cc4048ac09a3574f7cfddc3cd250e64db73ce12125ce8835213d928e.
+Transport must not reuse shared 2 MB/30 s streaming defaults. Decoded body reads
+request only the remaining per-profile allowance (1,000,000 bytes), with no
+extra overflow probe. Declared oversize is rejected before body reading. At the
+exact byte cap, unproven EOF is refused conservatively; known exact length/EOF
+is accepted. This limits decoded entity-body consumption, not TLS/framing bytes.
+One wall-clock deadline starts before the request worker and covers resolver,
+open, headers, body and in-memory IPC. Parent terminates/reaps a blocked worker
+at expiry; no background fetch remains. POSIX single-thread CLI only; unsupported
+execution context refuses before network. No new agent/orchestrator/global hooks.
+Complete response bytes remain in memory, never stored as full HTML on disk.
+Offline tests cover below/at/above byte cap, 1.2 MB reproducer, per-chunk and
+cumulative deadline, delayed open, blocking read1/chunked headers, actual dripping
+chunked-reader mocks and no surviving worker/late effect. No actual HTTP used.

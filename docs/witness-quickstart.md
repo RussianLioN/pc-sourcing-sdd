@@ -22,7 +22,7 @@ LIQUID OC, G5090-32SLC); SOC remains an explicit analogue, not the same SKU.
 Do not run these live commands until independent acceptance. Production defaults
 block before source initialization/HTTP without bound review. Existing root/state
 cannot be reset by bootstrap. Only 1 card/2 HTTP per new source, >=10s interval,
-<=1MB response, <=15s socket timeout, no redirects/query/API/subresource/retries.
+<=1MB response, <=15s total request deadline, no redirects/query/API/subresource/retries.
 Policy review expires 2026-10-13T10:45:00Z; recheck immediately before both reads.
 No DNS/Spectrasoft/Avito/NIX/Tavily routes. Fresh RAM budget is prohibited.
 
@@ -34,3 +34,10 @@ comparing reports. Synthetic transport is test-only and cannot use production st
 Unsupported layout, conditional price and malformed JSON remain unresolved coverage.
 Selected bytes/tokens/hash/date survive, no full HTML/reviews retained. Displayed
 price never becomes unconditional; no full-product DoD or ban-free guarantee.
+
+Request streaming now enforces the profile body cap directly. Unknown-length
+response at exact cap without proven EOF is blocked without reading an overflow
+byte. POSIX single-thread CLI runs one short-lived HTTP worker; the parent deadline
+covers DNS/open/headers/body/IPC and kills/reaps blocking reads at expiry. Full
+HTML remains in memory only. This is a request resource guard, not another
+development orchestrator. No production HTTP performed during validation.

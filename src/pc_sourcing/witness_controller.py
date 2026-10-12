@@ -1,8 +1,13 @@
 """Durable bounded acquisition retaining exact T015 safe witnesses. No implicit reset."""
 
 import json
+import multiprocessing
+import os
+import selectors
 import socket
 import sqlite3
+import struct
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -24,7 +29,7 @@ from pc_sourcing.durable_jobs import (
     write_file,
 )
 from pc_sourcing.live_models import Candidate, Request
-from pc_sourcing.live_transport import DENIAL_MARKERS, AccessBlocked, public_address, read_bounded
+from pc_sourcing.live_transport import DENIAL_MARKERS, AccessBlocked, public_address
 from pc_sourcing.product_extraction import extract_card, unique_members
 from pc_sourcing.witness_profiles import PROFILES, ROOT, release_gate
 
@@ -61,32 +66,85 @@ def shared_baseline(root):
     validate_state(root)
 
 
-def fixed_transport(profile, url):
-    if url not in {profile.url, profile.robots_url}:
-        raise AccessBlocked("exact source URL boundary")
+def read_profile_body(response, *, byte_limit, deadline, clock=time.monotonic):
+    """Read only remaining decoded-body allowance; never fetch an overflow byte."""
+    if type(byte_limit) is not int or byte_limit <= 0:
+        raise AccessBlocked("invalid profile byte limit")
+    header = response.headers.get("content-length")
+    declared = None
+    if header is not None:
+        if not isinstance(header, str) or not header.isdigit():
+            raise AccessBlocked("ambiguous content length")
+        declared = int(header)
+        if declared > byte_limit:
+            raise AccessBlocked("profile byte limit exceeded by declared length")
+    size, parts = 0, []
+    while True:
+        if clock() >= deadline:
+            raise AccessBlocked("profile total deadline exceeded")
+        if declared == size and not getattr(response, "chunked", False):
+            return b"".join(parts)
+        if size == byte_limit:
+            if response.isclosed() or declared == size and not getattr(response, "chunked", False):
+                return b"".join(parts)
+            raise AccessBlocked("profile byte limit reached without proven EOF")
+        remaining = byte_limit - size
+        if declared is not None:
+            remaining = min(remaining, declared - size)
+        part = response.read1(min(65536, remaining))
+        if clock() >= deadline:
+            raise AccessBlocked("profile total deadline exceeded during chunk")
+        if not isinstance(part, bytes) or len(part) > min(65536, remaining):
+            raise AccessBlocked("response violated bounded read protocol")
+        if not part:
+            if declared is not None and size != declared:
+                raise AccessBlocked("truncated declared response body")
+            return b"".join(parts)
+        parts.append(part)
+        size += len(part)
+
+
+def _request_with_profile_limits(profile, url, deadline):
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise AccessBlocked("profile total deadline exceeded before request")
     dns_status = "public_precheck_only_not_binding"
     try:
         public_address(urlsplit(url).hostname)
     except socket.gaierror:
-        # Only fixed reviewed trusted origins reach the managed-gateway case.
-        # Known non-public resolver answers still fail; local DNS unknown is logged.
         dns_status = "unknown_local_resolver_unavailable"
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise AccessBlocked("profile total deadline exceeded during resolver")
     request = urllib.request.Request(
         url, headers={"User-Agent": "PC-Sourcing-Research/1.0", "Accept-Encoding": "identity"}
     )
     try:
-        with urllib.request.build_opener(NoRedirect()).open(
-            request, timeout=profile.timeout
-        ) as response:
-            headers = {k.lower(): v for k, v in response.headers.items()}
-            headers["x-witness-local-dns-status"] = dns_status
+        with urllib.request.build_opener(NoRedirect()).open(request, timeout=remaining) as response:
+            if time.monotonic() >= deadline:
+                raise AccessBlocked("profile total deadline exceeded during headers")
+            raw_headers = {k.lower(): v for k, v in response.headers.items()}
             if (
                 response.status != 200
                 or response.geturl() != url
-                or headers.get("content-encoding", "identity") != "identity"
+                or raw_headers.get("content-encoding", "identity") != "identity"
             ):
                 raise AccessBlocked("source status/redirect/encoding refusal")
-            return read_bounded(response), headers
+            if (
+                hasattr(response.headers, "get_all")
+                and len(response.headers.get_all("content-length", [])) > 1
+            ):
+                raise AccessBlocked("ambiguous repeated content length")
+            if getattr(response, "chunked", False) and "content-length" in raw_headers:
+                raise AccessBlocked("ambiguous chunked/content-length framing")
+            headers = {
+                k: str(v)[:1024]
+                for k, v in raw_headers.items()
+                if k in {"content-type", "date", "age", "cache-control"}
+            }
+            headers["x-witness-local-dns-status"] = dns_status
+            body = read_profile_body(response, byte_limit=profile.byte_limit, deadline=deadline)
+            return body, headers
     except urllib.error.HTTPError as exc:
         value = exc.headers.get("retry-after") if exc.headers else None
         raise SourceFailure(
@@ -94,10 +152,108 @@ def fixed_transport(profile, url):
             status=exc.code,
             retry_after=value if value and value.isdigit() and len(value) < 8 else None,
         ) from exc
+    except AccessBlocked:
+        raise
     except (OSError, ValueError) as exc:
         raise AccessBlocked(
             "source transport refusal; no retry/fallback: " + type(exc).__name__
         ) from exc
+
+
+def _bounded_http_child(profile, url, deadline, read_fd, write_fd):
+    os.close(read_fd)
+    try:
+        try:
+            body, headers = _request_with_profile_limits(profile, url, deadline)
+            metadata = {"status": "ok", "headers": headers}
+        except BaseException as exc:
+            body = b""
+            metadata = {
+                "status": "blocked",
+                "reason": str(exc)[:500],
+                "http_status": getattr(exc, "status", None),
+                "retry_after": getattr(exc, "retry_after", None),
+            }
+        encoded_meta = encoded(metadata)
+        if len(encoded_meta) > 16384 or len(body) > profile.byte_limit:
+            raise ValueError("bounded worker result invariant")
+        payload = struct.pack("!II", len(encoded_meta), len(body)) + encoded_meta + body
+        view = memoryview(payload)
+        while view:
+            count = os.write(write_fd, view)
+            view = view[count:]
+    finally:
+        os.close(write_fd)
+
+
+def fixed_transport(profile, url):
+    """One cancellable HTTP worker; wall deadline covers DNS/open/headers/body."""
+    if url not in {profile.url, profile.robots_url}:
+        raise AccessBlocked("exact source URL boundary")
+    if (
+        threading.current_thread() is not threading.main_thread()
+        or threading.active_count() != 1
+        or not hasattr(os, "fork")
+        or multiprocessing.current_process().daemon
+    ):
+        raise AccessBlocked("bounded HTTP requires isolated single-thread POSIX CLI")
+    deadline = time.monotonic() + profile.timeout
+    read_fd, write_fd = os.pipe()
+    process = multiprocessing.get_context("fork").Process(
+        target=_bounded_http_child, args=(profile, url, deadline, read_fd, write_fd)
+    )
+    try:
+        process.start()
+    except BaseException:
+        os.close(read_fd)
+        os.close(write_fd)
+        process.close()
+        raise
+    os.close(write_fd)
+    os.set_blocking(read_fd, False)
+    data = bytearray()
+    try:
+        with selectors.DefaultSelector() as selector:
+            selector.register(read_fd, selectors.EVENT_READ)
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0 or not selector.select(remaining):
+                    raise AccessBlocked("profile total deadline exceeded; HTTP worker terminated")
+                part = os.read(read_fd, 65536)
+                if not part:
+                    break
+                data.extend(part)
+                if len(data) > profile.byte_limit + 16392:
+                    raise AccessBlocked("bounded worker result exceeded byte limit")
+        process.join(max(0, deadline - time.monotonic()))
+        if process.is_alive() or time.monotonic() >= deadline:
+            raise AccessBlocked("profile total deadline exceeded; HTTP worker terminated")
+        if process.exitcode != 0 or len(data) < 8:
+            raise AccessBlocked("bounded HTTP worker failed; no retry")
+        meta_size, body_size = struct.unpack("!II", data[:8])
+        if (
+            meta_size > 16384
+            or body_size > profile.byte_limit
+            or len(data) != 8 + meta_size + body_size
+        ):
+            raise AccessBlocked("bounded HTTP worker framing invalid")
+        metadata = json.loads(data[8 : 8 + meta_size], object_pairs_hook=unique_members)
+        if metadata["status"] != "ok":
+            raise SourceFailure(
+                metadata["reason"],
+                status=metadata.get("http_status"),
+                retry_after=metadata.get("retry_after"),
+            )
+        body = bytes(data[8 + meta_size :])
+        if time.monotonic() >= deadline:
+            raise AccessBlocked("profile total deadline exceeded during result transfer")
+        return body, metadata["headers"]
+    finally:
+        os.close(read_fd)
+        if process.is_alive():
+            process.kill()
+            process.join()
+        process.close()
 
 
 class Controller:

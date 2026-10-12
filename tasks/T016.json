@@ -1,10 +1,10 @@
 {
   "id": "T016",
-  "status": "controller_candidate_pending_exact_SHA_independent_review",
+  "status": "WIT_07_profile_streaming_deadline_repair_pending_recheck",
   "base_commit": "e772a60eb6dbdc5f8019e4a72ddf43a00ebbac18",
   "base_status": "T015 independent limited offline engineering PASS",
   "spec_revision": "1.0.0",
-  "spec_sha256": "4ed57c4bc12ed5b7a4da64366759c845eda064e2cadb1157d1bc3036df1799c8",
+  "spec_sha256": "58edc0f81081109d237afaf9ea944c3b0a9df2704c615f9fb33da396840b1f23",
   "owned_files": [
     "specs/011-witness-controller/spec.md",
     "specs/011-witness-controller/plan.md",
@@ -295,5 +295,11 @@
     "sha256": "7b01be4f7583380a4f9b893b0d877950b02985ec69c5755debeccc3c881e6303",
     "finding": "LOW Ruff I001; exact CP approved; no functional blocker found",
     "status": "repair_applied_final_exact_SHA_pending"
+  },
+  "final_rejection": {
+    "library_file_id": "libfile_a2664cd6f72c8191855fd9deeb8fb87b",
+    "sha256": "b9453df3cc4048ac09a3574f7cfddc3cd250e64db73ce12125ce8835213d928e",
+    "finding": "MEDIUM shared stream defaults exceeded 1MB/15s profile; fixed remaining-byte reader and cancellable whole-request deadline",
+    "status": "independent exact-SHA recheck pending"
   }
 }
