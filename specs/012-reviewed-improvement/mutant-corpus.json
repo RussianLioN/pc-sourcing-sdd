@@ -1,0 +1,71 @@
+{
+  "version": "1.0.0",
+  "synthetic": true,
+  "corpus": [
+    {
+      "id": "conflict",
+      "module": "pc_sourcing.identity_attributes",
+      "function": "attributes",
+      "file": "src/pc_sourcing/identity_attributes.py",
+      "before": "result.setdefault(name, set()).add(value)",
+      "after": "result[name] = {value}"
+    },
+    {
+      "id": "duplicate",
+      "module": "pc_sourcing.product_extraction",
+      "function": "unique_members",
+      "file": "src/pc_sourcing/product_extraction.py",
+      "before": "if key in result:",
+      "after": "if False:"
+    },
+    {
+      "id": "payment_or",
+      "module": "pc_sourcing.evaluate",
+      "function": "evaluate",
+      "file": "src/pc_sourcing/evaluate.py",
+      "before": "payment = bool(passed)",
+      "after": "payment = len(passed) == 2"
+    },
+    {
+      "id": "unknown",
+      "module": "pc_sourcing.identity_claims",
+      "function": "number",
+      "file": "src/pc_sourcing/identity_claims.py",
+      "before": "return None, default_unit",
+      "after": "return False, default_unit"
+    },
+    {
+      "id": "evidence_kind",
+      "module": "pc_sourcing.evaluate",
+      "function": "evaluate",
+      "file": "src/pc_sourcing/evaluate.py",
+      "before": "{\"platform_transaction\"}\n            if name",
+      "after": "{\"platform_transaction\", \"seller_statement\"}\n            if name"
+    },
+    {
+      "id": "budget_reset",
+      "module": "pc_sourcing.collection_acquisition",
+      "function": "Acquisition.integrity",
+      "file": "src/pc_sourcing/collection_acquisition.py",
+      "before": "raise ValueError(\"source budget row missing/duplicated; no reset\")",
+      "after": "return None"
+    },
+    {
+      "id": "schema",
+      "module": "pc_sourcing.collection_runtime",
+      "function": "require_schema",
+      "file": "src/pc_sourcing/collection_runtime.py",
+      "before": "if schema_fingerprint(db) != wanted:",
+      "after": "if False:"
+    },
+    {
+      "id": "stream",
+      "module": "pc_sourcing.witness_controller",
+      "function": "read_profile_body",
+      "file": "src/pc_sourcing/witness_controller.py",
+      "before": "if declared > byte_limit:",
+      "after": "if declared > byte_limit * 2:"
+    }
+  ],
+  "denominator": "eight fixed valid semantic families; no general coverage claim"
+}

@@ -1,0 +1,39 @@
+{
+  "cohort": [
+    "T012",
+    "T013",
+    "T015",
+    "T016"
+  ],
+  "taxonomy": [
+    "json_duplicate_declarations",
+    "ledger_integrity",
+    "public_checkpoint",
+    "transport_limits"
+  ],
+  "root_cause_incidents": {
+    "json_duplicate_declarations": 1,
+    "ledger_integrity": 1,
+    "public_checkpoint": 4,
+    "transport_limits": 1
+  },
+  "local_attempts": 0,
+  "independent_repair_rounds": 3,
+  "direct_human_interventions": 0,
+  "replay_eligible": 0,
+  "replay_pass": 0,
+  "replay_blocked": 0,
+  "acceptance_seconds": {
+    "T012": null,
+    "T013": null,
+    "T015": null,
+    "T016": null
+  },
+  "cost": null,
+  "active_user_time": null,
+  "improvement_claim": null,
+  "unknown_reason": "no measured usage/activity telemetry",
+  "measurement_scope": "incomplete public documented events only; no inferred hidden chronology or full historical count",
+  "historical_independent_rounds": null,
+  "historical_recurrence": null
+}

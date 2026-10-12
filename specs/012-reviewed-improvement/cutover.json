@@ -1,0 +1,7 @@
+{
+  "status": "LEARNING_OFF_PENDING_INDEPENDENT_T017_REVIEW",
+  "accepted_product_base": "f495e5294e93a281f945de6f4e1c6c89d7a6cb1e",
+  "real_learning_enabled": false,
+  "pending_source_refetch": false,
+  "product_resume": "Coordinator resumes accepted product after review; unavailable real authority keeps learning OFF rather than extending process pause indefinitely."
+}

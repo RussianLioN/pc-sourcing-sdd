@@ -1,0 +1,8 @@
+{
+  "status": "BOOTSTRAP_CASE_IMPLEMENTED_PENDING_INDEPENDENT_RESULT_REVIEW",
+  "explicit_skill": "$pc-reviewed-lessons",
+  "synthetic": true,
+  "scenario": "Conflict lesson -> applicability -> newly created decision with counterfactual; receipt-only/not-applicable/valid-hash hostile text controls",
+  "real_activation": "OFF",
+  "evidence": "external exact-SHA review bundle includes actual isolated invocation and observable artifact"
+}

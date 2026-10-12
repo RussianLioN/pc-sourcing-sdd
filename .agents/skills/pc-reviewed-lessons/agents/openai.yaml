@@ -1,0 +1,5 @@
+interface:
+  display_name: "Reviewed scoped lessons"
+  short_description: "Explicit bounded offline lesson use; real learning OFF"
+policy:
+  allow_implicit_invocation: false

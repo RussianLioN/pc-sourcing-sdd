@@ -1,0 +1,109 @@
+{
+  "source": "public Git checkpoints only; no private chats",
+  "cohort": [
+    "T012",
+    "T013",
+    "T015",
+    "T016"
+  ],
+  "taxonomy": [
+    "public_checkpoint",
+    "ledger_integrity",
+    "json_duplicate_declarations",
+    "transport_limits"
+  ],
+  "events": [
+    {
+      "event_id": "T012",
+      "event_type": "submission",
+      "at": null,
+      "incident_id": "T012",
+      "root_cause": "public_checkpoint",
+      "actor_type": "writer",
+      "eligible": false,
+      "reproducible": null,
+      "evidence": [
+        "https://github.com/RussianLioN/pc-sourcing-sdd/commit/35b8141c781cab7a3c72271a98722f5947d93e46"
+      ]
+    },
+    {
+      "event_id": "T013",
+      "event_type": "submission",
+      "at": null,
+      "incident_id": "T013",
+      "root_cause": "public_checkpoint",
+      "actor_type": "writer",
+      "eligible": false,
+      "reproducible": null,
+      "evidence": [
+        "https://github.com/RussianLioN/pc-sourcing-sdd/commit/79df7e5a04a9a54b4ee2122c4729459bfd512bae"
+      ]
+    },
+    {
+      "event_id": "T015",
+      "event_type": "submission",
+      "at": null,
+      "incident_id": "T015",
+      "root_cause": "public_checkpoint",
+      "actor_type": "writer",
+      "eligible": false,
+      "reproducible": null,
+      "evidence": [
+        "https://github.com/RussianLioN/pc-sourcing-sdd/commit/e772a60eb6dbdc5f8019e4a72ddf43a00ebbac18"
+      ]
+    },
+    {
+      "event_id": "T016",
+      "event_type": "submission",
+      "at": null,
+      "incident_id": "T016",
+      "root_cause": "public_checkpoint",
+      "actor_type": "writer",
+      "eligible": false,
+      "reproducible": null,
+      "evidence": [
+        "https://github.com/RussianLioN/pc-sourcing-sdd/commit/f495e5294e93a281f945de6f4e1c6c89d7a6cb1e"
+      ]
+    },
+    {
+      "event_id": "T013_public_rejection",
+      "event_type": "independent_rejection",
+      "at": null,
+      "incident_id": "T013",
+      "root_cause": "ledger_integrity",
+      "actor_type": "reviewer",
+      "eligible": false,
+      "reproducible": null,
+      "evidence": [
+        "https://github.com/RussianLioN/pc-sourcing-sdd/blob/79df7e5a04a9a54b4ee2122c4729459bfd512bae/tasks/T013.json"
+      ]
+    },
+    {
+      "event_id": "T015_public_rejection",
+      "event_type": "independent_rejection",
+      "at": null,
+      "incident_id": "T015",
+      "root_cause": "json_duplicate_declarations",
+      "actor_type": "reviewer",
+      "eligible": false,
+      "reproducible": null,
+      "evidence": [
+        "https://github.com/RussianLioN/pc-sourcing-sdd/blob/e772a60eb6dbdc5f8019e4a72ddf43a00ebbac18/tasks/T015.json"
+      ]
+    },
+    {
+      "event_id": "T016_public_rejection",
+      "event_type": "independent_rejection",
+      "at": null,
+      "incident_id": "T016",
+      "root_cause": "transport_limits",
+      "actor_type": "reviewer",
+      "eligible": false,
+      "reproducible": null,
+      "evidence": [
+        "https://github.com/RussianLioN/pc-sourcing-sdd/blob/f495e5294e93a281f945de6f4e1c6c89d7a6cb1e/tasks/T016.json"
+      ]
+    }
+  ],
+  "limitations": "Review chronology, root-cause recurrence, actual independent repair counts, usage and active user time not reconstructed. Metrics describe provided events only."
+}

@@ -1,0 +1,18 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-reviewed-improvement-validation"
+  name: "T017 inactive experiment common snapshot"
+  version: "1.0.0"
+steps:
+  - id: quality
+    type: shell
+    run: ".venv/bin/python scripts/improvement_quality.py"
+    timeout: 480
+  - id: scope
+    type: shell
+    run: ".venv/bin/python scripts/improvement_scope.py"
+    timeout: 60
+  - id: learning-off
+    type: shell
+    run: ".venv/bin/python scripts/reviewed_lessons.py status"
+    timeout: 60
