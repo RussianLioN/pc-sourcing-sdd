@@ -1,0 +1,14 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-curated-primary-validation"
+  name: "T010 common snapshot regression and scope"
+  version: "1.0.0"
+steps:
+  - id: quality
+    type: shell
+    run: ".venv/bin/python scripts/primary_quality.py"
+    timeout: 480
+  - id: scope
+    type: shell
+    run: ".venv/bin/python scripts/primary_scope.py"
+    timeout: 60

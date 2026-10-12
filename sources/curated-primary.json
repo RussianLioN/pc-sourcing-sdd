@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "origin": "https://28bit.ru",
+  "status": "bounded_public_read",
+  "reviewed_at": "2026-10-12T00:03:50.785796+00:00",
+  "scope": "One exact public buyer-research card; minimum scalar source evidence. No site crawl/republication/accounts/actions. User authorized sourcing research; published public policies reviewed, selected path not robots-disallowed. No blanket automation license claim.",
+  "policy_urls": [
+    "https://28bit.ru/politika/",
+    "https://28bit.ru/oplata-i-dostavka/"
+  ],
+  "robots_url": "https://28bit.ru/robots.txt",
+  "preflight_robots_sha256": "0794f4c1c3f742b9b882464936c7ba6fc85f93bd22dc022d792ee22c370d395c",
+  "listings": [
+    {
+      "url": "https://28bit.ru/videokart-palit-ne75090019r5-gb2020g-geforce-rtx-5090-32gb-gamerock/",
+      "title": "Palit RTX 5090 GAMEROCK: real negative example, not MSI Liquid analogue"
+    }
+  ]
+}

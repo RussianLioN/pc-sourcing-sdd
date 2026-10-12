@@ -378,11 +378,24 @@ def run(
     envelopes = bounded_envelopes
     reader = reader or Reader(policies)
     rows, rejects = candidates(envelopes, queries, now)
+    registry_receipt = None
+    if hasattr(reader, "seed_candidates"):
+        seeded = reader.seed_candidates(now)
+        known = {r.url for r in rows}
+        rows.extend(r for r in seeded if r.url not in known)
+        registry_receipt = {
+            "origin": "curated_source_registry",
+            "response": reader.registry,
+            "response_sha256": reader.registry_hash,
+        }
     observations = []
     for row in rows:
         try:
-            html = reader.read(row.url, now)
-            result = parse_card(request, row, html, datetime.now(UTC))
+            if hasattr(reader, "observe"):
+                result = reader.observe(request, row, now)
+            else:
+                html = reader.read(row.url, now)
+                result = parse_card(request, row, html, datetime.now(UTC))
         except AccessBlocked as exc:
             host = urlsplit_host(row.url)
             avito = host == "avito.ru" or host.endswith(".avito.ru")
@@ -433,6 +446,8 @@ def run(
         }
         for e in envelopes
     ]
+    if registry_receipt:
+        search_receipt.append(registry_receipt)
     (output / "search.json").write_text(dumps(search_receipt) + "\n")
     with sqlite3.connect(output / "observations.sqlite") as con:
         con.execute("CREATE TABLE runs (result TEXT NOT NULL)")
@@ -477,7 +492,11 @@ def run(
     lines.extend(["", "## Пробелы поиска", "<pre>" + escape(dumps(events)) + "</pre>"])
     (output / "report.md").write_text("\n\n".join(lines) + "\n")
     files = {p.name: digest(p.read_bytes()) for p in output.iterdir() if p.is_file()}
-    spec = ROOT / "specs/004-live-sourcing/spec.md"
+    spec = ROOT / (
+        "specs/005-primary-verification/spec.md"
+        if registry_receipt
+        else "specs/004-live-sourcing/spec.md"
+    )
     (output / "manifest.json").write_text(
         dumps(
             {
@@ -485,8 +504,7 @@ def run(
                 "status": "completed_with_gaps",
                 "spec_sha256": digest(spec.read_bytes()),
                 "code_sha256": {
-                    p.name: digest(p.read_bytes())
-                    for p in (ROOT / "src/pc_sourcing").glob("live_*.py")
+                    p.name: digest(p.read_bytes()) for p in (ROOT / "src/pc_sourcing").glob("*.py")
                 },
                 "runtime": sys.version,
                 "limitations": [
@@ -521,6 +539,10 @@ def verify(output):
     for receipt in receipts:
         if digest(dumps(receipt["response"]).encode()) != receipt["response_sha256"]:
             raise ValueError("search response digest mismatch")
+    for o in data["observations"]:
+        primary = o.get("primary")
+        if primary and digest(primary["retained_content"].encode()) != primary["retained_sha256"]:
+            raise ValueError("primary retained content digest mismatch")
     retained_hashes = {r["response_sha256"] for r in receipts}
     if any(o["candidate"]["response_sha256"] not in retained_hashes for o in data["observations"]):
         raise ValueError("candidate response evidence missing")
@@ -536,6 +558,8 @@ def main():
     parser.add_argument("--request", type=Path)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--search-responses", type=Path)
+    parser.add_argument("--primary-registry", type=Path)
+    parser.add_argument("--source-state", type=Path)
     parser.add_argument("--registry", type=Path, default=ROOT / "sources/live-registry.json")
     args = parser.parse_args()
     try:
@@ -552,7 +576,18 @@ def main():
                 envelopes = (
                     json.loads(args.search_responses.read_text()) if args.search_responses else None
                 )
-                data = run(request, args.out, envelopes=envelopes, policies=policies)
+                primary_reader = None
+                if args.primary_registry:
+                    from pc_sourcing.curated_primary import CuratedReader
+
+                    if not args.source_state:
+                        raise ValueError("curated primary requires explicit absolute source state")
+                    primary_reader = CuratedReader(
+                        json.loads(args.primary_registry.read_text()), args.source_state
+                    )
+                data = run(
+                    request, args.out, envelopes=envelopes, policies=policies, reader=primary_reader
+                )
                 result = {
                     "status": "completed_with_gaps",
                     "candidates": len(data["observations"]),

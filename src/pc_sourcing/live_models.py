@@ -76,6 +76,7 @@ class Candidate(LiveContract):
     queries: tuple[str, ...]
     observed_at: datetime
     response_sha256: str
+    origin: Literal["search", "curated_registry"] = "search"
     _url = field_validator("url")(canonical_url)
     _aware = field_validator("observed_at")(aware)
 
@@ -99,6 +100,7 @@ class Observation(LiveContract):
     eligible: Literal[False] = False
     label: str = "недостаточно подтверждений"
     facts: tuple[Fact, ...] = ()
+    primary: dict | None = None
 
 
 class SourcePolicy(LiveContract):

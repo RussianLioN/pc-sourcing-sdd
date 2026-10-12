@@ -15,7 +15,11 @@
     "tests/test_curated_primary.py",
     "sources/curated-primary.json",
     "scripts/primary_scope.py",
-    "docs/primary-quickstart.md"
+    "docs/primary-quickstart.md",
+    "docs/adr/0003-t009-scope-fixture.md",
+    "scripts/primary_quality.py",
+    "scripts/primary_check_workflow.py",
+    "workflows/primary-validation.yml"
   ],
   "mutable_baseline_files": [
     "src/pc_sourcing/live_models.py",
@@ -174,5 +178,6 @@
     "T009 independent engineering PASS; full product pending"
   ],
   "review": "separate exact-SHA reviewer",
-  "authority": "Coordinator authorizes next primary iteration after read-only research; no protected v1/T008/T009 requirements or receipts changed."
+  "authority": "Coordinator authorizes next primary iteration after read-only research; no protected v1/T008/T009 requirements or receipts changed.",
+  "workflow_sha256": "df4e44fb706aa1ad1cb487255a0292f49a39732e38a3d887c525a670129cd569"
 }
