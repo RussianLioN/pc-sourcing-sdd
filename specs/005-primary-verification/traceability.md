@@ -63,3 +63,11 @@ fixture integrations. Explicit literal booleans, negative scalar strings, unknow
 and supported positive controls remain distinct. Original reviewer NP12 grade case
 retains its original oracle disagreement; reviewer explicitly accepted nominal-grade
 interpretation, no oracle label silently changed. T011 WIP-v3 remains separate.
+
+08674a6 rejected on forced numeric positive polarity and missing latency copula
+negation. PRIMARY-06 → statement_polarity, scalar_numeric_claim and uniform add
+builder →29 additional tests (all numeric families, scalar schema, compound-safe
+derivation, unknown qualifiers and unparsed fragments). Actual independent
+CuratedReader unit-polarity5 replay remains separate from generic60/13/72 datasets.
+T011 WIP-v4:67 focused runtime/scope tests passed before the priority interruption;
+no full common-snapshot receipt or independent T011 acceptance yet.

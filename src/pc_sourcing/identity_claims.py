@@ -13,7 +13,7 @@ from decimal import Decimal
 @dataclass(frozen=True)
 class Claim:
     attribute: str
-    value: Decimal | str | bool | None
+    value: Decimal | str | bool | tuple | None
     unit: str
     scope: str
     polarity: str
@@ -28,7 +28,23 @@ def norm(value):
 def polarity(text, start, end):
     prefix = re.split(r"[;,\n—]|\bBUT\b|\bА\b", text[:start])[-1]
     words = re.findall(r"[A-ZА-Я0-9]+", prefix)[-5:]
-    if any(w in {"UNKNOWN", "UNVERIFIED", "НЕЯСНО", "НЕИЗВЕСТНО"} for w in words):
+    if any(
+        w
+        in {
+            "UNKNOWN",
+            "UNVERIFIED",
+            "UNCLEAR",
+            "UNCONFIRMED",
+            "MAYBE",
+            "PERHAPS",
+            "POSSIBLY",
+            "NECESSARILY",
+            "НЕЯСНО",
+            "НЕИЗВЕСТНО",
+            "ВОЗМОЖНО",
+        }
+        for w in words
+    ) or re.search(r"NOT\s+ONLY|НЕ\s+ТОЛЬКО", prefix):
         return "unknown"
     return (
         "negative"
@@ -75,9 +91,11 @@ def number(raw, default_unit):
     return amount, unit
 
 
-def statement_polarity(text, match):
-    prefix = polarity(text, match.start(), match.end())
-    suffix = re.split(r"[;,\n—]|\bBUT\b|\bА\b", text[match.end() :])[0][:80]
+def statement_polarity(text, match, value_group=None):
+    start = match.start(value_group) if value_group else match.start()
+    end = match.end(value_group) if value_group else match.end()
+    prefix = polarity(text, start, end)
+    suffix = re.split(r"[;,\n—]|\bBUT\b|\bА\b", text[end:])[0][:80]
     if re.search(
         r"UNKNOWN|UNVERIFIED|UNCLEAR|UNCONFIRMED|NO CONFIRMATION|НЕИЗВЕСТ|НЕТ ПОДТВЕРЖ", suffix
     ):
@@ -154,6 +172,30 @@ def boolean_claims(field, raw, source, *, invert=False, scope="product"):
     ) and not any(c.polarity != "positive" for c in result):
         return [Claim(field, None, "", scope, "unknown", source, str(raw))]
     return result or [Claim(field, None, "", scope, "unknown", source, str(raw))]
+
+
+def scalar_numeric_claim(field, raw, unit, scope, source):
+    text = norm(raw).strip()
+    match = re.fullmatch(
+        r"(?P<prefix>(?:(?:IS|ARE|WAS|NOT|NO|NON|WITHOUT|MAYBE|PERHAPS|POSSIBLY|NECESSARILY|ONLY|НЕ|НЕТ|БЕЗ|ВОЗМОЖНО|ТОЛЬКО)\s+)*)"
+        r"(?P<value>\d+(?:[.,]\d+)?)(?:\s*(?P<unit>MT/S|МТ/С|MHZ|МГЦ|GHZ|ГГЦ|GB|ГБ|CYCLES|CYCLE|NS|НС|COUNT))?"
+        r"(?P<suffix>(?:\s+(?:IS|ARE|WAS|NOT|НЕ|INSTALLED|INCLUDED|SUPPLIED|SUPPORTED|PRESENT|ABSENT|MISSING|DISABLED|UNSUPPORTED|UNKNOWN|UNVERIFIED|UNCLEAR|UNCONFIRMED))*)",
+        text,
+    )
+    if not match:
+        return Claim(field, None, unit, scope, "unknown", source, str(raw))
+    amount, parsed_unit = number(match["value"] + " " + (match["unit"] or unit), unit)
+    if field == "speed" and scope == "advertised" and parsed_unit == "MHz":
+        parsed_unit = "advertised-MHz"
+    return Claim(
+        field,
+        amount,
+        parsed_unit,
+        scope,
+        statement_polarity(text, match, "value"),
+        source,
+        str(raw),
+    )
 
 
 def structured_claims(product, category):
@@ -303,20 +345,7 @@ def structured_claims(product, category):
             value = None
             pol = "positive"
             if field in {"speed", "clock", "latency", "modules", "capacity"}:
-                value, parsed_unit = number(raw, unit)
-                if field == "speed" and scope == "advertised" and parsed_unit == "MHz":
-                    parsed_unit = "advertised-MHz"
-                result.append(
-                    Claim(
-                        field,
-                        value,
-                        parsed_unit,
-                        scope,
-                        "unknown" if value is None else pol,
-                        source,
-                        str(raw),
-                    )
-                )
+                result.append(scalar_numeric_claim(field, raw, unit, scope, source))
                 continue
             if field in {
                 "full_item",
@@ -360,7 +389,15 @@ def structured_claims(product, category):
                     else None
                 )
             elif field == "memory_type":
-                value = re.sub(r"\s", "", text)
+                declaration = re.fullmatch(
+                    r"(?:(?:IS|NOT|NO|MAYBE|PERHAPS|NECESSARILY|ONLY|НЕ|НЕТ|ВОЗМОЖНО|ТОЛЬКО)\s+)*(?P<value>G?DDR\s*[2-9]X?)(?:\s+(?:IS|NOT|SUPPORTED|UNSUPPORTED|UNKNOWN|UNCONFIRMED))*",
+                    text,
+                )
+                if declaration:
+                    value = re.sub(r"\s", "", declaration["value"])
+                    pol = statement_polarity(text, declaration, "value")
+                else:
+                    value, pol = None, "unknown"
             else:
                 value = str(raw)
             if field == "unsupported_property" or value is None:
@@ -373,54 +410,101 @@ def text_claims(raw, category, source="title"):
     text = norm(raw)
     result = []
     masked = list(text)
+    covered_numeric = []
 
-    def add(field, value, unit="", scope="product", match=None, pol=None):
-        p = pol or (polarity(text, match.start(), match.end()) if match else "positive")
+    def add(field, value, unit="", scope="product", match=None, pol=None, value_group=None):
+        p = pol or (statement_polarity(text, match, value_group) if match else "positive")
         result.append(Claim(field, value, unit, scope, p, source, match[0] if match else raw))
+        if match and field in {
+            "modules",
+            "capacity",
+            "speed",
+            "clock",
+            "latency",
+            "memory_type",
+            "topology",
+            "memory_grade",
+        }:
+            covered_numeric.append((match.start(), match.end()))
 
     for m in re.finditer(r"(\d+)\s*[XХ×*]\s*(\d+)\s*(?:GB|ГБ)\b", text):
-        add("modules", Decimal(m[1]), "count", "kit", m)
-        add("capacity", Decimal(m[2]), "GB", "module", m)
-        add("capacity", Decimal(m[1]) * Decimal(m[2]), "GB", "kit", m)
+        pol = statement_polarity(text, m, 1)
+        add("topology", (Decimal(m[1]), Decimal(m[2])), "count,GB", "kit", m, pol=pol)
+        if pol == "positive":
+            add("modules", Decimal(m[1]), "count", "kit", m, pol=pol)
+            add("capacity", Decimal(m[2]), "GB", "module", m, pol=pol)
+            add("capacity", Decimal(m[1]) * Decimal(m[2]), "GB", "kit", m, pol=pol)
         masked[m.start() : m.end()] = " " * len(m[0])
     for m in re.finditer(r"\b(\d+)\s*(?:GB|ГБ)\b", "".join(masked)):
         before = re.split(r"[;,\n—]", text[: m.start()])[-1]
         subjects = [
             (s.end(), "module")
             for s in re.finditer(
-                r"EACH\s+MODULE|PER[ -]+MODULE|НА\s+МОДУЛ\w*|КАЖД\w*\s+МОДУЛ\w*", before
+                r"EACH\s+MODULE|PER[ -]+MODULE|MODULE\s+(?:CAPACITY|SIZE)|НА\s+МОДУЛ\w*|КАЖД\w*\s+МОДУЛ\w*",
+                before,
             )
         ]
         subjects.extend((s.end(), "kit") for s in re.finditer(r"TOTAL|ВСЕГО|KIT|КОМПЛЕКТ", before))
         scope = max(subjects)[1] if subjects else "kit" if category == "ram" else "product"
-        add("capacity", Decimal(m[1]), "GB", scope, m)
+        add("capacity", Decimal(m[1]), "GB", scope, m, value_group=1)
+    grades = list(re.finditer(r"\b(DDR[2-9])[\s-]+(\d{4,5})\b", text)) if category == "ram" else []
+    negative_grade_ranges = [
+        (m.start(), m.end()) for m in grades if statement_polarity(text, m, 2) != "positive"
+    ]
+    for m in re.finditer(r"\b(\d+)\s+(?:MATCHED\s+)?MODULES?\b", text):
+        add("modules", Decimal(m[1]), "count", "kit", m, value_group=1)
+    for m in re.finditer(
+        r"\bMODULES?\s+(?:COUNT|NUMBER)[\s:=]*(?:(?:IS|NOT|MAYBE|НЕ)\s+)*(\d+)\b", text
+    ):
+        add("modules", Decimal(m[1]), "count", "kit", m, value_group=1)
     for m in re.finditer(r"\bG?DDR\s*[2-9]X?\b", text):
-        add("memory_type", re.sub(r"\s", "", m[0]), match=m)
+        if not any(start <= m.start() < end for start, end in negative_grade_ranges):
+            add("memory_type", re.sub(r"\s", "", m[0]), match=m)
     if category == "ram":
-        for m in re.finditer(r"\bDDR[2-9][\s-]+(\d{4,5})\b", text):
-            add("speed", Decimal(m[1]), "MT/s", "effective", m)
+        for m in grades:
+            pol = statement_polarity(text, m, 2)
+            add("memory_grade", (m[1], Decimal(m[2])), "DDR,MT/s", "product", m, pol=pol)
+            if pol == "positive":
+                add("speed", Decimal(m[2]), "MT/s", "effective", m, pol=pol)
         for m in re.finditer(r"\b(\d+(?:[.,]\d+)?)\s*(MT/S|МТ/С|MHZ|МГЦ|GHZ|ГГЦ)\b", text):
             value, unit = number(m[0], "MT/s")
-            before = text[max(0, m.start() - 25) : m.start()]
-            physical = bool(re.search(r"CLOCK|ТАКТОВ|PHYSICAL", before))
+            before = re.split(r"[;,\n—]", text[: m.start()])[-1]
+            roles = [(r.end(), "physical") for r in re.finditer(r"CLOCK|ТАКТОВ|PHYSICAL", before)]
+            roles.extend(
+                (r.end(), "effective")
+                for r in re.finditer(r"TRANSFER|EFFECTIVE|RATE|СКОРОСТЬ", before)
+            )
+            physical = bool(roles and max(roles)[1] == "physical")
             add(
                 "clock" if physical else "speed",
                 value,
                 unit,
                 "physical" if physical else "effective" if unit == "MT/s" else "unknown",
                 m,
-                pol="positive" if physical or unit == "MT/s" else "unknown",
+                pol=None if physical or unit == "MT/s" else "unknown",
+                value_group=1,
             )
         for m in re.finditer(
-            r"\b(?:CL|CAS(?:\s+LATENCY)?|LATENCY|ЛАТЕНТНОСТЬ|ЗАДЕРЖКА)[\s:=]*(\d{1,3})(?:\s*(CYCLES|NS|НС))?\b",
+            r"\b(?:CL|CAS(?:\s+LATENCY)?|LATENCY|ЛАТЕНТНОСТЬ|ЗАДЕРЖКА)[\s:=]*"
+            r"(?:(?:IS|ARE|NOT|NO|MAYBE|PERHAPS|NECESSARILY|ONLY|НЕ|НЕТ|ВОЗМОЖНО|ТОЛЬКО)\s+)*"
+            r"(\d{1,3})(?:\s*(CYCLES|NS|НС))?\b",
             text,
         ):
-            add("latency", Decimal(m[1]), "ns" if m[2] in {"NS", "НС"} else "cycles", match=m)
+            add(
+                "latency",
+                Decimal(m[1]),
+                "ns" if m[2] in {"NS", "НС"} else "cycles",
+                match=m,
+                value_group=1,
+            )
         for m in re.finditer(r"\b(?:EXPO|XMP)\b", text):
             suffix = re.split(r"[;,\n]", text[m.end() :])[0][:40]
-            unsupported = bool(re.search(r"UNSUPPORTED|NOT SUPPORTED|DISABLED|НЕ ПОДДЕРЖ", suffix))
-            add("profile_" + m[0], not unsupported, match=m)
-            if m[0] == "XMP" and re.search(r"\bONLY\b|ТОЛЬКО", suffix):
+            add("profile_" + m[0], True, match=m)
+            if (
+                m[0] == "XMP"
+                and re.search(r"\bONLY\b|ТОЛЬКО", suffix)
+                and statement_polarity(text, m) == "positive"
+            ):
                 add("profile_EXPO", False, match=m)
         for field, pattern in [
             ("registered", r"\bREGISTERED\b"),
@@ -503,6 +587,16 @@ def text_claims(raw, category, source="title"):
             add("factory_liquid", False, match=clause, pol="positive")
         if re.search(r"UNKNOWN|UNVERIFIED|НЕИЗВЕСТ|НЕТ ПОДТВЕРЖ", clause[0]):
             add("material_unknown", None, match=clause, pol="unknown")
+    signal = r"\d+(?:[.,]\d+)?\s*(?:GB\b|ГБ\b)"
+    if category == "ram":
+        signal += r"|\d+(?:[.,]\d+)?\s*(?:MT/S|МТ/С|MHZ|МГЦ|GHZ|ГГЦ|CYCLES|NS|НС|MODULES?)\b|\b(?:CL(?=[\s:=]|\d|NOT)|CAS LATENCY)[^;,\n]{0,24}?\d+"
+    for fragment in re.finditer(signal, text):
+        if not any(
+            start <= fragment.start() and fragment.end() <= end for start, end in covered_numeric
+        ):
+            result.append(
+                Claim("numeric_unknown", None, "", "product", "unknown", source, fragment[0])
+            )
     return result
 
 
@@ -565,6 +659,16 @@ def expectations(request):
         if unit == "MT/s":
             result[("clock", "physical")] = (rate / 2, "MHz")
             result[("speed", "advertised")] = (rate, "advertised-MHz")
+    if ("modules", "kit") in result and ("capacity", "module") in result:
+        result[("topology", "kit")] = (
+            (result[("modules", "kit")][0], result[("capacity", "module")][0]),
+            "count,GB",
+        )
+    if ("memory_type", "product") in result and ("speed", "effective") in result:
+        result[("memory_grade", "product")] = (
+            (result[("memory_type", "product")][0], result[("speed", "effective")][0]),
+            "DDR,MT/s",
+        )
     result[("full_item", "product")] = (True, "")
     if request.mpn:
         result[("mpn", "product")] = (request.mpn, "")
@@ -636,7 +740,11 @@ def assertions_data(claims):
     return [
         {
             "attribute": c.attribute,
-            "value": str(c.value) if isinstance(c.value, Decimal) else c.value,
+            "value": str(c.value)
+            if isinstance(c.value, Decimal)
+            else [str(v) if isinstance(v, Decimal) else v for v in c.value]
+            if isinstance(c.value, tuple)
+            else c.value,
             "value_type": "decimal" if isinstance(c.value, Decimal) else type(c.value).__name__,
             "unit": c.unit,
             "scope": c.scope,

@@ -24,3 +24,10 @@ unsupported grammar is unknown, literal booleans preserve their data and inverse
 predicate polarity. Nearest capacity subject within a clause prevents prior module
 labels from capturing later total capacity. T011 WIP-v3 (startup repair and origin
 binding) is saved separately; scope Unicode inventory fix remains to verify.
+
+Further 08674a6 review: a frequency/clock branch overrode parsed polarity with
+positive, and latency grammar omitted copula+not. Correction centralises numeric
+polarity and fails closed on unresolved numeric grammar. Negated topology/DDR
+grades are composite assertions, not independent negative components. Own source
+subject tests require emitted clock/rate assertions, not vacuous validation of an
+empty parse. T011 WIP-v4 is saved;67 focused operational/scope cases passed.

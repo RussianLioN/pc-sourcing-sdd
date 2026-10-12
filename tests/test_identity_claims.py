@@ -387,3 +387,91 @@ def test_completeness_module_count_is_a_scoped_assertion_not_just_matched_word()
             {"additionalProperty": [{"name": "Kit completeness", "value": "1 matched module"}]},
         ),
     ) == ("modules",)
+
+
+@pytest.mark.parametrize(
+    "positive,negative,attribute",
+    [
+        ("total 96GB", "total not 96GB", "capacity"),
+        ("each module 48GB", "each module not 48GB", "capacity"),
+        ("module capacity: 48GB", "module capacity: not 48GB", "capacity"),
+        ("2 modules", "not 2 modules", "modules"),
+        ("module count: 2", "module count: not 2", "modules"),
+        ("effective transfer rate: 6000 MT/s", "effective transfer rate: not 6000 MT/s", "speed"),
+        ("physical clock: 3000 MHz", "physical clock: not 3000 MHz", "clock"),
+        ("CAS latency is 30 cycles", "CAS latency is not 30 cycles", "latency"),
+        ("CL30", "CL not 30", "latency"),
+        ("DDR5", "not DDR5", "memory_type"),
+        ("DDR5-6000", "not DDR5-6000", "memory_grade"),
+        ("2x48GB", "not 2x48GB", "topology"),
+    ],
+)
+def test_every_numeric_extractor_preserves_positive_and_negative_polarity(
+    positive, negative, attribute
+):
+    good = extract([positive], "ram")
+    bad = extract([negative], "ram")
+    assert any(c.attribute == attribute and c.polarity == "positive" for c in good)
+    assert any(c.attribute == attribute and c.polarity == "negative" for c in bad)
+    assert not validate(RAM, good)
+    assert attribute in validate(RAM, bad)
+
+
+@pytest.mark.parametrize(
+    "name,positive,negative,attribute",
+    [
+        ("Total capacity", "96 GB", "not 96 GB", "capacity"),
+        ("Capacity per module", "48GB", "not 48GB", "capacity"),
+        ("Module count", "2", "not 2", "modules"),
+        ("Transfer rate", "6000 MT/s", "not 6000 MT/s", "speed"),
+        ("Physical clock", "3000 MHz", "not 3000 MHz", "clock"),
+        ("CAS latency", "30 cycles", "not 30 cycles", "latency"),
+        ("Memory generation", "DDR5", "not DDR5", "memory_type"),
+    ],
+)
+def test_scalar_numeric_and_enum_schema_share_polarity(name, positive, negative, attribute):
+    good = extract([], "ram", {"additionalProperty": [{"name": name, "value": positive}]})
+    bad = extract([], "ram", {"additionalProperty": [{"name": name, "value": negative}]})
+    assert not validate(RAM, good)
+    assert attribute in validate(RAM, bad)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "effective rate: maybe not 6000 MT/s",
+        "physical clock: not necessarily 3000 MHz",
+        "CAS latency maybe not 30 cycles",
+        "total possibly 96GB",
+        "not only 2 modules",
+    ],
+)
+def test_uncertain_numeric_operator_never_supports_exact_match(text):
+    claims = extract([text], "ram")
+    assert any(c.polarity == "unknown" for c in claims)
+    assert validate(RAM, claims)
+
+
+def test_negated_topology_does_not_invent_negative_component_or_total_facts():
+    claims = extract(["not 4x24GB"], "ram")
+    assert [(c.attribute, c.polarity) for c in claims] == [("topology", "negative")]
+    assert not validate(RAM, claims)  # excludes another topology; does not deny96GB
+
+
+def test_negative_grade_does_not_negate_generation_independently():
+    claims = extract(["not DDR5-5600"], "ram")
+    assert not any(c.attribute == "memory_type" for c in claims)
+    assert not validate(RAM, claims)
+
+
+def test_adjacent_physical_and_effective_declarations_keep_their_own_subject():
+    claims = extract(["physical clock 3000 MHz; effective rate 6000 MT/s"], "ram")
+    assert {c.attribute for c in claims} >= {"clock", "speed"}
+    assert not validate(RAM, claims)
+
+
+@pytest.mark.parametrize(
+    "text", ["effective transfer rate:not6000 MT/s", "CAS latency incorrectly30 cycles"]
+)
+def test_unparsed_numeric_declaration_is_a_gap_not_silently_ignored(text):
+    assert "numeric_unknown" in validate(RAM, extract([text], "ram"))

@@ -57,3 +57,16 @@ connectors, negation and supported presence/install verbs. Unparsed words/questi
 produce unknown, never positive truth from a recognised substring. Explicit module
 count in a completeness declaration becomes a separate kit-scoped assertion. This
 restricts technical parser capability, not the product rules or frozen oracle.
+
+Numeric polarity correction: all text numeric builders and scalar numeric/enum
+PropertyValue parsers use the same prefix/postfix polarity. Frequency/clock never
+force positive; copula+negation between a latency label and value is preserved.
+Ambiguous qualifiers (maybe, not necessarily, not only) are unknown, not negated
+confirmation. Recognised material numeric fragments outside the bounded grammar
+become numeric_unknown rather than silently disappear.
+
+Topology and named DDR grade are compound assertions. Only positive compounds
+derive component count/capacity/total or independent generation/rate. Negating a
+combination does not negate every component or the total. Tuple assertions retain
+their unit/scope and are serialised as typed arrays. Numeric subjects bind locally;
+a preceding physical-clock declaration cannot capture a later effective rate.
