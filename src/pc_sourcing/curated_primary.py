@@ -231,6 +231,15 @@ def observe(request, candidate, html, provenance, now):
     props = parsed.properties
     mpns = list(dict.fromkeys(props.get("mpn", [])))
     mpn = mpns[0] if len(mpns) == 1 else None
+    # Reviewed 28BIT Palit title convention: NE-prefixed manufacturer identifier,
+    # never numeric store sku. Preserve suffix exactly; conflicting declarations unknown.
+    declared = re.search(r"(?i)\bPalit\s*\((NE[A-Z0-9]+-[A-Z0-9]+)\)", title)
+    conflict = bool(declared and mpn and declared[1] != mpn)
+    if conflict:
+        mpn = None
+    elif mpn is None and declared:
+        mpn = declared[1]
+    mpn_selector = "Product meta[itemprop=mpn]" if mpns else "h1 Palit (NE manufacturer code)"
     match, differences = identity(request, title, mpn)
     primary = {
         "h1": title,
@@ -243,7 +252,7 @@ def observe(request, candidate, html, provenance, now):
     evidence = []
     for field, value, selector in [
         ("title", title, "h1"),
-        ("mpn", mpn, "Product meta[itemprop=mpn]"),
+        ("mpn", mpn, mpn_selector),
     ]:
         if value:
             evidence.append(
@@ -300,7 +309,7 @@ def observe(request, candidate, html, provenance, now):
         )
     return Observation(
         candidate=candidate,
-        status="observed" if parsed.product_count == 1 else "unresolved",
+        status="observed" if parsed.product_count == 1 and not conflict else "unresolved",
         reason="Primary content read; unconditional price, Moscow fulfillment, "
         "condition, seller review and quantity not confirmed",
         title=title or None,

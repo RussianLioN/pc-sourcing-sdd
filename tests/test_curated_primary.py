@@ -295,3 +295,20 @@ def test_primary_report_time_is_not_before_source_facts(tmp_path):
         for o in data["observations"]
         for f in o["facts"]
     )
+
+
+def test_reviewed_palit_title_mpn_preserves_suffix_and_ignores_numeric_store_id():
+    text = html().replace('<meta itemprop="mpn" content="NE75090019R5-GB2020G">', "")
+    text = text.replace("Palit RTX 5090 GAMEROCK", "Palit (NE75090019R5-GB2020G) RTX 5090 GAMEROCK")
+    result = observe(GPU, candidate(URL), text, {}, datetime.now(UTC))
+    assert result.mpn == "NE75090019R5-GB2020G" and result.match == "excluded"
+    numeric = text.replace("NE75090019R5-GB2020G", "30845")
+    assert observe(GPU, candidate(URL), numeric, {}, datetime.now(UTC)).mpn is None
+
+
+def test_primary_mpn_declarations_conflict_unknown():
+    text = html().replace(
+        "Palit RTX 5090 GAMEROCK", "Palit (NE75090S19R5-GB2020G) RTX 5090 GAMEROCK"
+    )
+    result = observe(GPU, candidate(URL), text, {}, datetime.now(UTC))
+    assert result.mpn is None and result.status == "unresolved"
