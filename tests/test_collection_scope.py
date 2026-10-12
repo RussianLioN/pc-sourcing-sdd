@@ -13,9 +13,27 @@ scope = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(scope)
 
 
-def test_collection_preserves_all_parent_blobs():
-    assert scope.check()["protected_byte_identical"] == 200
-    assert scope.check()["approved_protected_patches"] == 1
+def test_collection_preserves_all_parent_blobs(tmp_path):
+    import subprocess
+
+    checkout = tmp_path / "historical-T013"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-hardlinks", str(ROOT), str(checkout)], check=True
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(checkout),
+            "checkout",
+            "--quiet",
+            "--detach",
+            "79df7e5a04a9a54b4ee2122c4729459bfd512bae",
+        ],
+        check=True,
+    )
+    assert scope.check(checkout)["protected_byte_identical"] == 200
+    assert scope.check(checkout)["approved_protected_patches"] == 1
 
 
 @pytest.mark.parametrize(
