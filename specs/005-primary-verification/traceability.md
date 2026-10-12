@@ -15,3 +15,12 @@ Independent review repair cases → live_sourcing.identity/parse_card and
 curated_primary.observe/ProductScope → additive review regressions in
 test_curated_primary.py. Conflicting fields remain unknown/unresolved; no oracle
 was changed. CP-T010-02 is pending for one protected contradictory assertion.
+
+CP-T010-02 approved on 2026-10-12 against 2a75952: exact sole expected
+literal correction, bound byte-for-byte in primary_scope. Full legacy assertions
+otherwise remain unchanged. VRAM, RAM timings/speed/profile/form factor, partial
+items, regional/revision MPN and missing model regressions extend PRIMARY-04/05.
+Aftermarket factory contradiction remains unresolved pending manufacturer evidence,
+rather than excluded: this is more conservative and agrees with the frozen 60-card
+oracle; the earlier 25-card oracle used excluded for that same conflict. Both labels
+block purchase; this discrepancy is disclosed, not an edited reviewer oracle.

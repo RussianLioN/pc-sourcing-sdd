@@ -209,7 +209,7 @@ def test_e2e_permitted_reader_and_escaped_injection(tmp_path):
 
 
 def test_mpn_does_not_hide_soc_conflict():
-    assert identity(GPU, GPU.name.replace(" OC", " SOC"), GPU.mpn)[0] == "analogue"
+    assert identity(GPU, GPU.name.replace(" OC", " SOC"), GPU.mpn)[0] == "unresolved"
 
 
 def test_provider_quote_echo_normalization_only():

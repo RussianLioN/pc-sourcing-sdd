@@ -32,11 +32,21 @@ def check(root=ROOT):
             anchor = b'    task = json.loads((ROOT / "tasks/T009.json").read_text())\n'
             patch = b'    subprocess.run(\n        [\n            "git",\n            "-C",\n            str(checkout),\n            "checkout",\n            "--detach",\n            "130d67acd07b68a942dd62daf9127723556916e3",\n        ],\n        check=True,\n    )\n'
             if (
-                set(task.get("approved_protected_patches", {})) != {name}
+                set(task.get("approved_protected_patches", {}))
+                != {name, "tests/test_live_sourcing.py"}
                 or expected.count(anchor) != 1
             ):
                 raise ValueError("approved CP-T010-01 binding missing")
             expected = expected.replace(anchor, patch + anchor)
+        if name == "tests/test_live_sourcing.py":
+            anchor = b'    assert identity(GPU, GPU.name.replace(" OC", " SOC"), GPU.mpn)[0] == "analogue"\n'
+            if (
+                set(task.get("approved_protected_patches", {}))
+                != {"tests/test_stage_acceptance.py", name}
+                or expected.count(anchor) != 1
+            ):
+                raise ValueError("approved CP-T010-02 binding missing")
+            expected = expected.replace(anchor, anchor.replace(b'"analogue"', b'"unresolved"'))
         if (root / name).read_bytes() != expected:
             raise ValueError("protected prior stage changed: " + name)
     changed = subprocess.check_output(["git", "diff", "--name-only", "-z", BASELINE], cwd=root)
@@ -54,8 +64,9 @@ def check(root=ROOT):
     return {
         "status": "passed",
         "baseline": BASELINE,
-        "protected_byte_identical": len(names) - 3,
+        "protected_byte_identical": len(names) - 4,
         "approved_setup_patch": 1,
+        "approved_identity_assertion_patch": 1,
     }
 
 

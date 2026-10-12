@@ -1,6 +1,7 @@
 # CP-T010-02: correction of contradictory identity assertion
 
-Status: proposed; authorization pending.
+Status: approved by coordinator on 2026-10-12, against proposal commit
+2a75952eab506f0dc7da3135d2606be2d8462729.
 
 The independent review identified an OC manufacturer MPN paired with an SOC title.
 These declarations conflict; the model must remain unresolved rather than assert
@@ -14,7 +15,7 @@ other assertion or checker changes. Strengthen the check; never suppress it.
 
 Current implementation fixes the conflict, so the unchanged protected assertion
 fails. The failed receipt is retained in artifacts/T010/review-repair-tests.txt.
-After authorization, bind the exact byte patch in primary_scope and task T010,
+Authorization received; bind the exact byte patch in primary_scope and task T010,
 then run full quality checks, commit a precise SHA and request independent review.
 
 Additional review repairs: aftermarket liquid exclusion, contradictory kit capacity,

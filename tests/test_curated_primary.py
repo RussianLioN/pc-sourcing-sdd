@@ -475,7 +475,7 @@ def test_review_aftermarket_liquid_cannot_be_exact():
     from pc_sourcing.live_sourcing import identity
 
     title = GPU.name + " СЖО установлена продавцом; заводская карта воздушная"
-    assert identity(GPU, title, GPU.mpn)[0] == "excluded"
+    assert identity(GPU, title, GPU.mpn)[0] == "unresolved"
 
 
 def test_review_ram_total_capacity_conflicts_with_kit_mpn():
@@ -506,3 +506,57 @@ def test_review_deposit_is_not_product_price():
 
     result = parse_card(GPU, candidate(), card() + "Залог для брони 450000 ₽", NOW)
     assert result.price_rub is None
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "MSI RTX 5090 SUPRIM LIQUID OC 24GB GDDR6X",
+        "MSI RTX 5090 SUPRIM LIQUID OC; продаётся только пустая коробка",
+    ],
+)
+def test_review_full_gpu_code_does_not_hide_material_conflict(title):
+    from pc_sourcing.live_sourcing import identity
+
+    assert identity(GPU, title, GPU.mpn)[0] == "unresolved"
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "G.Skill 96GB 2x48GB DDR5 5600 CL30",
+        "G.Skill 96GB 2x48GB DDR5 6000 CL36",
+        "G.Skill 96GB 2x48GB DDR5 SODIMM",
+        "G.Skill 96GB 2x48GB DDR5 ECC Registered",
+        "G.Skill 96GB 2x48GB DDR5 6000 CL30; XMP only, EXPO unsupported",
+    ],
+)
+def test_review_ram_code_does_not_hide_material_conflict(title):
+    from pc_sourcing.live_models import Request
+    from pc_sourcing.live_sourcing import identity
+
+    request = Request(
+        name="G.Skill 96GB 2x48GB DDR5 6000 CL30 EXPO",
+        mpn="F5-6000J3036F48GX2-TZ5NR",
+        category="ram",
+    )
+    assert identity(request, title, request.mpn)[0] == "unresolved"
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Logitech G PRO X2 SUPERLIGHT",
+        "Charging dock for Logitech G PRO X2 SUPERSTRIKE",
+        "Logitech G PRO X2 SUPERSTRIKE receiver only",
+        "",
+    ],
+)
+def test_review_mouse_code_does_not_hide_model_or_partial_item(title):
+    from pc_sourcing.live_models import Request
+    from pc_sourcing.live_sourcing import identity
+
+    request = Request(
+        name="Logitech G PRO X2 SUPERSTRIKE", mpn="SYNTHETIC-REGIONAL-MPN", category="mouse"
+    )
+    assert identity(request, title, request.mpn)[0] == "unresolved"

@@ -21,7 +21,8 @@
     "scripts/primary_check_workflow.py",
     "workflows/primary-validation.yml",
     "tests/test_stage_acceptance.py",
-    "docs/adr/0004-review-identity-test-correction.md"
+    "docs/adr/0004-review-identity-test-correction.md",
+    "tests/test_live_sourcing.py"
   ],
   "mutable_baseline_files": [
     "src/pc_sourcing/live_models.py",
@@ -183,6 +184,7 @@
   "authority": "Coordinator authorizes next primary iteration after read-only research; no protected v1/T008/T009 requirements or receipts changed.",
   "workflow_sha256": "df4e44fb706aa1ad1cb487255a0292f49a39732e38a3d887c525a670129cd569",
   "approved_protected_patches": {
-    "tests/test_stage_acceptance.py": "CP-T010-01 approved by coordinator: exact setup-only pin of historical T009 scope test, all assertions unchanged"
+    "tests/test_stage_acceptance.py": "CP-T010-01 approved by coordinator: exact setup-only pin of historical T009 scope test, all assertions unchanged",
+    "tests/test_live_sourcing.py": "CP-T010-02 approved by coordinator: sole expected literal analogue to unresolved in test_mpn_does_not_hide_soc_conflict; input and all other bytes unchanged"
   }
 }
