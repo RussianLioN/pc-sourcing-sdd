@@ -3,7 +3,7 @@
   "status": "preliminary_review_repairs_ready_for_recheck",
   "base_commit": "35b8141c781cab7a3c72271a98722f5947d93e46",
   "spec_revision": "1.0.0",
-  "spec_sha256": "271327c2037f3b8c392018f5cd8f4bc33ab38706d588aaeb7a0558a2b241c690",
+  "spec_sha256": "551ba4e35b8365f01cc28a0c3bbbf86921163048cf46acad036f6934cb910cc9",
   "owned_files": [
     "specs/008-collection-integration/spec.md",
     "specs/008-collection-integration/plan.md",
@@ -126,14 +126,14 @@
     "scripts/verify_readonly.py",
     "scripts/verify_scope.py",
     "sources/README.md",
-    "sources/SDD \u0438 \u043c\u0443\u043b\u044c\u0442\u0438\u0430\u0433\u0435\u043d\u0442\u043d\u0430\u044f \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u043a\u0430 \u043f\u043e\u0438\u0441\u043a\u0430 \u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442\u0443\u044e\u0449\u0438\u0445.docx",
-    "sources/SDD \u0438 \u043c\u0443\u043b\u044c\u0442\u0438\u0430\u0433\u0435\u043d\u0442\u043d\u0430\u044f \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u043a\u0430 \u043f\u043e\u0438\u0441\u043a\u0430 \u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442\u0443\u044e\u0449\u0438\u0445.txt",
+    "sources/SDD и мультиагентная разработка поиска комплектующих.docx",
+    "sources/SDD и мультиагентная разработка поиска комплектующих.txt",
     "sources/access-registry.json",
     "sources/curated-primary.json",
     "sources/library-manifest.json",
     "sources/live-registry.json",
-    "sources/\u041f\u043e\u0438\u0441\u043a \u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442\u0443\u044e\u0449\u0438\u0445 \u0438 Avito \u2014 \u0440\u0435\u0448\u0435\u043d\u0438\u0435 \u0434\u043b\u044f dodik.docx",
-    "sources/\u041f\u043e\u0438\u0441\u043a \u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442\u0443\u044e\u0449\u0438\u0445 \u0438 Avito \u2014 \u0440\u0435\u0448\u0435\u043d\u0438\u0435 \u0434\u043b\u044f dodik.txt",
+    "sources/Поиск комплектующих и Avito — решение для dodik.docx",
+    "sources/Поиск комплектующих и Avito — решение для dodik.txt",
     "spec-kit-build.lock",
     "spec-kit.lock",
     "specs/001-offline/contracts/Evaluation.schema.json",
@@ -261,5 +261,10 @@
     "library_file_id": "libfile_044a2ceb46f0819183030a125460d742",
     "sha256": "0144a280980d2c75a18b0ef6d932b17f77f39106509e82f0424ba6101ff6a9af",
     "status": "four_findings_repaired_pending_independent_recheck"
+  },
+  "second_rejection": {
+    "library_file_id": "libfile_7912348709688191afc32d43467b26b6",
+    "sha256": "9afec20d0be666f2c6f748efe90111e74eaa74d6846727a793bce85341ecd29c",
+    "status": "F3 zero-byte ledger and F4 constraints repaired; independent recheck pending"
   }
 }

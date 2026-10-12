@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from pc_sourcing.collection_capture import Capture
+from pc_sourcing.collection_runtime import SOURCE_SCHEMA, require_schema
 from pc_sourcing.curated_primary import CuratedReader, fixed_get
 from pc_sourcing.durable_jobs import (
     absolute,
@@ -85,17 +86,31 @@ class Acquisition:
         self.captures = self.state_dir / (self.source_key + "-acquisition-captures")
         if self.captures.is_symlink():
             raise ValueError("symlink source capture directory")
-        self.captures.mkdir(exist_ok=True)
         marker = self.state_dir / ("." + self.source_key + "-acquisition.initialized")
+        if marker.is_symlink():
+            raise ValueError("symlink source initialization marker")
         if marker.exists() and not self.dbpath.exists():
             raise AccessBlocked("persistent source budget missing; no automatic recreation/reset")
+        if not self.synthetic and not marker.is_file():
+            raise AccessBlocked("production source marker missing; restore complete state")
+        # Preflight existing databases read-only before creating locks/directories or
+        # opening a writable connection. Empty SQLite files are not fresh state.
+        if self.dbpath.exists():
+            with sqlite3.connect(self.dbpath.as_uri() + "?mode=ro", uri=True) as db:
+                db.row_factory = sqlite3.Row
+                self.integrity(db)
+        self.captures.mkdir(exist_ok=True)
         with file_lock(self.lock, timeout=2), self.connect() as db:
             objects = db.execute(
                 "SELECT name,type FROM sqlite_master WHERE type IN ('table','view','trigger')"
             ).fetchall()
             if not objects:
+                if not self.synthetic or marker.exists():
+                    raise AccessBlocked("empty established ledger; no initialization/reset")
                 db.executescript(
-                    "BEGIN IMMEDIATE;CREATE TABLE budget(id INTEGER PRIMARY KEY CHECK(id=1),cards_reserved INTEGER NOT NULL,http_reserved INTEGER NOT NULL,http_attempted INTEGER NOT NULL,blocked TEXT);INSERT INTO budget VALUES(1,0,0,0,NULL);CREATE TABLE intents(id TEXT PRIMARY KEY,request TEXT NOT NULL,url TEXT NOT NULL,policy_hash TEXT NOT NULL,realm INTEGER NOT NULL,state TEXT NOT NULL,capture_hash TEXT,error TEXT);PRAGMA user_version=1;COMMIT;"
+                    "BEGIN IMMEDIATE;"
+                    + SOURCE_SCHEMA
+                    + "INSERT INTO budget VALUES(1,0,0,0,NULL);PRAGMA user_version=1;COMMIT;"
                 )
             self.integrity(db)
 
@@ -104,6 +119,7 @@ class Acquisition:
                 fsync_directory(self.state_dir)
 
     def integrity(self, db):
+        require_schema(db, SOURCE_SCHEMA)
         expected = {
             "budget": {"id", "cards_reserved", "http_reserved", "http_attempted", "blocked"},
             "intents": {
@@ -160,7 +176,11 @@ class Acquisition:
 
     @contextmanager
     def connect(self):
-        db = sqlite3.connect(self.dbpath, timeout=0, isolation_level=None)
+        # A lost production ledger must never be recreated by a later operation.
+        mode = "rwc" if self.synthetic and not self.dbpath.exists() else "rw"
+        db = sqlite3.connect(
+            self.dbpath.as_uri() + "?mode=" + mode, uri=True, timeout=0, isolation_level=None
+        )
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA synchronous=FULL")
         try:
@@ -231,6 +251,7 @@ class Acquisition:
         # A committed source capture is available even if its policy later expires.
         # This is checkpoint consumption, never a fresh source authorization.
         with file_lock(self.lock), self.connect() as db:
+            self.integrity(db)
             prior = db.execute("SELECT * FROM intents WHERE id=?", (intent,)).fetchone()
             if prior and prior["capture_hash"]:
                 capture = self.checkpoint(prior["capture_hash"])
@@ -255,6 +276,7 @@ class Acquisition:
             return {"status": "checkpoint_reused", "http_calls": 0, "intent": intent}
         reader = self.admit(request)
         with file_lock(self.lock), self.connect() as db:
+            self.integrity(db)
             db.execute("BEGIN IMMEDIATE")
             try:
                 # Recheck under reservation lock; concurrent identical caller never fetches.

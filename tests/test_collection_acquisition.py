@@ -230,3 +230,75 @@ def test_production_both_ledger_and_marker_loss_never_resets_with_stops_present(
     with pytest.raises(AccessBlocked, match="no implicit initialization"):
         Acquisition()
     assert not (state / "28bit-acquisition.sqlite").exists()
+
+
+@pytest.mark.parametrize(
+    "damage", ["zero", "truncated_header", "truncated_pages", "malformed", "empty_sqlite"]
+)
+def test_damaged_production_ledger_refuses_without_mutating_any_state(
+    tmp_path, monkeypatch, damage
+):
+    import sqlite3
+
+    import pc_sourcing.collection_acquisition as module
+
+    a, calls, r, j = setup(tmp_path)
+    a.acquire(r, j)
+    original = module.PACKAGE_ROOT
+    (tmp_path / "sources").mkdir()
+    (tmp_path / "sources/curated-primary.json").write_bytes(
+        (original / "sources/curated-primary.json").read_bytes()
+    )
+    state = tmp_path / "artifacts/source-state"
+    import shutil
+
+    shutil.copytree(a.state_dir, state)
+    (state / "tavily-stop.json").write_text('{"endpoint":"https://api.tavily.com/search"}')
+    (state / "28bit-stop.json").write_text('{"reason":"gaierror"}')
+    ledger = state / "28bit-acquisition.sqlite"
+    raw = ledger.read_bytes()
+    if damage == "zero":
+        ledger.write_bytes(b"")
+    elif damage == "truncated_header":
+        ledger.write_bytes(raw[:16])
+    elif damage == "truncated_pages":
+        ledger.write_bytes(raw[: len(raw) // 2])
+    elif damage == "malformed":
+        ledger.write_bytes(b"not a SQLite database")
+    else:
+        ledger.unlink()
+        with sqlite3.connect(ledger) as db:
+            db.execute("PRAGMA user_version=1")
+    before = {str(p.relative_to(state)): p.read_bytes() for p in state.rglob("*") if p.is_file()}
+    monkeypatch.setattr(module, "PACKAGE_ROOT", tmp_path)
+    with pytest.raises((ValueError, AccessBlocked, sqlite3.DatabaseError)):
+        Acquisition()
+    after = {str(p.relative_to(state)): p.read_bytes() for p in state.rglob("*") if p.is_file()}
+    assert before == after
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize("mutation", ["type", "not_null", "primary_key", "check", "extra_index"])
+def test_source_schema_constraints_and_indexes_are_protected(tmp_path, mutation):
+    a, calls, r, j = setup(tmp_path)
+    with a.connect() as db:
+        if mutation == "extra_index":
+            db.execute("CREATE INDEX unexpected ON intents(url)")
+        else:
+            ddl = db.execute("SELECT sql FROM sqlite_master WHERE name='budget'").fetchone()[0]
+            ddl = (
+                ddl.replace("INTEGER PRIMARY KEY", "TEXT PRIMARY KEY", 1)
+                if mutation == "type"
+                else ddl.replace(" NOT NULL", "", 1)
+                if mutation == "not_null"
+                else ddl.replace(" PRIMARY KEY", "", 1)
+                if mutation == "primary_key"
+                else ddl.replace(" CHECK(id=1)", "")
+            )
+            db.execute("DROP TABLE budget")
+            db.execute(ddl)
+            db.execute("INSERT INTO budget VALUES(1,0,0,0,NULL)")
+    before = a.dbpath.read_bytes()
+    with pytest.raises(ValueError, match="schema"):
+        Acquisition(state_dir=a.state_dir, registry=a.registry, transport=a.transport)
+    assert a.dbpath.read_bytes() == before and calls == []

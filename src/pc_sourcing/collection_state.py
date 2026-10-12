@@ -6,6 +6,7 @@ import uuid
 from contextlib import ExitStack
 from pathlib import Path
 
+from pc_sourcing.collection_runtime import SOURCE_SCHEMA, require_schema
 from pc_sourcing.durable_jobs import (
     absolute,
     digest,
@@ -51,8 +52,9 @@ def validate_state(root):
             raise ValueError("source marker/ledger incomplete; no reset")
         if not dbpath.exists():
             continue
-        with sqlite3.connect("file:" + str(dbpath) + "?mode=ro", uri=True) as db:
+        with sqlite3.connect(dbpath.as_uri() + "?mode=ro", uri=True) as db:
             db.row_factory = sqlite3.Row
+            require_schema(db, SOURCE_SCHEMA)
             objects = db.execute(
                 "SELECT name,type FROM sqlite_master WHERE type IN ('table','view','trigger')"
             ).fetchall()

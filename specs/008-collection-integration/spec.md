@@ -75,3 +75,17 @@ cannot recreate a missing production ledger/marker. Transfer must restore a comp
 validated source snapshot. Synthetic test initialization remains explicit via injected
 transport and cannot claim a live origin. Future source bootstrap is a separately
 reviewed state operation, not an acquisition or budget reset command.
+
+Second independent recheck repairs (cc5fbc3 rejected):
+- An established zero-byte, truncated, malformed or empty-schema source ledger
+  must be rejected via read-only preflight before creating lock/capture files.
+  Production never initializes any existing empty SQLite database; missing marker
+  also requires restoration. State file inventory and all bytes remain unchanged
+  on damaged-ledger rejection. No HTTP is attempted.
+- Compare canonical SQLite DDL plus table_xinfo types/NOT NULL/primary keys,
+  index_list/index_xinfo uniqueness/partial/collation layouts, foreign keys and
+  user_version through a computed schema fingerprint. Extra indexes/constraints,
+  weakened constraints and same-column altered types fail closed. Apply the same
+  source schema to acquisition and source-snapshot validation, and validate the
+  CPU schema before constructor/mutations/backup. Canonical historical DBs remain
+  compatible: no schema migration or original source state changes are required.

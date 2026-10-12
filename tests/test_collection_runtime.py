@@ -131,3 +131,59 @@ def test_unresolved_capture_cannot_export_injected_buyer_ready_offer(tmp_path):
     with pytest.raises(ValueError, match="bound capture projection"):
         j.report(tmp_path / "report", NOW)
     assert not (tmp_path / "report").exists()
+
+
+@pytest.mark.parametrize(
+    "mutation", ["type", "not_null", "primary_key", "extra_index", "unique_index", "partial_index"]
+)
+def test_runtime_schema_constraints_types_indexes_reject_identical_columns(tmp_path, mutation):
+    j = Journal(tmp_path / "runtime")
+    with j.connect() as db:
+        if mutation.endswith("index"):
+            prefixes = {"extra_index": "", "unique_index": "UNIQUE ", "partial_index": ""}
+            db.execute(
+                "CREATE "
+                + prefixes[mutation]
+                + "INDEX unexpected ON jobs(capture_hash)"
+                + (" WHERE state='ready'" if mutation == "partial_index" else "")
+            )
+        else:
+            ddl = db.execute("SELECT sql FROM sqlite_master WHERE name='jobs'").fetchone()[0]
+            ddl = (
+                ddl.replace("realm INTEGER", "realm TEXT", 1)
+                if mutation == "type"
+                else ddl.replace(" NOT NULL", "", 1)
+                if mutation == "not_null"
+                else ddl.replace(" PRIMARY KEY", "", 1)
+            )
+            db.execute("DROP TABLE jobs")
+            db.execute(ddl)
+    before = (j.root / "collection.sqlite").read_bytes()
+    with pytest.raises(ValueError, match="schema"):
+        Journal(j.root)
+    assert (j.root / "collection.sqlite").read_bytes() == before
+
+
+def test_canonical_runtime_schema_reopens_and_restores_as_positive_control(tmp_path):
+    j = Journal(tmp_path / "runtime")
+    j.submit([fixture_capture()])
+    j.work()
+    assert Journal(j.root).status()["jobs"][0]["state"] == "done"
+    j.backup(tmp_path / "backup")
+    restored = Journal.restore(tmp_path / "backup", tmp_path / "restored")
+    assert restored.status()["jobs"] == j.status()["jobs"]
+
+
+@pytest.mark.parametrize("damage", [b"", b"SQLite format 3\x00", b"malformed"])
+def test_existing_empty_or_damaged_cpu_database_never_reinitializes(tmp_path, damage):
+    import sqlite3
+
+    j = Journal(tmp_path / "runtime")
+    j.submit([fixture_capture()])
+    p = j.root / "collection.sqlite"
+    p.write_bytes(damage)
+    before = {str(f.relative_to(j.root)): f.read_bytes() for f in j.root.rglob("*") if f.is_file()}
+    with pytest.raises((ValueError, sqlite3.DatabaseError)):
+        Journal(j.root)
+    after = {str(f.relative_to(j.root)): f.read_bytes() for f in j.root.rglob("*") if f.is_file()}
+    assert before == after

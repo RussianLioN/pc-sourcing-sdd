@@ -60,3 +60,8 @@ Its one-card budget is already spent, so repeated same request consumes checkpoi
 with zero HTTP. This capture is unresolved; title/stock claims and source diagnostics
 are preserved. GPU/mouse URLs are unknown; ANDPRO profiles/cards are not enabled.
 Further live requests are paused pending repair recheck; do not use alternate tools.
+
+Existing source/CPU databases are validated against canonical DDL, types, primary
+keys, NOT NULL, indexes, foreign keys and user_version. Empty/truncated source
+ledgers fail read-only preflight before state-file creation; restore a validated
+complete snapshot rather than opening an empty file. Never reset budgets/stops.

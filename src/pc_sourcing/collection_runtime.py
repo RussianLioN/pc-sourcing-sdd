@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import sqlite3
 import uuid
 from contextlib import contextmanager
@@ -20,6 +21,54 @@ from pc_sourcing.durable_jobs import (
     write_file,
 )
 from pc_sourcing.normalized_exports import export_bundle
+
+JOURNAL_SCHEMA = "CREATE TABLE jobs(id TEXT PRIMARY KEY, capture_hash TEXT NOT NULL, realm INTEGER NOT NULL, state TEXT NOT NULL, token TEXT, expires REAL, output TEXT, error TEXT);CREATE TABLE events(hash TEXT PRIMARY KEY,data TEXT NOT NULL);CREATE TABLE meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);"
+SOURCE_SCHEMA = "CREATE TABLE budget(id INTEGER PRIMARY KEY CHECK(id=1),cards_reserved INTEGER NOT NULL,http_reserved INTEGER NOT NULL,http_attempted INTEGER NOT NULL,blocked TEXT);CREATE TABLE intents(id TEXT PRIMARY KEY,request TEXT NOT NULL,url TEXT NOT NULL,policy_hash TEXT NOT NULL,realm INTEGER NOT NULL,state TEXT NOT NULL,capture_hash TEXT,error TEXT);"
+
+
+def schema_fingerprint(db):
+    """DDL and SQLite's actual constraints/types/index layouts, not column names alone."""
+    objects = [
+        (r[0], r[1], r[2], re.sub(r"\s+", " ", r[3]).strip() if r[3] else None)
+        for r in db.execute("SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name")
+    ]
+    tables = {}
+    for kind, name, _table, _sql in objects:
+        if kind != "table":
+            continue
+        # Object names from untrusted state are never interpolated as bare SQL.
+        quoted = '"' + name.replace('"', '""') + '"'
+        indexes = []
+        for row in db.execute("PRAGMA index_list(" + quoted + ")"):
+            index = '"' + row[1].replace('"', '""') + '"'
+            indexes.append(
+                (tuple(row), [tuple(r) for r in db.execute("PRAGMA index_xinfo(" + index + ")")])
+            )
+        tables[name] = {
+            "columns": [tuple(r) for r in db.execute("PRAGMA table_xinfo(" + quoted + ")")],
+            "indexes": indexes,
+            "foreign_keys": [
+                tuple(r) for r in db.execute("PRAGMA foreign_key_list(" + quoted + ")")
+            ],
+        }
+    return digest(
+        encoded(
+            {
+                "objects": objects,
+                "tables": tables,
+                "version": db.execute("PRAGMA user_version").fetchone()[0],
+            }
+        )
+    )
+
+
+def require_schema(db, ddl):
+    with sqlite3.connect(":memory:") as expected:
+        expected.executescript(ddl + "PRAGMA user_version=1;")
+        wanted = schema_fingerprint(expected)
+    if schema_fingerprint(db) != wanted:
+        raise ValueError("database schema fingerprint/constraints/types/indexes mismatch")
+    return wanted
 
 
 class Journal:
@@ -42,6 +91,13 @@ class Journal:
                 }
             )
         )
+        existing = self.root / "collection.sqlite"
+        if existing.is_symlink():
+            raise ValueError("symlink collection component")
+        if existing.exists():
+            with sqlite3.connect(existing.as_uri() + "?mode=ro", uri=True) as db:
+                db.row_factory = sqlite3.Row
+                self.integrity(db)
         with file_lock(self.root / ".lock", timeout=2):
             if any(
                 p.name not in {".lock", "blobs", "collection.sqlite", "collection.sqlite-journal"}
@@ -59,7 +115,7 @@ class Journal:
                 ).fetchall()
                 if not objects:
                     db.executescript(
-                        "BEGIN IMMEDIATE;CREATE TABLE jobs(id TEXT PRIMARY KEY, capture_hash TEXT NOT NULL, realm INTEGER NOT NULL, state TEXT NOT NULL, token TEXT, expires REAL, output TEXT, error TEXT);CREATE TABLE events(hash TEXT PRIMARY KEY,data TEXT NOT NULL);CREATE TABLE meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);PRAGMA user_version=1;COMMIT;"
+                        "BEGIN IMMEDIATE;" + JOURNAL_SCHEMA + "PRAGMA user_version=1;COMMIT;"
                     )
                     db.execute(
                         "INSERT INTO meta VALUES ('worker_fingerprint',?)", (self.fingerprint,)
@@ -68,6 +124,7 @@ class Journal:
         fsync_directory(self.root)
 
     def integrity(self, db):
+        require_schema(db, JOURNAL_SCHEMA)
         expected = {
             "jobs": {"id", "capture_hash", "realm", "state", "token", "expires", "output", "error"},
             "events": {"hash", "data"},
@@ -133,6 +190,7 @@ class Journal:
     @contextmanager
     def transaction(self):
         with file_lock(self.root / ".lock"), self.connect() as db:
+            self.integrity(db)
             db.execute("BEGIN IMMEDIATE")
             try:
                 yield db
@@ -275,6 +333,7 @@ class Journal:
         stage.mkdir()
         (stage / "blobs").mkdir()
         with file_lock(self.root / ".lock"), self.connect() as db:
+            self.integrity(db)
             with sqlite3.connect(stage / "collection.sqlite") as target:
                 db.backup(target)
             for row in db.execute("SELECT DISTINCT capture_hash FROM jobs"):
