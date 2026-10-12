@@ -251,3 +251,30 @@ def test_multiple_product_metadata_not_promoted_to_displayed_price():
     result = observe(GPU, candidate(URL), html() + html(), {}, datetime.now(UTC))
     assert result.status == "unresolved"
     assert not [f for f in result.facts if f.field == "displayed_price_rub"]
+
+
+def test_dns_precheck_is_runtime_failure_not_site_denial(tmp_path):
+    import socket
+
+    def unresolved(url):
+        raise socket.gaierror(-3, "temporary resolver failure")
+
+    state = tmp_path / "stop.json"
+    reader = CuratedReader(registry(), state, transport=unresolved, sleep=lambda _: None)
+    with pytest.raises(AccessBlocked, match="before source HTTP"):
+        reader.observe(GPU, candidate(URL), datetime.now(UTC))
+    assert not state.exists()
+    assert len(list(tmp_path.glob("stop.json.dns-*.json"))) == 1
+
+
+def test_legacy_dns_record_preserved_without_treating_it_as_site_ban(tmp_path):
+    import json
+
+    state = tmp_path / "stop.json"
+    raw = json.dumps({"origin": "https://28bit.ru", "reason": "gaierror"})
+    state.write_text(raw)
+    reader = CuratedReader(
+        registry(), state, transport=lambda u: pytest.fail("no implicit request")
+    )
+    reader.check_state()
+    assert state.read_text() == raw

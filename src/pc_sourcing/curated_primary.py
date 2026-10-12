@@ -1,7 +1,9 @@
 """Reviewed exact-URL capabilities for public buyer research through managed gateway."""
 
 import hashlib
+import json
 import re
+import socket
 import time
 import urllib.error
 import urllib.request
@@ -371,6 +373,11 @@ class CuratedReader:
 
     def check_state(self):
         if self.state.exists():
+            record = json.loads(self.state.read_text())
+            # Legacy plain gaierror could only escape public_address before HTTP.
+            # Preserve its bytes; it is an infrastructure record, not a site denial.
+            if record.get("reason") == "gaierror":
+                return
             raise AccessBlocked("source has persistent stop; explicit new source review required")
 
     def stop(self, reason):
@@ -423,6 +430,26 @@ class CuratedReader:
                 "target_ip_binding": "unknown behind managed gateway",
             }
             return observe(request, candidate, text, provenance, datetime.now(UTC))
+        except socket.gaierror as exc:
+            self.state.parent.mkdir(parents=True, exist_ok=True)
+            diagnostic = self.state.with_name(self.state.name + f".dns-{time.time_ns()}.json")
+            with diagnostic.open("x") as stream:
+                stream.write(
+                    dumps(
+                        {
+                            "origin": APPROVED_ORIGIN,
+                            "stage": "local_dns_precheck",
+                            "errno": exc.errno,
+                            "reason": "gaierror",
+                            "source_http_request_sent": False,
+                            "at": datetime.now(UTC).isoformat(),
+                        }
+                    )
+                    + "\n"
+                )
+            raise AccessBlocked(
+                "runtime DNS precheck failed before source HTTP; no retry in run"
+            ) from exc
         except (AccessBlocked, OSError, ValueError, TypeError, UnicodeError) as exc:
             if not self.state.exists():
                 self.stop(str(exc)[:200] if isinstance(exc, AccessBlocked) else type(exc).__name__)

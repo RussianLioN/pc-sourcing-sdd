@@ -35,3 +35,9 @@ cache metadata, so it isn't a replacement primary verification channel.
 New iteration requires exact SHA, actual bounded smoke, transfer and independent
 review. Previous receipts remain immutable; testing a successor under historical
 scope is not retrospective acceptance. Full product DoD remains pending.
+
+Local DNS precheck gaierror is infrastructure failure before source HTTP. It is
+recorded separately and stops the run, without inventing a site ban. The original
+legacy gaierror stop record remains unchanged; a newly initiated bounded run may
+probe the same approved route. Actual source denial/timeout stops remain persistent,
+with no automated retry, alternate provider or silent reset.
