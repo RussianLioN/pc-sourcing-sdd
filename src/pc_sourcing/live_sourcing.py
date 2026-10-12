@@ -113,21 +113,47 @@ def identity(request, title, mpn):
     tokens = set(re.findall(r"[A-Z0-9]+", text))
     if request.category == "gpu":
         if (
-            not {"MSI", "RTX", "5090", "SUPRIM", "LIQUID"} <= tokens
-            or "AIR" in tokens
+            "AIR" in tokens
             or "WATERBLOCK" in tokens
             or "ВОДОБЛОК" in text
             or re.search(r"\bWATER[\s_-]*BLOCK\b", text)
             or any(t.startswith("5090") and t != "5090" for t in tokens)
+            or re.search(
+                r"УСТАНОВЛЕН[А-Я]*\s+ПРОДАВЦ|AFTERMARKET|SELLER.INSTALLED|"
+                r"ЗАВОДСК[^;,.]{0,50}ВОЗДУШН|КАРТА\s+ВОЗДУШН",
+                text,
+            )
+            or tokens.intersection({"ASUS", "PALIT", "GIGABYTE", "ZOTAC"})
         ):
-            return "excluded", ("Не подтверждена полная заводская MSI RTX 5090 SUPRIM LIQUID",)
+            return "excluded", ("Не полная заводская MSI RTX 5090 SUPRIM LIQUID",)
+        if re.search(r"\bRTX\s+(?!5090\b)[0-9]+", text):
+            return "excluded", ("Другая модель GPU",)
+        if not {"MSI", "RTX", "5090", "SUPRIM", "LIQUID"} <= tokens:
+            return "unresolved", ("Заводской liquid вариант/полная идентичность не подтверждены",)
         requested = set(re.findall(r"[A-Z0-9]+", request.name.upper()))
         if {"OC", "SOC"} <= tokens:
             return "unresolved", ("Конфликт вариантов OC/SOC",)
+        if "SOC" in tokens and mpn == "G5090-32SLC":
+            return "unresolved", ("SOC title конфликтует с OC MPN",)
         if ("SOC" in tokens and "OC" in requested) or ("OC" in tokens and "SOC" in requested):
+            if request.mpn and mpn == request.mpn:
+                return "unresolved", ("Title variant конфликтует с заданным MPN",)
             return "analogue", ("Другой вариант OC/SOC; не точный SKU",)
         if ("OC" in requested or "SOC" in requested) and not {"OC", "SOC"} & tokens:
             return "unresolved", ("Вариант OC/SOC не подтверждён",)
+    if request.category == "ram":
+        expected_capacity = 96 if request.mpn == "F5-6000J3036F48GX2-TZ5NR" else None
+        kits = list(re.finditer(r"([0-9]+)\s*[X×Х]\s*([0-9]+)\s*(?:GB|ГБ)", text))
+        without_kits = text
+        for kit in reversed(kits):
+            without_kits = without_kits[: kit.start()] + without_kits[kit.end() :]
+        capacities = [int(v) for v in re.findall(r"([0-9]{1,3})\s*(?:GB|ГБ)\b", without_kits)]
+        contradiction = expected_capacity and (
+            any(v != expected_capacity for v in capacities)
+            or any(int(k[1]) != 2 or int(k[2]) != 48 for k in kits)
+        )
+        if contradiction and request.mpn and mpn == request.mpn:
+            return "unresolved", ("Ёмкость/комплектность title конфликтует с kit MPN",)
     if request.mpn:
         if mpn == request.mpn:
             return "exact", ()
@@ -229,6 +255,13 @@ def parse_card(request, candidate, html, now):
             else "unknown"
         )
         visible = " ".join(document.visible).casefold()
+        if condition == "new" and re.search(
+            r"open[ -]?box|упаковк[а-я]* вскрыт|распакован|"
+            r"refurb|восстановлен|б/у|\bused\b|витрин",
+            visible,
+        ):
+            condition = "unknown"
+            reasons.append("Visible condition contradicts NewCondition; condition unresolved")
         if stock == "in_stock" and any(
             x in visible
             for x in ("нет в наличии", "под заказ", "предзаказ", "out of stock", "preorder")
@@ -257,6 +290,12 @@ def parse_card(request, candidate, html, now):
         if any(
             x in visible
             for x in (
+                "залог",
+                "задаток",
+                "deposit",
+                "плата за брон",
+                "аванс",
+                "предоплат",
                 "скидк",
                 "наличными",
                 "при оплате",

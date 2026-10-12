@@ -436,3 +436,73 @@ def test_actual_denial_persists_even_with_preserved_legacy_dns_record(tmp_path):
     with pytest.raises(AccessBlocked, match="persistent denial"):
         second.observe(GPU, candidate(URL), datetime.now(UTC))
     assert len(calls) == 1
+
+
+@pytest.mark.parametrize("mutation", ["two_products", "two_mpns", "wrong_name"])
+def test_review_conflicting_primary_identity_is_unresolved(mutation):
+    page = html()
+    if mutation == "two_products":
+        page += html()
+    elif mutation == "two_mpns":
+        page = page.replace("</div></div>", '<meta itemprop="mpn" content="OTHER-MPN"></div></div>')
+        # Put the second declaration in the Product, outside Offer.
+        page = page.replace(
+            '<meta itemprop="mpn" content="OTHER-MPN"></div></div>',
+            '</div><meta itemprop="mpn" content="OTHER-MPN"></div>',
+        )
+    else:
+        page = page.replace(
+            '<meta itemprop="sku"',
+            '<meta itemprop="name" content="MSI RTX 5080"><meta itemprop="sku"',
+        )
+    result = observe(GPU, candidate(url=URL), page, {}, datetime.now(UTC))
+    assert result.match == "unresolved"
+    assert result.mpn is None
+    assert not any(f.field == "mpn" for f in result.facts)
+
+
+def test_nested_brand_name_does_not_conflict_with_product():
+    page = html().replace(
+        '<meta itemprop="sku"',
+        '<div itemprop="brand" itemscope itemtype="https://schema.org/Brand"><meta itemprop="name" content="Palit"></div><meta itemprop="sku"',
+    )
+    result = observe(GPU, candidate(url=URL), page, {}, datetime.now(UTC))
+    assert result.mpn == "NE75090019R5-GB2020G"
+    assert result.match == "excluded"
+
+
+def test_review_aftermarket_liquid_cannot_be_exact():
+    from pc_sourcing.live_sourcing import identity
+
+    title = GPU.name + " СЖО установлена продавцом; заводская карта воздушная"
+    assert identity(GPU, title, GPU.mpn)[0] == "excluded"
+
+
+def test_review_ram_total_capacity_conflicts_with_kit_mpn():
+    from pc_sourcing.live_models import Request
+    from pc_sourcing.live_sourcing import identity
+
+    request = Request(
+        name="G.Skill 96GB 2x48GB DDR5 6000 CL30 EXPO",
+        mpn="F5-6000J3036F48GX2-TZ5NR",
+        category="ram",
+    )
+    assert identity(request, "G.Skill 48GB всего DDR5 6000 CL30", request.mpn)[0] == "unresolved"
+
+
+def test_review_visible_open_box_overrides_new_declaration():
+    from test_live_sourcing import NOW, card
+
+    from pc_sourcing.live_sourcing import parse_card
+
+    result = parse_card(GPU, candidate(), card() + "Open-box; упаковка вскрыта", NOW)
+    assert result.condition == "unknown"
+
+
+def test_review_deposit_is_not_product_price():
+    from test_live_sourcing import NOW, card
+
+    from pc_sourcing.live_sourcing import parse_card
+
+    result = parse_card(GPU, candidate(), card() + "Залог для брони 450000 ₽", NOW)
+    assert result.price_rub is None

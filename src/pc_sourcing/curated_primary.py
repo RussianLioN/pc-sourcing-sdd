@@ -183,6 +183,7 @@ class ProductScope(HTMLParser):
         self.stack, self.scope, self.properties, self.h1, self.h1_depth = [], None, {}, [], None
         self.price_types = []
         self.product_count = 0
+        self.item_scopes = {}
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -191,6 +192,10 @@ class ProductScope(HTMLParser):
         if attrs.get("itemtype", "").rstrip("/").endswith("schema.org/Product"):
             self.product_count += 1
             self.scope = len(self.stack)
+        if "itemscope" in attrs:
+            self.item_scopes[len(self.stack)] = (
+                attrs.get("itemtype", "").rstrip("/").rsplit("/", 1)[-1]
+            )
         if tag == "h1":
             self.h1_depth = len(self.stack)
         if self.scope and attrs.get("itemprop") in {
@@ -203,6 +208,10 @@ class ProductScope(HTMLParser):
             "itemCondition",
         }:
             prop = attrs["itemprop"]
+            owner = self.item_scopes[max(self.item_scopes)] if self.item_scopes else None
+            required_owner = "Product" if prop in {"name", "sku", "mpn"} else "Offer"
+            if owner != required_owner:
+                return
             value = attrs.get("content", attrs.get("href"))
             if value is not None and len(value) <= 300:
                 self.properties.setdefault(prop, []).append(value)
@@ -224,6 +233,7 @@ class ProductScope(HTMLParser):
                 self.h1_depth = None
             if self.scope and depth <= self.scope:
                 self.scope = None
+            self.item_scopes = {d: kind for d, kind in self.item_scopes.items() if d < depth}
             del self.stack[depth - 1 :]
 
     def handle_data(self, text):
@@ -246,13 +256,24 @@ def observe(request, candidate, html, provenance, now):
         ram_declared = re.search(r"\b(F5-[A-Z0-9]+(?:-[A-Z0-9]+)+)\b", title, re.IGNORECASE)
         if ram_declared:
             declared = ram_declared
-    conflict = bool(declared and mpn and declared[1] != mpn)
+    conflict = len(mpns) > 1 or bool(declared and mpn and declared[1].upper() != mpn.upper())
+    names = list(dict.fromkeys(props.get("name", [])))
+
+    def normalize(value):
+        return " ".join(value.casefold().split())
+
+    conflict = conflict or bool(
+        names and (len(names) != 1 or normalize(names[0]) != normalize(title))
+    )
+    conflict = conflict or parsed.product_count != 1
     if conflict:
         mpn = None
-    elif mpn is None and declared:
+    elif not mpns and declared:
         mpn = declared[1]
     mpn_selector = "Product meta[itemprop=mpn]" if mpns else "h1 declared manufacturer code (NE/F5)"
     match, differences = identity(request, title, mpn)
+    if conflict:
+        match, differences = "unresolved", ("Conflicting or multiple primary Product identities",)
     if request.category == "ram" and (
         not re.search(r"(?i)оперативная память|\bRAM\b|\bmemory\b", title)
         or re.search(r"(?i)ноутбук|компьютер|\blaptop\b|\bDDR[234]\b", title)

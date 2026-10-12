@@ -10,3 +10,8 @@ No prior receipts or immutable old assertions/specifications change.
 CP-T010-01 approved: exact setup-only historical T009 checkout pin; every assertion
 unchanged. primary_scope byte-checks exact insertion; new regression proves frozen
 T009 gate rejects T010 additions. No old allowlist/checker/contracts/receipt changed.
+
+Independent review repair cases → live_sourcing.identity/parse_card and
+curated_primary.observe/ProductScope → additive review regressions in
+test_curated_primary.py. Conflicting fields remain unknown/unresolved; no oracle
+was changed. CP-T010-02 is pending for one protected contradictory assertion.

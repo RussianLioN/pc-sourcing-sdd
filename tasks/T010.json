@@ -20,7 +20,8 @@
     "scripts/primary_quality.py",
     "scripts/primary_check_workflow.py",
     "workflows/primary-validation.yml",
-    "tests/test_stage_acceptance.py"
+    "tests/test_stage_acceptance.py",
+    "docs/adr/0004-review-identity-test-correction.md"
   ],
   "mutable_baseline_files": [
     "src/pc_sourcing/live_models.py",
