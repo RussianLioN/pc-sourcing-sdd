@@ -37,3 +37,9 @@ Acceptance: independently frozen60, metamorphic13 and holdout72 are separate gen
 JSON-LD route metrics, never pooled with curated microdata probes. Own tests cover
 unit/scoping pairs, positive/negative inversion, structured mapping, unknown and
 both adapters. No new live reads. Exact SHA full regression and independent review.
+
+Advertised-MHz compares only the nominal grade numeral against the requested DDR
+grade. It is a separate expectation, not a unit conversion into MT/s or a physical
+clock assertion. A value explicitly in MT/s compares with effective transfer;
+a value explicitly labelled clock compares with physical MHz. Raw source unit
+remains in retained assertions. No measured clock is inferred from a vendor label.

@@ -227,3 +227,10 @@ def test_copied_code_alone_cannot_confirm_ram_model(title):
     from pc_sourcing.live_sourcing import identity
 
     assert identity(RAM, title, RAM.mpn)[0] == "unresolved"
+
+
+def test_marketed_mhz_label_never_becomes_physical_or_transfer_unit():
+    claims = extract([], "ram", {"memorySpeed": "6000 MHz"})
+    assert claims[0].unit == "advertised-MHz" and claims[0].scope == "advertised"
+    assert not validate(RAM, claims)  # agrees with requested nominal DDR grade only
+    assert validate(RAM, extract([], "ram", {"memorySpeed": "3000 MHz"}))

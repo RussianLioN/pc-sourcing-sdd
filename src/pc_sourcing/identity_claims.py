@@ -508,6 +508,7 @@ def expectations(request):
         rate, unit = result[("speed", "effective")]
         if unit == "MT/s":
             result[("clock", "physical")] = (rate / 2, "MHz")
+            result[("speed", "advertised")] = (rate, "advertised-MHz")
     result[("full_item", "product")] = (True, "")
     if request.mpn:
         result[("mpn", "product")] = (request.mpn, "")
@@ -520,7 +521,11 @@ def validate(request, claims, *, allow_variant_difference=False):
     for c in claims:
         if c.attribute == "basis" and c.value == "DDR physical clock":
             continue
-        scope = "effective" if c.attribute == "speed" and c.scope == "advertised" else c.scope
+        scope = (
+            "effective"
+            if c.attribute == "speed" and c.scope == "advertised" and c.unit == "MT/s"
+            else c.scope
+        )
         expected = wanted.get((c.attribute, scope))
         if c.polarity == "unknown" or c.attribute in {
             "revision",
@@ -560,8 +565,6 @@ def validate(request, claims, *, allow_variant_difference=False):
             if len(clocks) == 1 and isinstance(declared_value, Decimal):
                 declared_value = declared_value * next(iter(clocks)) / Decimal(1000)
                 declared_unit = "cycles"
-        if c.attribute == "speed" and c.scope == "advertised" and declared_unit == "advertised-MHz":
-            declared_unit = "MT/s"
         equal = declared_value == value and declared_unit == unit
         if allow_variant_difference and c.attribute == "variant":
             continue
