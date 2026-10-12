@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import fcntl
 import hashlib
 import json
 import re
@@ -115,7 +116,8 @@ def identity(request, title, mpn):
         return "unresolved", ("Primary model/title отсутствует",)
     accessory = re.search(
         r"ПУСТ[А-Я]* КОРОБ|EMPTY BOX|DUMMY|ПАМЯТИ НЕТ|MOUSE PAD|CHARGING DOCK|"
-        r"REPLACEMENT SHELL|RECEIVER ONLY|ТОЛЬКО (?:КОРОБ|ПРИЁМНИК)",
+        r"REPLACEMENT SHELL|RECEIVER ONLY|ТОЛЬКО (?:КОРОБ|ПРИЁМНИК)|"
+        r"ПУСТ[А-Я]* УПАКОВК|ЗАПЧАСТ|СМЕНН[А-Я]* КОРПУС|ЗАРЯДН[А-Я]* СТАНЦ|КОВРИК",
         text,
     )
     if accessory:
@@ -176,14 +178,16 @@ def identity(request, title, mpn):
         traits_conflict = bool(
             topology and any((k[1], k[2]) != (topology[1], topology[2]) for k in kits)
         )
-        for pattern in (r"\bCL\s*([0-9]+)\b", r"\bDDR5\s+([0-9]{4})\b"):
+        for pattern in (r"\bCL\s*([0-9]+)\b", r"\bDDR5[\s-]+([0-9]{4})\b"):
             expected = re.search(pattern, requested)
             actual = re.search(pattern, text)
             traits_conflict |= bool(expected and actual and actual[1] != expected[1])
         traits_conflict |= bool(re.search(r"SODIMM|REGISTERED|\bECC\b", text))
         if "EXPO" in requested:
             traits_conflict |= bool(
-                re.search(r"EXPO\s+(?:UNSUPPORTED|NOT SUPPORTED)|XMP ONLY", text)
+                re.search(
+                    r"EXPO\s+(?:UNSUPPORTED|NOT SUPPORTED|НЕ ПОДДЕРЖ)|XMP ONLY|ТОЛЬКО XMP", text
+                )
             )
         if traits_conflict:
             return "unresolved", (
@@ -199,6 +203,9 @@ def identity(request, title, mpn):
             return ("unresolved" if mpn == request.mpn else "excluded"), (
                 "Mouse manufacturer not agreed",
             )
+        required = set(re.findall(r"[A-Z0-9]+", wanted))
+        if not required <= tokens:
+            return "unresolved", ("Full requested mouse model not confirmed",)
     if request.mpn:
         if mpn == request.mpn:
             return "exact", ()
@@ -638,6 +645,45 @@ def verify(output):
     return {"status": "passed", "files": len(expected)}
 
 
+class PersistentSearch:
+    """Fixed keyless endpoint stop shared across CLI runs; never auto-reset a denial."""
+
+    def __init__(self, state, search=keyless_search):
+        self.state = Path(state)
+        if (
+            not self.state.is_absolute()
+            or self.state.is_symlink()
+            or self.state.parent.is_symlink()
+        ):
+            raise ValueError("search stop state requires absolute non-symlink path")
+        self.search = search
+
+    def __call__(self, query):
+        self.state.parent.mkdir(parents=True, exist_ok=True)
+        lockpath = self.state.with_name(self.state.name + ".lock")
+        if lockpath.is_symlink():
+            raise AccessBlocked("search stop lock symlink")
+        with lockpath.open("a") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            if self.state.exists() or self.state.is_symlink():
+                raise AccessBlocked("persisted keyless search stop; no retry or automatic reset")
+            try:
+                return self.search(query)
+            except AccessBlocked as exc:
+                with self.state.open("x") as stream:
+                    stream.write(
+                        dumps(
+                            {
+                                "endpoint": "https://api.tavily.com/search",
+                                "reason": str(exc),
+                                "at": datetime.now(UTC).isoformat(),
+                            }
+                        )
+                        + "\n"
+                    )
+                raise
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["plan", "run", "verify"])
@@ -672,7 +718,12 @@ def main():
                         json.loads(args.primary_registry.read_text()), args.source_state
                     )
                 data = run(
-                    request, args.out, envelopes=envelopes, policies=policies, reader=primary_reader
+                    request,
+                    args.out,
+                    envelopes=envelopes,
+                    policies=policies,
+                    reader=primary_reader,
+                    search=PersistentSearch(ROOT / "artifacts/source-state/tavily-stop.json"),
                 )
                 result = {
                     "status": "completed_with_gaps",

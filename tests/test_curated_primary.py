@@ -560,3 +560,54 @@ def test_review_mouse_code_does_not_hide_model_or_partial_item(title):
         name="Logitech G PRO X2 SUPERSTRIKE", mpn="SYNTHETIC-REGIONAL-MPN", category="mouse"
     )
     assert identity(request, title, request.mpn)[0] == "unresolved"
+
+
+@pytest.mark.parametrize(
+    "name,title",
+    [
+        ("G.Skill 96GB DDR5-6000 CL30 EXPO", "G.Skill 96GB DDR5-5600 CL30 EXPO"),
+        ("G.Skill 96GB DDR5 6000 CL30 EXPO", "G.Skill 96GB DDR5 6000 CL30; EXPO не поддерживается"),
+    ],
+)
+def test_identity_trait_variations_not_tied_to_oracle_spelling(name, title):
+    from pc_sourcing.live_models import Request
+    from pc_sourcing.live_sourcing import identity
+
+    request = Request(name=name, mpn="F5-6000J3036F48GX2-TZ5NR", category="ram")
+    assert identity(request, title, request.mpn)[0] == "unresolved"
+
+
+def test_mouse_partial_model_cannot_be_exact_with_copied_code():
+    from pc_sourcing.live_models import Request
+    from pc_sourcing.live_sourcing import identity
+
+    request = Request(name="Logitech G PRO X2 SUPERSTRIKE", mpn="SYNTHETIC-MPN", category="mouse")
+    assert identity(request, "Logitech", request.mpn)[0] == "unresolved"
+
+
+@pytest.mark.parametrize("reason", ["HTTP 429; Retry-After=600", "HTTP 403", "CAPTCHA", "timeout"])
+def test_keyless_stop_survives_new_reader_without_network(tmp_path, reason):
+    from pc_sourcing.live_sourcing import PersistentSearch
+
+    state = tmp_path / "search-stop.json"
+    calls = []
+
+    def denied(query):
+        calls.append(query)
+        raise AccessBlocked(reason)
+
+    with pytest.raises(AccessBlocked, match=reason.split(";")[0]):
+        PersistentSearch(state, denied)("first query")
+    before = state.read_bytes()
+    with pytest.raises(AccessBlocked, match="persisted keyless"):
+        PersistentSearch(state, denied)("second query")
+    assert calls == ["first query"]
+    assert state.read_bytes() == before
+
+
+def test_successful_keyless_call_does_not_create_stop(tmp_path):
+    from pc_sourcing.live_sourcing import PersistentSearch
+
+    state = tmp_path / "stop.json"
+    assert PersistentSearch(state, lambda query: {"query": query})("safe") == {"query": "safe"}
+    assert not state.exists()

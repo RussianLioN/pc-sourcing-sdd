@@ -49,3 +49,10 @@ resolver. Status is recorded as unknown; no proxy IP-binding/public-IP-only clai
 Unlisted origins/paths/actions/redirects still fail before networking. Source HTTP
 denial/CAPTCHA/timeout is never retried via another route. This does not grant an
 arbitrary URL capability or change DNS/proxy configuration.
+
+CLI keyless searches now share artifacts/source-state/tavily-stop.json. Any search
+access denial, rate limit or timeout persists before propagation; future CLI calls
+block before HTTP. No automatic reset or credential/provider substitution. Respect
+Retry-After, and require separately reviewed explicit recovery before another live
+search. Original three 429 receipts are preserved: the earlier per-run stop did not
+prevent separate CLI invocations, a defect corrected by this shared state.

@@ -24,3 +24,8 @@ Aftermarket factory contradiction remains unresolved pending manufacturer eviden
 rather than excluded: this is more conservative and agrees with the frozen 60-card
 oracle; the earlier 25-card oracle used excluded for that same conflict. Both labels
 block purchase; this discrepancy is disclosed, not an edited reviewer oracle.
+
+PRIMARY-03 cross-run rate-limit preservation → PersistentSearch CLI wrapper →
+429/403/CAPTCHA/timeout persisted-stop regressions. Original observed 429 receipts
+remain retained; no new keyless request after stop persistence. Existing primary
+card capabilities may be read independently without altering denied search access.
