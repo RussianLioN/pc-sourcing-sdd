@@ -9,8 +9,24 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import improvement_scope as scope  # noqa: E402
 
 
-def test_parent_scope_unchanged():
-    value = scope.check()
+def test_parent_scope_unchanged(tmp_path):
+    checkout = tmp_path / "historical-T017"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-hardlinks", str(scope.ROOT), str(checkout)], check=True
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(checkout),
+            "checkout",
+            "--quiet",
+            "--detach",
+            "4bc835b57d948c56afc29ceafce671a9ce739099",
+        ],
+        check=True,
+    )
+    value = scope.check(checkout)
     assert value["status"] == "PASS"
     assert value["real_learning_enabled"] is False
 

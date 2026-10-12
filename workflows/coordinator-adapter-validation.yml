@@ -1,0 +1,18 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-one-coordinator-operation-validation"
+  name: "Inactive T018 bounded adapter common snapshot"
+  version: "1.0.0"
+steps:
+  - id: quality
+    type: shell
+    run: ".venv/bin/python scripts/coordinator_adapter_quality.py"
+    timeout: 480
+  - id: scope
+    type: shell
+    run: ".venv/bin/python scripts/coordinator_adapter_scope.py"
+    timeout: 60
+  - id: "off"
+    type: shell
+    run: ".venv/bin/python scripts/coordinator_adapter.py status"
+    timeout: 60
