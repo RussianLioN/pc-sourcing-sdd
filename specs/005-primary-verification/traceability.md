@@ -6,3 +6,7 @@ actual fixed-origin 28BIT card receipt (Palit excluded from MSI factory Liquid).
 PRIMARY-08 → CLI/state/observation/report equality + transfer tests.
 PRIMARY-09 → scripts/primary_scope.py, full quality and independent exact-SHA review.
 No prior receipts or immutable old assertions/specifications change.
+
+CP-T010-01 approved: exact setup-only historical T009 checkout pin; every assertion
+unchanged. primary_scope byte-checks exact insertion; new regression proves frozen
+T009 gate rejects T010 additions. No old allowlist/checker/contracts/receipt changed.

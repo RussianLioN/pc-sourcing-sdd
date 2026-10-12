@@ -44,6 +44,17 @@ def test_every_original_assertion_and_test_body_preserved():
 def test_current_scope_accepts_only_approved_fixture_patch_and_owned_additions(tmp_path):
     checkout = tmp_path / "scope copy"
     subprocess.run(["git", "clone", "--shared", "--quiet", str(ROOT), str(checkout)], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(checkout),
+            "checkout",
+            "--detach",
+            "130d67acd07b68a942dd62daf9127723556916e3",
+        ],
+        check=True,
+    )
     task = json.loads((ROOT / "tasks/T009.json").read_text())
     for name in task["owned_files"]:
         source = ROOT / name

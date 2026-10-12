@@ -1,6 +1,6 @@
 # CP-T010-01 — historical T009 scope unit setup
 
-Status: pending explicit coordinator approval. One protected baseline file:
+Status: coordinator approved on 2026-10-12; exact setup-only insertion applied. One protected baseline file:
 tests/test_stage_acceptance.py, setup inside
 `test_current_scope_accepts_only_approved_fixture_patch_and_owned_additions`.
 
@@ -25,5 +25,5 @@ T010 is tested by new primary_scope and its negatives; T008 checker/fixtures,
 T009 scope code/contracts/receipts unchanged. T008/T009 gate still reject successor
 scope; no skip/deselect/xfail, widened allowlist or retroactive acceptance.
 
-Needs explicit approved T010 ownership exception for this exact setup insertion.
-Until then keep full check failed and preserve original failure receipt.
+Approved ownership exception records only this exact setup insertion. Prior failure
+receipts are preserved; fresh full checks and review are required.

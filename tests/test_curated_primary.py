@@ -312,3 +312,18 @@ def test_primary_mpn_declarations_conflict_unknown():
     )
     result = observe(GPU, candidate(URL), text, {}, datetime.now(UTC))
     assert result.mpn is None and result.status == "unresolved"
+
+
+def test_frozen_t009_scope_rejects_t010_snapshot(tmp_path):
+    import importlib
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(root / "scripts"))
+    historical = importlib.import_module("live_scope")
+    checkout = tmp_path / "successor scope"
+    subprocess.run(["git", "clone", "--shared", "--quiet", str(root), str(checkout)], check=True)
+    with pytest.raises(ValueError, match="unowned changes"):
+        historical.check(checkout)

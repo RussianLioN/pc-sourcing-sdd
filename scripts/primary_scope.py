@@ -25,9 +25,19 @@ def check(root=ROOT):
     if set(names) != set(task["protected_files"]):
         raise ValueError("baseline inventory differs")
     for name in names:
-        if name not in allowed_mutations and (root / name).read_bytes() != subprocess.check_output(
-            ["git", "show", f"{BASELINE}:{name}"], cwd=root
-        ):
+        if name in allowed_mutations:
+            continue
+        expected = subprocess.check_output(["git", "show", f"{BASELINE}:{name}"], cwd=root)
+        if name == "tests/test_stage_acceptance.py":
+            anchor = b'    task = json.loads((ROOT / "tasks/T009.json").read_text())\n'
+            patch = b'    subprocess.run(\n        [\n            "git",\n            "-C",\n            str(checkout),\n            "checkout",\n            "--detach",\n            "130d67acd07b68a942dd62daf9127723556916e3",\n        ],\n        check=True,\n    )\n'
+            if (
+                set(task.get("approved_protected_patches", {})) != {name}
+                or expected.count(anchor) != 1
+            ):
+                raise ValueError("approved CP-T010-01 binding missing")
+            expected = expected.replace(anchor, patch + anchor)
+        if (root / name).read_bytes() != expected:
             raise ValueError("protected prior stage changed: " + name)
     changed = subprocess.check_output(["git", "diff", "--name-only", "-z", BASELINE], cwd=root)
     other = subprocess.check_output(
@@ -41,7 +51,12 @@ def check(root=ROOT):
         != task["spec_sha256"]
     ):
         raise ValueError("T010 spec/task mismatch")
-    return {"status": "passed", "baseline": BASELINE, "protected": len(names) - 2}
+    return {
+        "status": "passed",
+        "baseline": BASELINE,
+        "protected_byte_identical": len(names) - 3,
+        "approved_setup_patch": 1,
+    }
 
 
 if __name__ == "__main__":
