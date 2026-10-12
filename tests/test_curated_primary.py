@@ -413,3 +413,26 @@ def test_known_nonpublic_dns_still_rejects_fixed_origin_before_gateway(monkeypat
     )
     with pytest.raises(AccessBlocked, match="non-public"):
         curated_primary.fixed_get("https://28bit.ru/robots.txt")
+
+
+def test_actual_denial_persists_even_with_preserved_legacy_dns_record(tmp_path):
+    import json
+
+    state = tmp_path / "stop.json"
+    old = json.dumps({"origin": "https://28bit.ru", "reason": "gaierror"})
+    state.write_text(old)
+    calls = []
+
+    def denied(url):
+        calls.append(url)
+        raise AccessBlocked("HTTP 403")
+
+    reader = CuratedReader(registry(), state, transport=denied, sleep=lambda _: None)
+    with pytest.raises(AccessBlocked):
+        reader.observe(GPU, candidate(URL), datetime.now(UTC))
+    assert state.read_text() == old
+    assert state.with_name(state.name + ".denial.json").exists()
+    second = CuratedReader(registry(), state, transport=lambda u: pytest.fail("no retry"))
+    with pytest.raises(AccessBlocked, match="persistent denial"):
+        second.observe(GPU, candidate(URL), datetime.now(UTC))
+    assert len(calls) == 1

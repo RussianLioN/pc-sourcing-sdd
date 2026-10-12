@@ -405,6 +405,8 @@ class CuratedReader:
         ]
 
     def check_state(self):
+        if self.state.with_name(self.state.name + ".denial.json").exists():
+            raise AccessBlocked("source has persistent denial; explicit source review required")
         if self.state.exists():
             record = json.loads(self.state.read_text())
             # Legacy plain gaierror could only escape public_address before HTTP.
@@ -415,7 +417,14 @@ class CuratedReader:
 
     def stop(self, reason):
         self.state.parent.mkdir(parents=True, exist_ok=True)
-        with self.state.open("x") as stream:
+        target = (
+            self.state
+            if not self.state.exists()
+            else self.state.with_name(self.state.name + ".denial.json")
+        )
+        if target.exists():
+            return
+        with target.open("x") as stream:
             stream.write(
                 dumps(
                     {
@@ -485,8 +494,7 @@ class CuratedReader:
                 "runtime DNS precheck failed before source HTTP; no retry in run"
             ) from exc
         except (AccessBlocked, OSError, ValueError, TypeError, UnicodeError) as exc:
-            if not self.state.exists():
-                self.stop(str(exc)[:200] if isinstance(exc, AccessBlocked) else type(exc).__name__)
+            self.stop(str(exc)[:200] if isinstance(exc, AccessBlocked) else type(exc).__name__)
             raise AccessBlocked(
                 "primary source stopped: "
                 + (str(exc)[:200] if isinstance(exc, AccessBlocked) else type(exc).__name__)
