@@ -1,14 +1,14 @@
 {
   "id": "T017",
-  "status": "THREE_MEDIUM_REPAIRS_READY_FOR_FINAL_VALIDATION",
+  "status": "GIT_BOUNDARY_AND_R7_R8_REPAIR_READY_FOR_EXACT_SHA_REVIEW",
   "base_commit": "f495e5294e93a281f945de6f4e1c6c89d7a6cb1e",
   "base_status": "T016 independent limited engineering PASS",
   "base_review": {
     "library_file_id": "libfile_d5f5b14b1d148191b82699ea3c50bf09",
     "sha256": "d35368ccc77974afa2165521314a295735110a3da1e61a4bc2cd7ff813232ad4"
   },
-  "spec_revision": "0.1.2-existing-contract-repair",
-  "spec_sha256": "66790c8167c877bb2df4a0b3f1d7ab1c31d9e5b0fe9dd3c480ace58a1c14af93",
+  "spec_revision": "0.1.3-existing-boundary-repair",
+  "spec_sha256": "46387cb6bad575e2959124a7819fd850a51f8a5b9c058f76f3248d4417e822a9",
   "owned_files": [
     ".agents/skills/pc-reviewed-lessons/SKILL.md",
     ".agents/skills/pc-reviewed-lessons/agents/openai.yaml",
@@ -334,5 +334,24 @@
     "library_file_id": "libfile_31896ca4e9ec8191bd30f3f8345063e6",
     "sha256": "43dd4e7a20974588da4895073fe5759ae78745e43f364379b756b362cc0d7e97",
     "status": "repaired_independent_exact_SHA_recheck_pending"
-  }
+  },
+  "additional_rejections": [
+    {
+      "library_file_id": "libfile_3397f9050b608191a9cf153dacd8e6ba",
+      "sha256": "0dfbf89f064551fd65f0489ba4b13701c27c9fb5dcbe4b43dc67d2e6fe3ba56a",
+      "findings": [
+        "HIGH fsmonitor execution",
+        "MEDIUM replace objects"
+      ]
+    },
+    {
+      "library_file_id": "libfile_a7656d01bbe48191b067ecbe6c88d900",
+      "sha256": "32c19e978d8aff2a51a0d283670c094125ae626358d6e38afd8d0e4ee1c91249",
+      "findings": [
+        "filter.clean neighbor",
+        "R7 invalid/never-active rollback",
+        "R8 rehashed semantic contradiction"
+      ]
+    }
+  ]
 }

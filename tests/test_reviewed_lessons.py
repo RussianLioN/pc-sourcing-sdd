@@ -269,3 +269,57 @@ def test_review_M3_validly_reencoded_incident_drift_refuses_promotion(tmp_path):
     with pytest.raises(Rejected, match="lineage"):
         store.switch(0, old["snapshot_sha256"], lesson=lesson, approval=approval)
     assert store.snapshot() == old
+
+
+@pytest.mark.parametrize(
+    "attack",
+    [
+        "duplicate_entries",
+        "unknown_field",
+        "wrong_schema",
+        "wrong_previous_version",
+        "wrong_verdict",
+    ],
+)
+def test_rollback_revalidates_target_before_pointer_switch(tmp_path, attack):
+    store, lesson, approval = fixture(tmp_path)
+    old = store.snapshot()
+    active = activate(store, lesson, approval)
+    current = store.switch(1, active["snapshot_sha256"], rollback=old["snapshot_sha256"])
+    target = dict(active)
+    if attack == "duplicate_entries":
+        target["entries"] = active["entries"] * 2
+    elif attack == "unknown_field":
+        target["extra"] = True
+    elif attack == "wrong_schema":
+        target["schema_version"] = "invalid"
+    elif attack == "wrong_previous_version":
+        target["previous_version"] = True
+    else:
+        target["entries"] = [{"lesson": lesson, "approval": approval | {"verdict": "REJECT"}}]
+    target = bind(target, "snapshot_sha256")
+    (store.root / "snapshots" / (target["snapshot_sha256"] + ".json")).write_text(
+        __import__("json").dumps(target)
+    )
+    before = (store.root / "active.json").read_bytes()
+    with pytest.raises((Rejected, ValueError)):
+        store.switch(
+            current["version"], current["snapshot_sha256"], rollback=target["snapshot_sha256"]
+        )
+    assert (store.root / "active.json").read_bytes() == before
+
+
+def test_valid_but_never_visible_orphan_snapshot_cannot_be_rollback_target(tmp_path):
+    store, lesson, approval = fixture(tmp_path)
+    old = store.snapshot()
+    with pytest.raises(Rejected, match="interrupted"):
+        store._snapshot(1, 0, old["snapshot_sha256"], [], fault="before_switch")
+    orphan = next(
+        p for p in (store.root / "snapshots").iterdir() if p.stem != old["snapshot_sha256"]
+    )
+    active = activate(store, lesson, approval)
+    current = store.switch(1, active["snapshot_sha256"], rollback=old["snapshot_sha256"])
+    before = (store.root / "active.json").read_bytes()
+    with pytest.raises(Rejected, match="never"):
+        store.switch(current["version"], current["snapshot_sha256"], rollback=orphan.stem)
+    assert (store.root / "active.json").read_bytes() == before

@@ -95,7 +95,7 @@ See [data-model.md](data-model.md), [contracts/process-cli.md](contracts/process
 
 ### Review authority boundary
 
-The coordinator must verify real independent reviewer provenance in its own environment and pin the approval's complete hash tuple outside writer-changeable state. Repository approval JSON is evidence, never authority. Production promotion executes only in a coordinator-controlled boundary whose state and approval registry the writer cannot alter. The coordinator must verify actual permissions/sandbox separation; pathname or writer-declared read-only flags do not prove it. Current shared `/workspace` is writer-writable and cannot provide this boundary by naming another directory. No permission changes are performed by this task.
+The coordinator must verify real independent reviewer provenance in its own environment and pin the approval's complete hash tuple outside writer-changeable state. Repository approval JSON is evidence, never authority. Production promotion executes only in a coordinator-controlled boundary whose state and approval registry the writer cannot alter. The coordinator must verify its existing authenticated external review/hash-anchor boundary for every explicit operation; a pathname or writer-declared flag does not prove it. Coordinator platform context can retain that anchor without new credentials. Current shared `/workspace` is writer-writable and cannot provide this boundary by naming another directory. No permission changes are performed by this task.
 
 Implementation can prove rejection and lifecycle behavior with explicitly synthetic isolated authority fixtures. Such fixtures carry `synthetic: true` and cannot promote a real active set. If actual external authority is unavailable, production promotion is blocked, useful offline testing proceeds, and product work resumes with learning off. No new cryptographic service is introduced. The platform/coordinator independent-review channel supplies identity, rather than locally self-asserted signer names.
 
@@ -120,3 +120,5 @@ Public historical facts seed the baseline; missing independent-verdict chronolog
 ## Complexity Tracking
 
 No constitutional violations requested. The small curated semantic harness avoids dependency closure and protected-lock changes at the cost of explicitly limited mutation coverage. General mutmut adoption would require a separate reviewed proposal.
+
+Current real-entrypoint blocker: coordinator-operated external-authority/store/consumer validation adapters are not implemented; ExternalAuthority.verify and real CLI remain fail-closed. No new authorization platform or unattended writer-local activation is introduced. Product may resume accepted T016 with learning OFF after independent adapter review.

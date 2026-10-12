@@ -140,3 +140,7 @@ T016 limited engineering PASS: `f495e5294e93a281f945de6f4e1c6c89d7a6cb1e`, coord
 ## Review Repair Constraints
 
 Consumer bootstrap proves a real isolated committed change and substantive decision, including a bounded semantic counterfactual; arbitrary artifacts or commit strings do not prove use. Mutation reuse validates the complete immutable spec/oracle/test/harness binding and refuses drift. Promotion validates the persisted quarantine payload and incident hash lineage, not filename existence. These clarify existing FR-001/002/004/005/006/011 without widening the inactive MVP.
+
+## Git and Reuse Boundary Repair
+
+Repository metadata never supplies executable validation policy. Original immutable Git objects, raw parents and worktree bytes are checked in a neutral metadata view. Rollback requires a fully valid previously visible snapshot; rehashed unknown targets cannot become active. Mutation proof must match the frozen transformation, loaded/fresh structural code and relevant assertion, not only a checksum or boolean. Existing inactive scope and external-review requirements are unchanged.

@@ -123,7 +123,7 @@ LESSON_FIELDS = {
 }
 
 
-def validate_lesson(value):
+def validate_lesson(value, *, verify_evidence=True):
     checked(value, LESSON_FIELDS)
     if value["schema_version"] != "1.0.0" or type(value["synthetic"]) is not bool:
         raise Rejected("schema/synthetic label")
@@ -159,8 +159,9 @@ def validate_lesson(value):
         checked(evidence, {"path", "sha256"})
         path = safe_root(evidence["path"])
         hash_id(evidence["sha256"])
-        if (
+        if verify_evidence and (
             not path.is_file()
+            or path.stat().st_size > MAX_DOCUMENT
             or hashlib.sha256(path.read_bytes()).hexdigest() != evidence["sha256"]
         ):
             raise Rejected("evidence missing or changed")
@@ -264,6 +265,7 @@ class SyntheticStore:
             },
             "snapshot_sha256",
         )
+        self.validate_snapshot(snapshot, snapshot["snapshot_sha256"])
         snap_path = self.root / "snapshots" / (snapshot["snapshot_sha256"] + ".json")
         atomic(snap_path, snapshot)
         if fault == "before_switch":
@@ -275,14 +277,7 @@ class SyntheticStore:
             raise Rejected("interrupted after switch; visible immutable snapshot retained")
         return snapshot
 
-    def snapshot(self, *, validate_entries=True):
-        safe_root(self.root)
-        pointer = read(self.root / "active.json")
-        checked(pointer, {"version", "sha256"})
-        hash_id(pointer["sha256"])
-        if type(pointer["version"]) is not int or pointer["version"] < 0:
-            raise Rejected("invalid pointer version")
-        snapshot = read(self.root / "snapshots" / (pointer["sha256"] + ".json"))
+    def validate_snapshot(self, snapshot, expected_hash, *, validate_entries=True):
         checked(
             snapshot,
             {
@@ -295,29 +290,79 @@ class SyntheticStore:
                 "snapshot_sha256",
             },
         )
-        if (
-            snapshot["synthetic"] is not True
-            or type(snapshot["version"]) is not int
-            or snapshot["version"] != pointer["version"]
-            or digest(projection(snapshot, "snapshot_sha256")) != pointer["sha256"]
-        ):
-            raise Rejected("inconsistent snapshot")
+        hash_id(expected_hash)
         if (
             snapshot["schema_version"] != "1.0.0"
-            or not isinstance(snapshot["entries"], list)
-            or len(snapshot["entries"]) > 32
+            or snapshot["synthetic"] is not True
+            or type(snapshot["version"]) is not int
+            or snapshot["version"] < 0
+            or snapshot["snapshot_sha256"] != expected_hash
+            or digest(projection(snapshot, "snapshot_sha256")) != expected_hash
         ):
-            raise Rejected("snapshot schema/corpus bound")
+            raise Rejected("inconsistent snapshot schema/hash/version")
+        if not isinstance(snapshot["entries"], list) or len(snapshot["entries"]) > 32:
+            raise Rejected("snapshot corpus bound")
+        if snapshot["version"] == 0:
+            if (
+                snapshot["previous_version"] is not None
+                or snapshot["previous_sha256"] is not None
+                or snapshot["entries"]
+            ):
+                raise Rejected("initial snapshot must be the empty bootstrap")
+        else:
+            if (
+                type(snapshot["previous_version"]) is not int
+                or snapshot["previous_version"] != snapshot["version"] - 1
+            ):
+                raise Rejected("snapshot previous version lineage mismatch")
+            hash_id(snapshot["previous_sha256"])
         seen = set()
-        for entry in snapshot["entries"] if validate_entries else []:
+        for entry in snapshot["entries"]:
             checked(entry, {"lesson", "approval"})
-            lesson = validate_lesson(entry["lesson"])
-            self.lineage(lesson)
+            lesson = validate_lesson(entry["lesson"], verify_evidence=validate_entries)
+            if validate_entries:
+                self.lineage(lesson)
             self.authority.verify(lesson, entry["approval"])
             if lesson["lesson_id"] in seen:
                 raise Rejected("duplicate active lesson")
             seen.add(lesson["lesson_id"])
         return snapshot
+
+    def load_snapshot(self, expected_hash, *, validate_entries=True):
+        hash_id(expected_hash)
+        value = read(safe_root(self.root / "snapshots" / (expected_hash + ".json")))
+        return self.validate_snapshot(value, expected_hash, validate_entries=validate_entries)
+
+    def snapshot(self, *, validate_entries=True):
+        safe_root(self.root)
+        pointer = read(self.root / "active.json")
+        checked(pointer, {"version", "sha256"})
+        if type(pointer["version"]) is not int or pointer["version"] < 0:
+            raise Rejected("invalid pointer version")
+        snapshot = self.load_snapshot(pointer["sha256"], validate_entries=validate_entries)
+        if snapshot["version"] != pointer["version"]:
+            raise Rejected("pointer/snapshot version mismatch")
+        return snapshot
+
+    def rollback_target(self, current, expected_hash):
+        previous = self.load_snapshot(expected_hash)
+        if previous["version"] >= current["version"]:
+            raise Rejected("rollback must target a prior visible version")
+        node, found = current, False
+        for _ in range(512):
+            if node["snapshot_sha256"] == expected_hash:
+                found = True
+            if node["version"] == 0:
+                break
+            parent = self.load_snapshot(node["previous_sha256"], validate_entries=False)
+            if parent["version"] != node["previous_version"]:
+                raise Rejected("visible snapshot lineage version mismatch")
+            node = parent
+        else:
+            raise Rejected("snapshot lineage exceeds bound")
+        if not found:
+            raise Rejected("rollback target was never in visible snapshot lineage")
+        return previous
 
     def incident(self, value):
         validate_incident(value)
@@ -385,17 +430,8 @@ class SyntheticStore:
                 raise Rejected("stale compare-and-switch")
             if rollback is not None:
                 hash_id(rollback)
-                previous = read(self.root / "snapshots" / (rollback + ".json"))
-                if (
-                    digest(projection(previous, "snapshot_sha256")) != rollback
-                    or previous["synthetic"] is not True
-                    or previous["version"] >= current["version"]
-                ):
-                    raise Rejected("invalid prior rollback snapshot")
+                previous = self.rollback_target(current, rollback)
                 entries = previous["entries"]
-                for entry in entries:
-                    self.lineage(validate_lesson(entry["lesson"]))
-                    self.authority.verify(entry["lesson"], entry["approval"])
             else:
                 validate_lesson(lesson)
                 candidate_path = self.root / "candidates" / (lesson["lesson_sha256"] + ".json")

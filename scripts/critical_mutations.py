@@ -15,7 +15,7 @@ import tempfile
 import types
 from pathlib import Path
 
-from reviewed_lessons import bind, digest, hash_id, projection, read
+from reviewed_lessons import bind, checked, digest, hash_id, projection, read
 
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = [
@@ -339,6 +339,61 @@ def require_stable_binding(root, expected):
         raise ValueError("experiment input drift; stale result must not be reused")
 
 
+ASSERTIONS = {
+    "conflict": "SEMANTIC: earlier conflicting capacity retained",
+    "duplicate": "SEMANTIC: duplicate declarations must be rejected",
+    "payment_or": "SEMANTIC: route OR and evidence kind",
+    "unknown": "SEMANTIC: unknown must remain None",
+    "evidence_kind": "SEMANTIC: route OR and evidence kind",
+    "budget_reset": "SEMANTIC: schema drift/missing budget cannot pass",
+    "schema": "SEMANTIC: schema drift/missing budget cannot pass",
+    "stream": "SEMANTIC: refuse declared overflow before body read",
+}
+
+
+def expected_transformation(root, item):
+    source = (Path(root) / item["file"]).read_bytes().decode()
+    if source.count(item["before"]) != 1:
+        raise ValueError("frozen mutation anchor mismatch")
+    mutated = source.replace(item["before"], item["after"])
+    filename = str(Path(root) / item["file"])
+    names = item["function"].split(".")
+    original_code = code_hash(compiled_function(compile(source, filename, "exec"), names))
+    mutated_code = code_hash(compiled_function(compile(mutated, filename, "exec"), names))
+    return {
+        "original_sha256": hashlib.sha256(source.encode()).hexdigest(),
+        "mutated_sha256": hashlib.sha256(mutated.encode()).hexdigest(),
+        "original_code": original_code,
+        "mutated_code": mutated_code,
+    }
+
+
+def verify_loaded_proof(proof, source_sha, structural_sha, item):
+    checked(
+        proof,
+        {
+            "imported_path",
+            "source_sha256",
+            "loaded_code_sha256",
+            "fresh_source_code_sha256",
+            "actually_loaded_matches_source",
+        },
+    )
+    for key in ["source_sha256", "loaded_code_sha256", "fresh_source_code_sha256"]:
+        hash_id(proof[key])
+    path = Path(proof["imported_path"])
+    suffix = Path(item["file"]).parts
+    if not path.is_absolute() or ".." in path.parts or tuple(path.parts[-len(suffix) :]) != suffix:
+        raise ValueError("mutation original import origin mismatch")
+    if (
+        proof["source_sha256"] != source_sha
+        or proof["actually_loaded_matches_source"] is not True
+        or proof["loaded_code_sha256"] != structural_sha
+        or proof["fresh_source_code_sha256"] != structural_sha
+    ):
+        raise ValueError("mutation semantic loaded/source proof contradiction")
+
+
 def verify_result(output, root=ROOT):
     output = Path(output)
     result = read(output / "manifest.json")
@@ -355,14 +410,41 @@ def verify_result(output, root=ROOT):
             or entry["baseline"]["outcome"] != "survived"
         ):
             raise ValueError("mutation entry/baseline binding mismatch")
-        proof = entry["result"].get("proof", {})
-        if entry["result"]["outcome"] == "killed" and (
-            not entry["result"].get("assertion", "").startswith("SEMANTIC:")
-            or proof.get("source_sha256") != entry["mutated_sha256"]
-            or not proof.get("actually_loaded_matches_source")
-            or proof.get("loaded_code_sha256") == entry["baseline"]["proof"]["loaded_code_sha256"]
+        expected = expected_transformation(root, item)
+        if (
+            entry["synthetic"] is not True
+            or entry["original_sha256"] != expected["original_sha256"]
+            or entry["mutated_sha256"] != expected["mutated_sha256"]
+            or entry["original_sha256"] == entry["mutated_sha256"]
         ):
-            raise ValueError("mutation semantic kill proof invalid")
+            raise ValueError("mutation frozen original-to-mutant transformation mismatch")
+        verify_loaded_proof(
+            entry["baseline"]["proof"], expected["original_sha256"], expected["original_code"], item
+        )
+        outcome = entry["result"]["outcome"]
+        if outcome not in {
+            "killed",
+            "survived",
+            "equivalent",
+            "invalid_syntax",
+            "import_error",
+            "scope_error",
+            "timeout",
+            "unapplied",
+            "blocked",
+            "operational_error",
+        }:
+            raise ValueError("unknown mutation outcome")
+        if outcome in {"killed", "survived"}:
+            proof = entry["result"]["proof"]
+            verify_loaded_proof(proof, expected["mutated_sha256"], expected["mutated_code"], item)
+            if proof["imported_path"] != entry["baseline"]["proof"]["imported_path"]:
+                raise ValueError("mutation baseline/mutant import origin differs")
+        if outcome == "killed" and (
+            entry["result"].get("assertion") != ASSERTIONS[item["id"]]
+            or expected["mutated_code"] == expected["original_code"]
+        ):
+            raise ValueError("mutation relevant semantic kill proof invalid")
     killed = sum(x["result"]["outcome"] == "killed" for x in result["outcomes"])
     if result["meaningfully_killed"] != killed or result["status"] != (
         "PASS" if killed == len(CORPUS) else "FAIL"
@@ -387,7 +469,7 @@ def execute(output, root=ROOT):
                     ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
                 )
             target = clone / item["file"]
-            original = target.read_text()
+            original = target.read_bytes().decode()
             command = [
                 sys.executable,
                 str(clone / "scripts/critical_mutations.py"),

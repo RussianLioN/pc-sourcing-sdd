@@ -21,3 +21,5 @@ Primary references already fetched and versioned in source manifest:
 - https://developers.openai.com/codex/skills/
 
 No reference text grants operational authority. Compatibility of the not-yet-implemented mutation harness is NOT_RUN until its actual smoke. No unresolved technology choice blocks the inactive implementation design; actual review-authority/network-isolation boundaries require coordinator verification before corresponding operation.
+
+Git boundary primary references: https://git-scm.com/docs/git (explicit Git directory, environment isolation and no-replace objects), https://git-scm.com/docs/git-cat-file (raw object type/size/content), https://git-scm.com/docs/git-config (repository callbacks such as fsmonitor/filter). Installed Git observed2.52.0. Original metadata is never read as command policy; independent raw SHA1 recomputation validates object identity. No Git credentials or system permission changes are part of this repair.

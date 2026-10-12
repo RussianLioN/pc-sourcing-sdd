@@ -1,7 +1,8 @@
 {
   "status": "BLOCKED_REAL_AUTHORITY",
-  "reason": "Current /workspace is writer-writable; no external coordinator-owned approval/permission boundary established. Writer-local PASS cannot configure it.",
+  "reason": "Coordinator can retain trusted verdict/hash anchors in its existing authenticated external platform context without new credentials. Coordinator-operated real authority/store/consumer-validation entrypoints are not implemented or integrated; writer-local unattended activation has no authenticated external verifier.",
   "synthetic_fixture_authority": "test-only, cannot approve real lessons",
   "real_activation": false,
-  "permission_changes": false
+  "permission_changes": false,
+  "new_credentials_required": false
 }

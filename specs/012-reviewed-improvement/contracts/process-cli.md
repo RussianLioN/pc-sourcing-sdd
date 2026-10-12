@@ -16,3 +16,5 @@ Status: initial interface design plus implemented inactive MVP. Real CLI status/
 Skill installation planned with `agents/openai.yaml` policy `allow_implicit_invocation: false`. No global hooks. Runtime skill use is an agent action backed by invocation/outcome receipts, not equivalent to CLI metadata saying a skill was used. Independent reviewer observes the new artifact and exact resulting change.
 
 Implemented consumer proof supports the substantive decision branch: actual isolated Git change, new committed decision and fixed semantic counterfactual. Reusing evidence as a new regression test is rejected. Other test-consumption recipes require separate validation and are not implicitly enabled.
+
+Git validation uses a neutral temporary metadata view with raw object-ID/hash checking. Supplied Git config, index, attributes, replace refs, grafts and caller Git environment are not policy. Ordinary local SHA1 storage only: packed original objects supported; external alternates, promisor/symlink storage and linked gitfiles fail closed. Missing coordinator-operated real authority/store/consumer entrypoints remain BLOCKED, not implicitly implemented.

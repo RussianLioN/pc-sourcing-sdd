@@ -53,3 +53,12 @@ Reviewer reference: libfile_31896ca4e9ec8191bd30f3f8345063e6, SHA256 43dd4e7a209
 | LOW obsolete NOT_RUN status | FR-008/009 | Current status corrected here; original authoring/WIP receipts unchanged |
 
 CP-T017-01 was explicitly approved and applied only at exact protected-file hashes documented in CP-T017-01.md. Original assertions244/1, seven negatives and historical checker remain unchanged.
+
+## Additional Independent Findings Repaired
+
+- HIGH R5 and filter.clean neighbor: ObjectView never reads the supplied repository config/index/attributes. Controlled temporary metadata and explicit environment are used; no repository-driven callbacks run. Actual before/after marker controls are preserved.
+- MEDIUM R6: original commit/tree/blob object IDs and payloads are verified without replace refs/grafts or inherited Git environment. Raw parent/file sets and worktree bytes are checked; false replacement commits are refused. Valid packed original objects and symbolic HEAD are covered.
+- MEDIUM R7: rollback revalidates full target schema, unique bounded entries, lesson/incident/verdict and visible ancestry before pointer mutation. Interrupted but never-visible orphan targets refuse; valid empty historical rollback after evidence loss remains supported.
+- MEDIUM R8: verifier reconstructs each frozen original-to-mutant transformation and expected structural code. Contradictory loaded/fresh hashes, unchanged source, false baseline/origin/assertion refuse after rehashing.
+
+Review evidence: libfile_3397f9050b608191a9cf153dacd8e6ba SHA2560dfbf89f064551fd65f0489ba4b13701c27c9fb5dcbe4b43dc67d2e6fe3ba56a; recovered independent package libfile_a7656d01bbe48191b067ecbe6c88d900 SHA25632c19e978d8aff2a51a0d283670c094125ae626358d6e38afd8d0e4ee1c91249 was materialized and its exact seven probes checked, red4/green7. Historical receipts are not rewritten.

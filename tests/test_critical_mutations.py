@@ -196,3 +196,45 @@ def test_review_M2_tampered_receipt_never_reused(tmp_path):
     p.write_text(json.dumps(value))
     with pytest.raises(ValueError, match="hash"):
         verify_result(output, clone)
+
+
+@pytest.mark.parametrize(
+    "attack",
+    [
+        "false_loaded_hash",
+        "unchanged_source",
+        "wrong_original",
+        "wrong_assertion",
+        "false_baseline",
+        "wrong_origin",
+    ],
+)
+def test_rehashed_semantic_contradiction_cannot_pass_reuse(tmp_path, attack):
+    from critical_mutations import verify_result
+    from reviewed_lessons import bind
+
+    clone = mutation_checkout(tmp_path)
+    output = tmp_path / "contradictory-result"
+    execute(output, clone)
+    p = output / "manifest.json"
+    result = json.loads(p.read_text())
+    entry = result["outcomes"][0]
+    if attack == "false_loaded_hash":
+        entry["result"]["proof"]["fresh_source_code_sha256"] = entry["baseline"]["proof"][
+            "fresh_source_code_sha256"
+        ]
+    elif attack == "unchanged_source":
+        entry["mutated_sha256"] = entry["original_sha256"]
+        entry["result"]["proof"]["source_sha256"] = entry["original_sha256"]
+    elif attack == "wrong_original":
+        entry["original_sha256"] = "f" * 64
+    elif attack == "wrong_assertion":
+        entry["result"]["assertion"] = "SEMANTIC: unrelated assertion"
+    elif attack == "false_baseline":
+        entry["baseline"]["proof"]["loaded_code_sha256"] = "f" * 64
+    else:
+        entry["result"]["proof"]["imported_path"] = "/tmp/unrelated/other.py"
+    (output / (entry["family"] + ".json")).write_text(json.dumps(entry))
+    p.write_text(json.dumps(bind(result, "result_sha256")))
+    with pytest.raises(ValueError):
+        verify_result(output, clone)

@@ -42,3 +42,7 @@ The mutation harness fixes eight semantic families and verifies loaded function 
 `new_decision` creates two actual commits in a fresh synthetic isolated repository: last-declaration baseline, then conflict-preserving resolver plus a new structured decision. `validate_use` checks committed content/parents/current clean tree and replays only the exact bounded recipe. This bootstrap does not grant real activation or independent review.
 
 Reuse mutation receipts only with `.venv/bin/python scripts/critical_mutations.py --verify /absolute/experiment-output`; changed Git/spec/oracle/tests/code/harness/corpus invalidates old evidence. Raw historical JSON PASS remains a historical observation, never current acceptance.
+
+## Repository Execution and Semantic Reuse Controls
+
+Git config fsmonitor/include/hooks/diff/textconv/filter.clean and inherited config variables are marker-tested without execution by validation. Object replacement at commit/tree/blob/custom-ref levels cannot change original proof. Rollback refuses schema/entry/verdict/visible-lineage failures before switching. Rehashed mutation contradictions are rejected by frozen-source and structural/assertion checks. See exact external probe XML and current full/native receipts in the review bundle.
