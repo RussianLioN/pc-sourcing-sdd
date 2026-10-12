@@ -1,0 +1,14 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-durable-runtime-validation"
+  name: "T011 common snapshot regression and protected parent scope"
+  version: "1.0.0"
+steps:
+  - id: quality
+    type: shell
+    run: ".venv/bin/python scripts/durable_quality.py"
+    timeout: 480
+  - id: scope
+    type: shell
+    run: ".venv/bin/python scripts/durable_scope.py"
+    timeout: 60
