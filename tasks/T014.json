@@ -1,0 +1,8 @@
+{
+  "id": "T014",
+  "status": "planned_not_live_enabled",
+  "depends_on": "T013 acceptance",
+  "spec": "specs/009-source-coverage/spec.md",
+  "implementation_owned_files": [],
+  "source_queries": 0
+}

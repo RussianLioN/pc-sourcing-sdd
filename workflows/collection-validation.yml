@@ -1,0 +1,14 @@
+schema_version: "1.0"
+workflow:
+  id: "pc-collection-integration-validation"
+  name: "T013 common snapshot regression and protected parent scope"
+  version: "1.0.0"
+steps:
+  - id: quality
+    type: shell
+    run: ".venv/bin/python scripts/collection_quality.py"
+    timeout: 480
+  - id: scope
+    type: shell
+    run: ".venv/bin/python scripts/collection_scope.py"
+    timeout: 60

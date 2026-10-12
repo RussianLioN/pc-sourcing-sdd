@@ -13,8 +13,26 @@ scope = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(scope)
 
 
-def test_normalized_stage_preserves_parent_blobs():
-    result = scope.check(ROOT)
+def test_normalized_stage_preserves_parent_blobs(tmp_path):
+    import subprocess
+
+    checkout = tmp_path / "historical-T012"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-hardlinks", str(ROOT), str(checkout)], check=True
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(checkout),
+            "checkout",
+            "--quiet",
+            "--detach",
+            "35b8141c781cab7a3c72271a98722f5947d93e46",
+        ],
+        check=True,
+    )
+    result = scope.check(checkout)
     assert result["status"] == "passed"
     assert result["protected_byte_identical"] == 182
     assert result["approved_protected_patches"] == 1
