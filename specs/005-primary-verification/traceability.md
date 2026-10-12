@@ -29,3 +29,13 @@ PRIMARY-03 cross-run rate-limit preservation → PersistentSearch CLI wrapper �
 429/403/CAPTCHA/timeout persisted-stop regressions. Original observed 429 receipts
 remain retained; no new keyless request after stop persistence. Existing primary
 card capabilities may be read independently without altering denied search access.
+
+Independent metamorphic repair → identity_attributes.py sets of normalized facts
+(capacity/topology/memory type/speed units/CAS aliases/profile negation/full-item
+role/factory cooling origin), compared with requested/known target attributes before
+MPN exact-match. Product.name/description, visible text and named structured
+properties participate; conflicting values never use last-value-wins. Existing
+hard exclusions remain explicit; missing model is unresolved. PRIMARY-06/07 →
+tests/test_identity_attributes.py (paraphrases, structural/visible conflicts and
+positive controls) + frozen60 + independent metamorphic13. No new live receipts.
+T011 WIP preserved separately until T010 reviewer authorizes continuation.

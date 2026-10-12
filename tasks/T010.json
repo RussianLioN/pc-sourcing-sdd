@@ -22,7 +22,9 @@
     "workflows/primary-validation.yml",
     "tests/test_stage_acceptance.py",
     "docs/adr/0004-review-identity-test-correction.md",
-    "tests/test_live_sourcing.py"
+    "tests/test_live_sourcing.py",
+    "src/pc_sourcing/identity_attributes.py",
+    "tests/test_identity_attributes.py"
   ],
   "mutable_baseline_files": [
     "src/pc_sourcing/live_models.py",

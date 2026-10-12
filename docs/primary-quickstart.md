@@ -56,3 +56,14 @@ block before HTTP. No automatic reset or credential/provider substitution. Respe
 Retry-After, and require separately reviewed explicit recovery before another live
 search. Original three 429 receipts are preserved: the earlier per-run stop did not
 prevent separate CLI invocations, a defect corrected by this shared state.
+
+Identity correction: matched MPN is considered only after normalized material
+attribute conflicts are checked. Parsed attributes are bounded deterministic facts,
+not unrestricted language understanding. Unrecognized structured values for a
+material attribute remain unresolved. Curated product text truncation blocks exact
+classification; retained metadata records that truncation instead of changing the
+observed Product count. Positive full-model controls remain exact identity only;
+no offer becomes purchase eligible from identity alone.
+
+Handoff bundles containing ^130d67 are incremental and require that exact baseline;
+they are not standalone repository archives. T010 evidence does not accept T011.

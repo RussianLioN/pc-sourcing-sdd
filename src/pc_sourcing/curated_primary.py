@@ -184,6 +184,9 @@ class ProductScope(HTMLParser):
         self.price_types = []
         self.product_count = 0
         self.item_scopes = {}
+        self.visible_product_text = []
+        self.visible_length = 0
+        self.text_overflow = False
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -206,10 +209,21 @@ class ProductScope(HTMLParser):
             "priceCurrency",
             "availability",
             "itemCondition",
+            "description",
+            "memorySize",
+            "memorySpeed",
+            "memoryType",
+            "casLatency",
+            "isComplete",
+            "factory_liquid",
         }:
             prop = attrs["itemprop"]
             owner = self.item_scopes[max(self.item_scopes)] if self.item_scopes else None
-            required_owner = "Product" if prop in {"name", "sku", "mpn"} else "Offer"
+            required_owner = (
+                "Offer"
+                if prop in {"price", "priceCurrency", "availability", "itemCondition"}
+                else "Product"
+            )
             if owner != required_owner:
                 return
             value = attrs.get("content", attrs.get("href"))
@@ -239,6 +253,12 @@ class ProductScope(HTMLParser):
     def handle_data(self, text):
         if self.h1_depth:
             self.h1.append(text)
+        if self.scope and self.stack[-1] not in {"script", "style"} and text.strip():
+            if self.visible_length + len(text) <= 4000 and not self.text_overflow:
+                self.visible_product_text.append(text)
+                self.visible_length += len(text)
+            else:
+                self.text_overflow = True
 
 
 def observe(request, candidate, html, provenance, now):
@@ -265,7 +285,7 @@ def observe(request, candidate, html, provenance, now):
     conflict = conflict or bool(
         names and (len(names) != 1 or normalize(names[0]) != normalize(title))
     )
-    conflict = conflict or parsed.product_count != 1
+    conflict = conflict or parsed.product_count != 1 or parsed.text_overflow
     if conflict:
         mpn = None
     elif not mpns and declared:
@@ -274,6 +294,19 @@ def observe(request, candidate, html, provenance, now):
     match, differences = identity(request, title, mpn)
     if conflict:
         match, differences = "unresolved", ("Conflicting or multiple primary Product identities",)
+    from pc_sourcing.identity_attributes import conflicts
+
+    attribute_conflicts = conflicts(
+        request,
+        [title, " ".join(parsed.visible_product_text), *props.get("description", [])],
+        structured=props,
+    )
+    if attribute_conflicts:
+        match, differences = (
+            "unresolved",
+            ("Conflicting primary attributes: " + ", ".join(attribute_conflicts),),
+        )
+        conflict = True
     if request.category == "ram" and (
         not re.search(r"(?i)оперативная память|\bRAM\b|\bmemory\b", title)
         or re.search(r"(?i)ноутбук|компьютер|\blaptop\b|\bDDR[234]\b", title)
@@ -284,6 +317,9 @@ def observe(request, candidate, html, provenance, now):
         "product_count": parsed.product_count,
         "properties": props,
         "price_types": parsed.price_types,
+        "visible_product_text": " ".join(parsed.visible_product_text),
+        "identity_conflicts": list(attribute_conflicts),
+        "visible_text_truncated": parsed.text_overflow,
     }
     retained = dumps(primary)
     retained_hash = hashlib.sha256(retained.encode()).hexdigest()

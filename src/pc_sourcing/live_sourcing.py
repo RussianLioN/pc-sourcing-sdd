@@ -111,28 +111,12 @@ def products(value):
 def identity(request, title, mpn):
     """Conservative matching of primary identities, never inferred from a snippet."""
     text = (title or "").upper()
+    from pc_sourcing.identity_attributes import conflicts
+
     tokens = set(re.findall(r"[A-Z0-9]+", text))
     if not text.strip():
         return "unresolved", ("Primary model/title отсутствует",)
-    accessory = re.search(
-        r"ПУСТ[А-Я]* КОРОБ|EMPTY BOX|DUMMY|ПАМЯТИ НЕТ|MOUSE PAD|CHARGING DOCK|"
-        r"REPLACEMENT SHELL|RECEIVER ONLY|ТОЛЬКО (?:КОРОБ|ПРИЁМНИК)|"
-        r"ПУСТ[А-Я]* УПАКОВК|ЗАПЧАСТ|СМЕНН[А-Я]* КОРПУС|ЗАРЯДН[А-Я]* СТАНЦ|КОВРИК",
-        text,
-    )
-    if accessory:
-        return "unresolved", ("Accessory/partial item conflicts with full product identity",)
-
     if request.category == "gpu":
-        if re.search(
-            r"УСТАНОВЛЕН[А-Я]*\s+ПРОДАВЦ|AFTERMARKET|SELLER.INSTALLED|"
-            r"ЗАВОДСК[^;,.]{0,50}ВОЗДУШН|КАРТА\s+ВОЗДУШН",
-            text,
-        ):
-            return "unresolved", ("Factory liquid and aftermarket declarations conflict",)
-        capacities = re.findall(r"([0-9]+)\s*(?:GB|ГБ)\b", text)
-        if any(int(v) != 32 for v in capacities) or "GDDR6X" in tokens:
-            return "unresolved", ("VRAM characteristics conflict with RTX 5090 target",)
         if (
             "AIR" in tokens
             or "WATERBLOCK" in tokens
@@ -144,6 +128,20 @@ def identity(request, title, mpn):
             return "excluded", ("Не полная заводская MSI RTX 5090 SUPRIM LIQUID",)
         if re.search(r"\bRTX\s+(?!5090\b)[0-9]+", text):
             return "excluded", ("Другая модель GPU",)
+    attribute_conflicts = conflicts(request, [title])
+    if attribute_conflicts:
+        # Explicit wrong RAM total/DDR with a different code is a hard exclusion;
+        # copied matching code or unapproved substitutions remain unresolved.
+        hard_wrong = (
+            request.category == "ram"
+            and mpn != request.mpn
+            and set(attribute_conflicts) & {"capacity", "memory_type"}
+        )
+        return ("excluded" if hard_wrong else "unresolved"), (
+            "Conflicting primary attributes: " + ", ".join(attribute_conflicts),
+        )
+
+    if request.category == "gpu":
         if not {"MSI", "RTX", "5090", "SUPRIM", "LIQUID"} <= tokens:
             return "unresolved", ("Заводской liquid вариант/полная идентичность не подтверждены",)
         requested = set(re.findall(r"[A-Z0-9]+", request.name.upper()))
@@ -157,42 +155,8 @@ def identity(request, title, mpn):
             return "analogue", ("Другой вариант OC/SOC; не точный SKU",)
         if ("OC" in requested or "SOC" in requested) and not {"OC", "SOC"} & tokens:
             return "unresolved", ("Вариант OC/SOC не подтверждён",)
-    if request.category == "ram":
-        requested = request.name.upper()
-        kits = list(re.finditer(r"([0-9]+)\s*[X×Х]\s*([0-9]+)\s*(?:GB|ГБ)", text))
-        without_kits = text
-        for kit in reversed(kits):
-            without_kits = without_kits[: kit.start()] + without_kits[kit.end() :]
-        capacities = [int(v) for v in re.findall(r"([0-9]{1,3})\s*(?:GB|ГБ)\b", without_kits)]
-        wanted = re.search(r"([0-9]+)\s*(?:GB|ГБ)\b", requested)
-        wanted_capacity = int(wanted[1]) if wanted else None
-        if wanted_capacity is None and request.mpn == "F5-6000J3036F48GX2-TZ5NR":
-            wanted_capacity = 96
-        hard_wrong = bool(wanted_capacity and any(v != wanted_capacity for v in capacities))
-        hard_wrong |= bool(re.search(r"\bDDR[234]\b|KINGSTON|ОДИН МОДУЛЬ", text))
-        if hard_wrong:
-            return ("unresolved" if mpn == request.mpn else "excluded"), (
-                "RAM total/category conflicts with request",
-            )
-        topology = re.search(r"([0-9]+)\s*[X×Х]\s*([0-9]+)\s*(?:GB|ГБ)", requested)
-        traits_conflict = bool(
-            topology and any((k[1], k[2]) != (topology[1], topology[2]) for k in kits)
-        )
-        for pattern in (r"\bCL\s*([0-9]+)\b", r"\bDDR5[\s-]+([0-9]{4})\b"):
-            expected = re.search(pattern, requested)
-            actual = re.search(pattern, text)
-            traits_conflict |= bool(expected and actual and actual[1] != expected[1])
-        traits_conflict |= bool(re.search(r"SODIMM|REGISTERED|\bECC\b", text))
-        if "EXPO" in requested:
-            traits_conflict |= bool(
-                re.search(
-                    r"EXPO\s+(?:UNSUPPORTED|NOT SUPPORTED|НЕ ПОДДЕРЖ)|XMP ONLY|ТОЛЬКО XMP", text
-                )
-            )
-        if traits_conflict:
-            return "unresolved", (
-                "RAM material characteristics conflict; compatibility unconfirmed",
-            )
+    if request.category == "ram" and re.search(r"KINGSTON|ОДИН МОДУЛЬ", text):
+        return ("unresolved" if mpn == request.mpn else "excluded"), ("RAM model/kit not agreed",)
     if request.category == "mouse":
         wanted = request.name.upper()
         if "SUPERSTRIKE" in wanted and ("SUPERLIGHT" in tokens or "WIRED" in tokens):
@@ -238,6 +202,16 @@ def parse_card(request, candidate, html, now):
     title = product.get("name") if isinstance(product.get("name"), str) else None
     mpn = product.get("mpn") if isinstance(product.get("mpn"), str) else None
     match, differences = identity(request, title, mpn)
+    from pc_sourcing.identity_attributes import conflicts
+
+    attribute_conflicts = conflicts(
+        request, [title, product.get("description"), " ".join(document.visible)], structured=product
+    )
+    if attribute_conflicts and match != "excluded":
+        match, differences = (
+            "unresolved",
+            ("Conflicting primary attributes: " + ", ".join(attribute_conflicts),),
+        )
     facts = []
     page_hash = digest(html.encode())
 
