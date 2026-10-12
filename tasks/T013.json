@@ -3,7 +3,7 @@
   "status": "preliminary_review_repairs_ready_for_recheck",
   "base_commit": "35b8141c781cab7a3c72271a98722f5947d93e46",
   "spec_revision": "1.0.0",
-  "spec_sha256": "762593831030b31e19983e3a65dbd84673c9aadccc8b278d5893e8b12d6c0dc9",
+  "spec_sha256": "271327c2037f3b8c392018f5cd8f4bc33ab38706d588aaeb7a0558a2b241c690",
   "owned_files": [
     "specs/008-collection-integration/spec.md",
     "specs/008-collection-integration/plan.md",

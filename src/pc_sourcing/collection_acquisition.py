@@ -77,6 +77,10 @@ class Acquisition:
             raise ValueError("symlink source-state component")
         self.state = self.state_dir / (self.source_key + "-stop.json")
         self.dbpath = self.state_dir / (self.source_key + "-acquisition.sqlite")
+        if not self.synthetic and not self.dbpath.is_file():
+            raise AccessBlocked(
+                "established production ledger missing; restore complete state, no implicit initialization"
+            )
         self.lock = self.state_dir / ("." + self.source_key + "-acquisition.lock")
         self.captures = self.state_dir / (self.source_key + "-acquisition-captures")
         if self.captures.is_symlink():

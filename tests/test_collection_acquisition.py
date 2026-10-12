@@ -210,3 +210,23 @@ def test_source_ledger_drift_never_reinitializes_or_resets(tmp_path, mutation):
             state_dir=a.state_dir, registry=a.registry, transport=a.transport, sleep=lambda _: None
         )
     assert len(calls) == 2
+
+
+def test_production_both_ledger_and_marker_loss_never_resets_with_stops_present(
+    tmp_path, monkeypatch
+):
+    import pc_sourcing.collection_acquisition as module
+
+    original = module.PACKAGE_ROOT
+    (tmp_path / "sources").mkdir()
+    (tmp_path / "sources/curated-primary.json").write_bytes(
+        (original / "sources/curated-primary.json").read_bytes()
+    )
+    state = tmp_path / "artifacts/source-state"
+    state.mkdir(parents=True)
+    (state / "tavily-stop.json").write_text('{"endpoint":"https://api.tavily.com/search"}')
+    (state / "28bit-stop.json").write_text('{"reason":"gaierror"}')
+    monkeypatch.setattr(module, "PACKAGE_ROOT", tmp_path)
+    with pytest.raises(AccessBlocked, match="no implicit initialization"):
+        Acquisition()
+    assert not (state / "28bit-acquisition.sqlite").exists()

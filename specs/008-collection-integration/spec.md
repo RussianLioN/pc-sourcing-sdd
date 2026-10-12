@@ -69,3 +69,9 @@ price malformed/conditional and MPN unconfirmed. No price or eligibility invente
 Both source captures can be replayed/restored with zero HTTP. Further live requests
 remain paused pending independent repair review. ANDPRO has no known target URL
 in the current source documents; no card/feed/API or navigation call was made.
+
+Production ledger creation is not implicit: even a directory with old stop records
+cannot recreate a missing production ledger/marker. Transfer must restore a complete
+validated source snapshot. Synthetic test initialization remains explicit via injected
+transport and cannot claim a live origin. Future source bootstrap is a separately
+reviewed state operation, not an acquisition or budget reset command.
